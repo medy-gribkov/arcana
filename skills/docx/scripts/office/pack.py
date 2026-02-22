@@ -20,6 +20,7 @@ from pathlib import Path
 import defusedxml.minidom
 
 from validators import DOCXSchemaValidator, PPTXSchemaValidator, RedliningValidator
+from security_utils import sanitize_path
 
 def pack(
     input_directory: str,
@@ -28,8 +29,12 @@ def pack(
     validate: bool = True,
     infer_author_func=None,
 ) -> tuple[None, str]:
-    input_dir = Path(input_directory)
-    output_path = Path(output_file)
+    try:
+        input_dir = sanitize_path(input_directory, must_exist=True)
+        output_path = sanitize_path(output_file)
+    except (ValueError, FileNotFoundError) as e:
+        return None, f"Error: {e}"
+        
     suffix = output_path.suffix.lower()
 
     if not input_dir.is_dir():
@@ -39,8 +44,10 @@ def pack(
         return None, f"Error: {output_file} must be a .docx, .pptx, or .xlsx file"
 
     if validate and original_file:
-        original_path = Path(original_file)
-        if original_path.exists():
+        try:
+            original_path = sanitize_path(original_file, must_exist=True)
+        except (ValueError, FileNotFoundError) as e:
+             return None, f"Error: {e}"
             success, output = _run_validation(
                 input_dir, original_path, suffix, infer_author_func
             )

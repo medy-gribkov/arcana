@@ -33,6 +33,11 @@ def get_soffice_env() -> dict:
 
 
 def run_soffice(args: list[str], **kwargs) -> subprocess.CompletedProcess:
+    """Run LibreOffice with the given arguments safely."""
+    # Ensure args is a list to prevent shell injection via string concatenation
+    if not isinstance(args, list):
+        raise ValueError("args must be a list of strings")
+        
     env = get_soffice_env()
     return subprocess.run(["soffice"] + args, env=env, **kwargs)
 

@@ -22,6 +22,7 @@ import defusedxml.minidom
 
 from helpers.merge_runs import merge_runs as do_merge_runs
 from helpers.simplify_redlines import simplify_redlines as do_simplify_redlines
+from security_utils import sanitize_path
 
 SMART_QUOTE_REPLACEMENTS = {
     "\u201c": "&#x201C;",  
@@ -37,12 +38,13 @@ def unpack(
     merge_runs: bool = True,
     simplify_redlines: bool = True,
 ) -> tuple[None, str]:
-    input_path = Path(input_file)
-    output_path = Path(output_directory)
+    try:
+        input_path = sanitize_path(input_file, must_exist=True)
+        output_path = sanitize_path(output_directory)
+    except (ValueError, FileNotFoundError) as e:
+        return None, f"Error: {e}"
+        
     suffix = input_path.suffix.lower()
-
-    if not input_path.exists():
-        return None, f"Error: {input_file} does not exist"
 
     if suffix not in {".docx", ".pptx", ".xlsx"}:
         return None, f"Error: {input_file} must be a .docx, .pptx, or .xlsx file"
