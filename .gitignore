@@ -10,6 +10,7 @@ htmlcov/
 # Node
 cli/node_modules/
 cli/dist/
+cli/coverage/
 *.tgz
 .npmrc
 
