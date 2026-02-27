@@ -6,6 +6,7 @@ import { getProvider, getProviders } from "../registry.js";
 import { ui, banner, spinner, noopSpinner } from "../utils/ui.js";
 import { loadConfig } from "../utils/config.js";
 import { validateSlug } from "../utils/validate.js";
+import { updateLockEntry } from "../utils/integrity.js";
 
 function isNewer(remoteVersion: string, localVersion: string | undefined): boolean {
   const local = semver.valid(semver.coerce(localVersion)) ?? "0.0.0";
@@ -147,6 +148,7 @@ async function updateOne(
       description: remote.description,
       fileCount: files.length,
     });
+    updateLockEntry(skillName, remote.version, providerName, files);
 
     if (json) {
       console.log(JSON.stringify({ updated: [skillName], upToDate: [], failed: [] }));
@@ -248,6 +250,7 @@ async function updateMultiple(
         description: remote.description,
         fileCount: files.length,
       });
+      updateLockEntry(skillName, remote.version, providerName, files);
       updatedList.push(skillName);
     } catch (err) {
       failedList.push(skillName);
@@ -360,6 +363,7 @@ async function updateAll(installDir: string, providerName: string, json?: boolea
           description: remote.description,
           fileCount: files.length,
         });
+        updateLockEntry(skillName, remote.version, provider.name, files);
         updatedList.push(skillName);
         break;
       }

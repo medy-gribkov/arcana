@@ -1,5 +1,51 @@
 # Changelog
 
+## 2.4.2 (2026-02-27)
+
+Deep security hardening, 10 new commands, integrity lockfile, and full modernization.
+
+### Security (WS1)
+- **Scanner expanded**: 20 patterns to 45+ covering Snyk ToxicSkills taxonomy
+- **New CRITICAL patterns**: curl|source piping, nested base64, encrypted archives, GitHub release binaries, PowerShell encoded commands
+- **New HIGH patterns**: API key printing, AWS access keys (AKIA), Anthropic/OpenAI keys, auth headers, memory poisoning (SOUL.md/MEMORY.md/.cursorrules), Unicode zero-width smuggling, behavior override, autonomy escalation, data exfiltration
+- **New MEDIUM patterns**: global package installs, crypto APIs, rm -rf, sudo, system dir writes, docker privileged, third-party HTTP
+
+### Integrity & Lockfile (WS2)
+- **`arcana lock`**: Generate `~/.arcana/arcana-lock.json` with SHA-256 hashes of all installed skills
+- **`arcana lock --ci`**: Validate lockfile matches installed state (deterministic CI mode)
+- **`arcana verify [skill]`**: Check installed skill integrity against lockfile (ok/modified/missing)
+- **Automatic lockfile updates**: `install` and `update` commands now write lockfile entries on success
+
+### Performance (WS3)
+- **Shell completions**: `arcana completions <bash|zsh|fish>` generates completion scripts
+- **Slug length limit**: 128 character max on skill names to prevent path traversal via long names
+
+### Token Optimization (WS4)
+- **`arcana benchmark [skill]`**: Measure token cost per skill (file count, bytes, estimated tokens, context %)
+- **`arcana benchmark --all`**: Sorted table of all skills by token cost
+- **`arcana profile`**: Named skill profiles (create, delete, show, apply) for switching between skill sets
+
+### Inspection (WS5)
+- **`arcana diff <skill>`**: Show added/removed/modified files between installed and remote versions
+- **`arcana outdated`**: List skills with newer versions available (semver comparison)
+
+### Team & Workflow (WS6)
+- **`arcana team init/sync/add/remove`**: Shared `.arcana/team.json` config (git-committable)
+- **`arcana export`**: Export installed skills as JSON manifest or `--sbom` SPDX-lite format
+- **`arcana import <file>`**: Import and install skills from a manifest file
+
+### Testing (WS7)
+- **427 tests** across 43 test files (was 355 across 35)
+- **Coverage**: 59.5% stmts, 48.6% branches, 67% funcs, 60.3% lines (all above thresholds)
+- **8 new test files** for all new commands
+
+### Infrastructure
+- **28 total commands** (was 18)
+- **10 new source files**, ~1,800 lines of new code
+- **ESM-only**, TypeScript strict, zero lint errors
+
+---
+
 ## 2.4.1 (2026-02-27)
 
 CI hardening, test coverage, linting, npm package optimization, session pruning.

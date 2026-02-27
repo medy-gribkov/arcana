@@ -9,6 +9,7 @@ import { renderBanner } from "../utils/help.js";
 import { validateSlug } from "../utils/validate.js";
 import { scanSkillContent } from "../utils/scanner.js";
 import type { SkillFile } from "../types.js";
+import { updateLockEntry } from "../utils/integrity.js";
 
 /**
  * Scan fetched skill files for security threats before installing.
@@ -137,14 +138,16 @@ async function installOneInteractive(
     const dir = installSkill(skillName, files);
 
     const remote = await provider.info(skillName);
+    const version = remote?.version ?? "0.0.0";
     writeSkillMeta(skillName, {
-      version: remote?.version ?? "0.0.0",
+      version,
       installedAt: new Date().toISOString(),
       source: provider.name,
       description: remote?.description,
       fileCount: files.length,
       sizeBytes: files.reduce((s, f) => s + f.content.length, 0),
     });
+    updateLockEntry(skillName, version, provider.name, files);
 
     const sizeKB = files.reduce((s, f) => s + f.content.length, 0) / 1024;
     spin2.stop(`Installed ${chalk.bold(skillName)} (${files.length} files, ${sizeKB.toFixed(1)} KB)`);
@@ -225,14 +228,16 @@ async function installMultipleInteractive(
 
       installSkill(skillName, files);
       const remote = await provider.info(skillName);
+      const ver = remote?.version ?? "0.0.0";
       writeSkillMeta(skillName, {
-        version: remote?.version ?? "0.0.0",
+        version: ver,
         installedAt: new Date().toISOString(),
         source: provider.name,
         description: remote?.description,
         fileCount: files.length,
         sizeBytes: files.reduce((s, f) => s + f.content.length, 0),
       });
+      updateLockEntry(skillName, ver, provider.name, files);
       installedList.push(skillName);
     } catch (err) {
       failedList.push(skillName);
@@ -309,6 +314,7 @@ async function installAllInteractive(providers: Provider[], dryRun?: boolean, fo
           fileCount: files.length,
           sizeBytes: files.reduce((s, f) => s + f.content.length, 0),
         });
+        updateLockEntry(skill.name, skill.version, provider.name, files);
         installedList.push(skill.name);
       } catch (err) {
         failedList.push(skill.name);
@@ -396,6 +402,7 @@ async function installJson(
             fileCount: files.length,
             sizeBytes: files.reduce((s, f) => s + f.content.length, 0),
           });
+          updateLockEntry(skill.name, skill.version, provider.name, files);
           installedList.push(skill.name);
         } catch (err) {
           failedList.push(skill.name);
@@ -438,14 +445,16 @@ async function installJson(
 
         installSkill(skillName, files);
         const remote = await provider.info(skillName);
+        const ver = remote?.version ?? "0.0.0";
         writeSkillMeta(skillName, {
-          version: remote?.version ?? "0.0.0",
+          version: ver,
           installedAt: new Date().toISOString(),
           source: provider.name,
           description: remote?.description,
           fileCount: files.length,
           sizeBytes: files.reduce((s, f) => s + f.content.length, 0),
         });
+        updateLockEntry(skillName, ver, provider.name, files);
         installedList.push(skillName);
       } catch (_err) {
         failedList.push(skillName);

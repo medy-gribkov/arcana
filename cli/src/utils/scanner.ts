@@ -159,6 +159,142 @@ const PATTERNS: Pattern[] = [
     detail: "Dynamic remote instruction loading",
     regex: /(?:curl|wget|fetch)\s+[^\n]*(?:instructions|config|setup)\.(?:md|txt|sh|yaml)/i,
   },
+
+  // =========================================================================
+  // v2.4.2 Extended patterns (Snyk ToxicSkills deep coverage)
+  // =========================================================================
+
+  // CRITICAL: Additional malicious code patterns
+  {
+    level: "critical",
+    category: "Malicious code",
+    detail: "Curl/wget piped to source",
+    regex: /(?:curl|wget)\s+[^\n|]*\|\s*source\b/i,
+  },
+  {
+    level: "critical",
+    category: "Malicious code",
+    detail: "Nested base64 decoding (obfuscation chain)",
+    regex: /base64\s+-d[^\n]*\|\s*base64\s+-d/i,
+  },
+  {
+    level: "critical",
+    category: "Malicious code",
+    detail: "Password-protected 7z or GPG-encrypted archive",
+    regex: /(?:7z\s+x\s+-p\S+|gpg\s+--decrypt\s|gpg\s+-d\s)/i,
+  },
+  {
+    level: "critical",
+    category: "Suspicious download",
+    detail: "GitHub release download from unverified source",
+    regex: /github\.com\/[^\s/]+\/[^\s/]+\/releases\/download\//i,
+  },
+  {
+    level: "critical",
+    category: "Malicious code",
+    detail: "PowerShell encoded command execution",
+    regex: /powershell[^\n]*-[Ee](?:nc|ncodedCommand)\s/i,
+  },
+
+  // HIGH: Extended credential and prompt injection patterns
+  {
+    level: "high",
+    category: "Credential theft",
+    detail: "Instructing to print/echo API keys or secrets",
+    regex: /(?:echo|print|cat|display|output|show)\s+.*(?:api[_-]?key|token|secret|password|credential)/i,
+  },
+  {
+    level: "high",
+    category: "Secret detected",
+    detail: "AWS access key ID pattern",
+    regex: /AKIA[0-9A-Z]{16}/,
+  },
+  {
+    level: "high",
+    category: "Secret detected",
+    detail: "Anthropic or OpenAI project key pattern",
+    regex: /(?:sk-ant-[a-zA-Z0-9-]{20,}|sk-proj-[a-zA-Z0-9-]{20,})/,
+  },
+  {
+    level: "high",
+    category: "Credential theft",
+    detail: "Authorization header in curl/wget command",
+    regex: /(?:curl|wget)\s+[^\n]*-H\s+["']?(?:Authorization|Bearer|Token)\b/i,
+  },
+  {
+    level: "high",
+    category: "Memory poisoning",
+    detail: "Writing to agent config files (SOUL.md, MEMORY.md, CLAUDE.md)",
+    regex: /(?:>>?|write|append|modify|edit|update)\s+[^\n]*(?:SOUL\.md|MEMORY\.md|CLAUDE\.md|\.cursorrules|\.windsurfrules)/i,
+  },
+  {
+    level: "high",
+    category: "Prompt injection",
+    detail: "Invisible Unicode smuggling (zero-width characters)",
+    regex: /\u200B|\u200C|\u200D|\uFEFF|\u2060/,
+  },
+  {
+    level: "high",
+    category: "Prompt injection",
+    detail: "Global behavior override pattern",
+    regex: /always\s+(?:respond|reply|output|return|answer)\s+.*(?:json|xml|yaml|markdown|plain)/i,
+  },
+  {
+    level: "high",
+    category: "Prompt injection",
+    detail: "Agent autonomy escalation (suppressing confirmations)",
+    regex: /(?:never|don't|do\s+not|disable)\s+(?:ask|confirm|check|verify|refuse|warn|prompt)/i,
+  },
+  {
+    level: "high",
+    category: "Data exfiltration",
+    detail: "Instructing agent to include sensitive data in output",
+    regex: /include\s+.*(?:contents?|data|credentials?|keys?|tokens?|secrets?)\s+.*(?:response|output|message|reply)/i,
+  },
+
+  // MEDIUM: Extended system and dependency patterns
+  {
+    level: "medium",
+    category: "Unverifiable dependency",
+    detail: "Global package installation from unknown source",
+    regex: /(?:npm\s+install\s+-g|pip\s+install|go\s+install)\s+\S+/i,
+  },
+  {
+    level: "medium",
+    category: "Suspicious activity",
+    detail: "Cryptocurrency or financial API access",
+    regex: /(?:binance|coinbase|metamask|etherscan|stripe|paypal)\.\w+/i,
+  },
+  {
+    level: "medium",
+    category: "Destructive command",
+    detail: "Recursive force delete on root or home directory",
+    regex: /rm\s+-rf\s+(?:\/\s|\/\*|~\/|~\s|\$HOME)/,
+  },
+  {
+    level: "medium",
+    category: "Privilege escalation",
+    detail: "Sudo usage in skill instructions",
+    regex: /\bsudo\s+\w/,
+  },
+  {
+    level: "medium",
+    category: "System modification",
+    detail: "Writing to system directories",
+    regex: />\s*\/(?:etc|usr|var|opt)\//,
+  },
+  {
+    level: "medium",
+    category: "Privilege escalation",
+    detail: "Docker privileged mode or capability addition",
+    regex: /docker\s+run\s+[^\n]*(?:--privileged|--cap-add)/i,
+  },
+  {
+    level: "medium",
+    category: "Suspicious activity",
+    detail: "Third-party HTTP request in instructions",
+    regex: /(?:fetch\(|axios\.|requests\.get|http\.get|urllib)/,
+  },
 ];
 
 // ---------------------------------------------------------------------------

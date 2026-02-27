@@ -57,6 +57,16 @@ export function createCli(): Command {
         "audit",
         "scan",
         "optimize",
+        "verify",
+        "lock",
+        "completions",
+        "benchmark",
+        "profile",
+        "diff",
+        "outdated",
+        "team",
+        "export",
+        "import",
       ];
       const match = commands.find((c) => c.startsWith(cmd.slice(0, 3)));
       if (match) {
@@ -284,6 +294,126 @@ export function createCli(): Command {
     .action(async (opts) => {
       const { optimizeCommand } = await import("./commands/optimize.js");
       return optimizeCommand(opts);
+    });
+
+  // === Security ===
+
+  program
+    .command("verify [skill]")
+    .description("Verify installed skill integrity against lockfile")
+    .option("-a, --all", "Verify all installed skills")
+    .option("-j, --json", "Output as JSON")
+    .addHelpText("after", "\nExamples:\n  arcana verify code-reviewer\n  arcana verify --all\n  arcana verify --all --json")
+    .action(async (skill, opts) => {
+      const { verifyCommand } = await import("./commands/verify.js");
+      return verifyCommand(skill, opts);
+    });
+
+  program
+    .command("lock")
+    .description("Generate or validate lockfile from installed skills")
+    .option("--ci", "Validate lockfile matches installed skills (CI mode)")
+    .option("-j, --json", "Output as JSON")
+    .addHelpText("after", "\nExamples:\n  arcana lock\n  arcana lock --ci\n  arcana lock --json")
+    .action(async (opts) => {
+      const { lockCommand } = await import("./commands/lock.js");
+      return lockCommand(opts);
+    });
+
+  // === Performance & Inspection ===
+
+  program
+    .command("benchmark [skill]")
+    .description("Measure token cost of installed skills")
+    .option("-a, --all", "Benchmark all installed skills")
+    .option("-j, --json", "Output as JSON")
+    .addHelpText("after", "\nExamples:\n  arcana benchmark code-reviewer\n  arcana benchmark --all")
+    .action(async (skill, opts) => {
+      const { benchmarkCommand } = await import("./commands/benchmark.js");
+      return benchmarkCommand(skill, opts);
+    });
+
+  program
+    .command("diff <skill>")
+    .description("Show changes between installed and remote skill version")
+    .option("-p, --provider <name>", "Provider to compare against")
+    .option("-j, --json", "Output as JSON")
+    .addHelpText("after", "\nExamples:\n  arcana diff code-reviewer\n  arcana diff code-reviewer --json")
+    .action(async (skill, opts) => {
+      const { diffCommand } = await import("./commands/diff.js");
+      return diffCommand(skill, opts);
+    });
+
+  program
+    .command("outdated")
+    .description("List skills with newer versions available")
+    .option("-p, --provider <name>", "Check against specific provider")
+    .option("-j, --json", "Output as JSON")
+    .action(async (opts) => {
+      const { outdatedCommand } = await import("./commands/outdated.js");
+      return outdatedCommand(opts);
+    });
+
+  // === Workflow & Team ===
+
+  program
+    .command("profile [action] [name] [skills...]")
+    .description("Manage skill profiles (named sets of skills)")
+    .option("-j, --json", "Output as JSON")
+    .addHelpText(
+      "after",
+      "\nActions:\n  list          List all profiles (default)\n  create <name> Create a profile\n  delete <name> Delete a profile\n  show <name>   Show skills in a profile\n  apply <name>  Install all skills from a profile\n\nExamples:\n  arcana profile create security scan verify audit\n  arcana profile apply security",
+    )
+    .action(async (action, name, skills, opts) => {
+      const { profileCommand } = await import("./commands/profile.js");
+      return profileCommand(action, name, skills, opts);
+    });
+
+  program
+    .command("team [action] [skill]")
+    .description("Manage shared team skill configuration")
+    .option("-j, --json", "Output as JSON")
+    .addHelpText(
+      "after",
+      "\nActions:\n  init          Create .arcana/team.json\n  sync          Install skills from team config\n  add <skill>   Add a skill to team config\n  remove <skill> Remove a skill from team config\n\nExamples:\n  arcana team init\n  arcana team add code-reviewer\n  arcana team sync",
+    )
+    .action(async (action, skill, opts) => {
+      const { teamCommand } = await import("./commands/team.js");
+      return teamCommand(action, skill, opts);
+    });
+
+  program
+    .command("export")
+    .description("Export installed skills as a manifest")
+    .option("--sbom", "Export as SPDX-lite software bill of materials")
+    .option("-j, --json", "Output as JSON (default)")
+    .action(async (opts) => {
+      const { exportCommand } = await import("./commands/export-cmd.js");
+      return exportCommand(opts);
+    });
+
+  program
+    .command("import <file>")
+    .description("Import and install skills from a manifest file")
+    .option("-f, --force", "Reinstall even if already installed")
+    .option("-j, --json", "Output as JSON")
+    .addHelpText("after", "\nExamples:\n  arcana import manifest.json\n  arcana import manifest.json --force")
+    .action(async (file, opts) => {
+      const { importCommand } = await import("./commands/import-cmd.js");
+      return importCommand(file, opts);
+    });
+
+  program
+    .command("completions <shell>")
+    .description("Generate shell completion scripts")
+    .option("-j, --json", "Output as JSON")
+    .addHelpText(
+      "after",
+      "\nSupported shells: bash, zsh, fish\n\nExamples:\n  arcana completions bash >> ~/.bashrc\n  arcana completions zsh >> ~/.zshrc\n  arcana completions fish > ~/.config/fish/completions/arcana.fish",
+    )
+    .action(async (shell, opts) => {
+      const { completionsCommand } = await import("./commands/completions.js");
+      return completionsCommand(shell, opts);
     });
 
   return program;
