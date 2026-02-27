@@ -18,11 +18,7 @@ interface Manifest {
 
 function parseManifest(raw: string): Manifest {
   const parsed: unknown = JSON.parse(raw);
-  if (
-    typeof parsed !== "object" ||
-    parsed === null ||
-    !Array.isArray((parsed as Record<string, unknown>).skills)
-  ) {
+  if (typeof parsed !== "object" || parsed === null || !Array.isArray((parsed as Record<string, unknown>).skills)) {
     throw new Error("Invalid manifest: expected object with 'skills' array");
   }
   const obj = parsed as Record<string, unknown>;
@@ -44,10 +40,7 @@ function parseManifest(raw: string): Manifest {
   return { skills };
 }
 
-export async function importCommand(
-  file: string,
-  opts: { json?: boolean; force?: boolean },
-): Promise<void> {
+export async function importCommand(file: string, opts: { json?: boolean; force?: boolean }): Promise<void> {
   if (!existsSync(file)) {
     if (opts.json) {
       console.log(JSON.stringify({ error: `File not found: ${file}` }));
@@ -146,9 +139,7 @@ export async function importCommand(
     if (Object.keys(errors).length > 0) result.errors = errors;
     console.log(JSON.stringify(result));
   } else {
-    console.log(
-      `Import complete: ${installed.length} installed, ${skipped.length} skipped, ${failed.length} failed`,
-    );
+    console.log(`Import complete: ${installed.length} installed, ${skipped.length} skipped, ${failed.length} failed`);
   }
 
   if (failed.length > 0) process.exit(1);

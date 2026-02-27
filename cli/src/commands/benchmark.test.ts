@@ -8,14 +8,16 @@ describe("benchmarkCommand", () => {
   const makeDirStat = (size = 0) => ({ isDirectory: () => true, isFile: () => false, size });
   const makeFileStat = (size = 100) => ({ isDirectory: () => false, isFile: () => true, size });
 
-  function setupMocks(overrides: {
-    installDir?: string;
-    skillMeta?: Record<string, any> | null;
-    dirSize?: number;
-    readdirResults?: Record<string, string[]>;
-    statResults?: Record<string, ReturnType<typeof makeDirStat | typeof makeFileStat>>;
-    skillDirExists?: boolean;
-  } = {}) {
+  function setupMocks(
+    overrides: {
+      installDir?: string;
+      skillMeta?: Record<string, any> | null;
+      dirSize?: number;
+      readdirResults?: Record<string, string[]>;
+      statResults?: Record<string, ReturnType<typeof makeDirStat | typeof makeFileStat>>;
+      skillDirExists?: boolean;
+    } = {},
+  ) {
     const installDir = overrides.installDir ?? "/fake/install";
     const readdirResults = overrides.readdirResults ?? {};
     const statResults = overrides.statResults ?? {};
@@ -186,7 +188,9 @@ describe("benchmarkCommand", () => {
     // statSync always throws to simulate missing skill directory
     vi.doMock("node:fs", () => ({
       readdirSync: vi.fn(() => []),
-      statSync: vi.fn(() => { throw new Error("ENOENT"); }),
+      statSync: vi.fn(() => {
+        throw new Error("ENOENT");
+      }),
       readFileSync: vi.fn(() => ""),
     }));
 
@@ -213,7 +217,9 @@ describe("benchmarkCommand", () => {
 
     // Override node:fs to throw on installDir readdir
     vi.doMock("node:fs", () => ({
-      readdirSync: vi.fn(() => { throw new Error("ENOENT"); }),
+      readdirSync: vi.fn(() => {
+        throw new Error("ENOENT");
+      }),
       statSync: vi.fn(() => makeDirStat()),
       readFileSync: vi.fn(() => ""),
     }));

@@ -4,12 +4,14 @@ describe("verifyCommand", () => {
   let consoleLogSpy: any;
   let processExitSpy: any;
 
-  function setupMocks(overrides: {
-    installDirContents?: string[];
-    isSkillInstalled?: (name: string) => boolean;
-    verifySkillIntegrity?: (skill: string, dir: string) => "ok" | "modified" | "missing";
-    validateSlug?: (slug: string, label: string) => void;
-  } = {}) {
+  function setupMocks(
+    overrides: {
+      installDirContents?: string[];
+      isSkillInstalled?: (name: string) => boolean;
+      verifySkillIntegrity?: (skill: string, dir: string) => "ok" | "modified" | "missing";
+      validateSlug?: (slug: string, label: string) => void;
+    } = {},
+  ) {
     vi.doMock("chalk", () => ({
       default: Object.assign((s: string) => s, {
         bold: (s: string) => s,

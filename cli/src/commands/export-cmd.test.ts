@@ -20,10 +20,8 @@ describe("exportCommand", () => {
     vi.doMock("../utils/fs.js", () => ({
       getInstallDir: vi.fn(() => "/fake/skills"),
       readSkillMeta: vi.fn((name: string) => {
-        if (name === "skill-a")
-          return { version: "1.0.0", source: "arcana", description: "A skill" };
-        if (name === "skill-b")
-          return { version: "2.0.0", source: "custom", description: "B skill" };
+        if (name === "skill-a") return { version: "1.0.0", source: "arcana", description: "A skill" };
+        if (name === "skill-b") return { version: "2.0.0", source: "custom", description: "B skill" };
         return null;
       }),
     }));

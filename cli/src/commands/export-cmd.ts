@@ -20,18 +20,13 @@ interface SbomEntry {
 function getInstalledSkillDirs(): string[] {
   const installDir = getInstallDir();
   try {
-    return readdirSync(installDir).filter((d) =>
-      statSync(join(installDir, d)).isDirectory(),
-    );
+    return readdirSync(installDir).filter((d) => statSync(join(installDir, d)).isDirectory());
   } catch {
     return [];
   }
 }
 
-export async function exportCommand(opts: {
-  json?: boolean;
-  sbom?: boolean;
-}): Promise<void> {
+export async function exportCommand(opts: { json?: boolean; sbom?: boolean }): Promise<void> {
   const dirs = getInstalledSkillDirs();
 
   if (dirs.length === 0) {

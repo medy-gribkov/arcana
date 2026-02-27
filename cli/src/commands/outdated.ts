@@ -44,9 +44,7 @@ function listInstalledSkills(installDir: string): string[] {
   return results;
 }
 
-export async function outdatedCommand(
-  opts: { provider?: string; json?: boolean },
-): Promise<void> {
+export async function outdatedCommand(opts: { provider?: string; json?: boolean }): Promise<void> {
   const installDir = getInstallDir();
   const skills = listInstalledSkills(installDir);
 
@@ -60,9 +58,7 @@ export async function outdatedCommand(
   }
 
   const providerName = opts.provider ?? loadConfig().defaultProvider;
-  const providers = opts.provider
-    ? [getProvider(providerName)]
-    : getProviders();
+  const providers = opts.provider ? [getProvider(providerName)] : getProviders();
 
   if (providers.length === 0) {
     if (opts.json) {
@@ -75,9 +71,7 @@ export async function outdatedCommand(
         }),
       );
     } else {
-      console.error(
-        "No providers configured. Run: arcana providers --add owner/repo",
-      );
+      console.error("No providers configured. Run: arcana providers --add owner/repo");
     }
     process.exit(0);
   }
@@ -108,10 +102,8 @@ export async function outdatedCommand(
         if (!remoteInfo) continue;
 
         const remoteVersion = remoteInfo.version;
-        const coercedRemote =
-          semver.valid(semver.coerce(remoteVersion)) ?? "0.0.0";
-        const coercedLocal =
-          semver.valid(semver.coerce(localVersion)) ?? "0.0.0";
+        const coercedRemote = semver.valid(semver.coerce(remoteVersion)) ?? "0.0.0";
+        const coercedLocal = semver.valid(semver.coerce(localVersion)) ?? "0.0.0";
 
         if (semver.gt(coercedRemote, coercedLocal)) {
           outdated.push({
@@ -162,10 +154,7 @@ export async function outdatedCommand(
   // Calculate column widths
   const nameWidth = Math.max(4, ...outdated.map((e) => e.name.length));
   const currentWidth = Math.max(7, ...outdated.map((e) => e.current.length));
-  const availableWidth = Math.max(
-    9,
-    ...outdated.map((e) => e.available.length),
-  );
+  const availableWidth = Math.max(9, ...outdated.map((e) => e.available.length));
   const sourceWidth = Math.max(6, ...outdated.map((e) => e.source.length));
 
   const header =
@@ -202,9 +191,7 @@ export async function outdatedCommand(
   }
 
   console.log();
-  console.log(
-    `${outdated.length} outdated, ${upToDate} up to date, ${result.total} total`,
-  );
+  console.log(`${outdated.length} outdated, ${upToDate} up to date, ${result.total} total`);
 
   process.exit(0);
 }

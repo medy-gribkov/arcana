@@ -27,7 +27,11 @@ describe("lockCommand", () => {
     mockReadLockfile = vi.fn(() => []);
     mockComputeHash = vi.fn(() => "abc123");
     mockGetInstallDir = vi.fn(() => "/fake/install");
-    mockReadSkillMeta = vi.fn(() => ({ version: "1.0.0", source: "test-provider", installedAt: "2024-01-01T00:00:00.000Z" }));
+    mockReadSkillMeta = vi.fn(() => ({
+      version: "1.0.0",
+      source: "test-provider",
+      installedAt: "2024-01-01T00:00:00.000Z",
+    }));
 
     mockExistsSync = vi.fn(() => true);
     mockReaddirSync = vi.fn(() => []);
@@ -134,7 +138,12 @@ describe("lockCommand", () => {
 
     expect(mockWriteLockfile).toHaveBeenCalledTimes(1);
     const output = consoleLogSpy.mock.calls.find((c: any[]) => {
-      try { JSON.parse(c[0]); return true; } catch { return false; }
+      try {
+        JSON.parse(c[0]);
+        return true;
+      } catch {
+        return false;
+      }
     });
     expect(output).toBeDefined();
     const parsed = JSON.parse(output[0]);

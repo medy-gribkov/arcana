@@ -23,11 +23,9 @@ describe("diffCommand", () => {
 
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    processExitSpy = vi
-      .spyOn(process, "exit")
-      .mockImplementation((code?: number | string | null | undefined) => {
-        throw new ExitError(Number(code ?? 0));
-      });
+    processExitSpy = vi.spyOn(process, "exit").mockImplementation((code?: number | string | null | undefined) => {
+      throw new ExitError(Number(code ?? 0));
+    });
   });
 
   afterEach(() => {
@@ -51,9 +49,7 @@ describe("diffCommand", () => {
     }));
     vi.doMock("../registry.js", () => ({
       getProvider: vi.fn(() => ({
-        fetch: vi.fn(async () => [
-          { path: "SKILL.md", content: "# Hello" },
-        ]),
+        fetch: vi.fn(async () => [{ path: "SKILL.md", content: "# Hello" }]),
         info: vi.fn(async () => ({ version: "1.0.0" })),
       })),
     }));
@@ -113,26 +109,14 @@ describe("diffCommand", () => {
     await diffCommand("my-skill", {});
 
     // added: new-file.md (in remote, not local)
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Added (1)"),
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("+ new-file.md"),
-    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("Added (1)"));
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("+ new-file.md"));
     // removed: old-file.md (in local, not remote)
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Removed (1)"),
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("- old-file.md"),
-    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("Removed (1)"));
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("- old-file.md"));
     // modified: SKILL.md (content differs)
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Modified (1)"),
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("~ SKILL.md"),
-    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("Modified (1)"));
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("~ SKILL.md"));
   });
 
   it("outputs JSON when --json flag is set", async () => {
@@ -148,9 +132,7 @@ describe("diffCommand", () => {
     }));
     vi.doMock("../registry.js", () => ({
       getProvider: vi.fn(() => ({
-        fetch: vi.fn(async () => [
-          { path: "SKILL.md", content: "# Hello" },
-        ]),
+        fetch: vi.fn(async () => [{ path: "SKILL.md", content: "# Hello" }]),
         info: vi.fn(async () => ({ version: "1.0.0" })),
       })),
     }));
@@ -204,9 +186,7 @@ describe("diffCommand", () => {
     const { diffCommand } = await import("./diff.js");
 
     await expect(diffCommand("not-installed", {})).rejects.toThrow(ExitError);
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("not installed"),
-    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("not installed"));
     expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 
@@ -236,9 +216,7 @@ describe("diffCommand", () => {
     const { diffCommand } = await import("./diff.js");
 
     await expect(diffCommand("bad@name", {})).rejects.toThrow(ExitError);
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Invalid skill name"),
-    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid skill name"));
     expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 });

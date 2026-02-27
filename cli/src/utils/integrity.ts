@@ -98,9 +98,7 @@ export function verifySkillIntegrity(skillName: string, installDir: string): "ok
 
   const filePaths = readDirRecursive(skillDir);
   const relativePaths = filePaths.map((fp) => fp.slice(skillDir.length + 1)).sort();
-  const concatenated = relativePaths
-    .map((rel) => readFileSync(join(skillDir, rel), "utf-8"))
-    .join("");
+  const concatenated = relativePaths.map((rel) => readFileSync(join(skillDir, rel), "utf-8")).join("");
   const hash = computeHash(concatenated);
 
   return hash === entry.hash ? "ok" : "modified";

@@ -168,8 +168,9 @@ describe("profileCommand", () => {
     const mockInfo = vi.fn().mockResolvedValue({ version: "1.0.0", description: "A skill" });
     const mockInstallSkill = vi.fn();
     const mockWriteSkillMeta = vi.fn();
-    const mockIsSkillInstalled = vi.fn()
-      .mockReturnValueOnce(true)   // skill-a already installed
+    const mockIsSkillInstalled = vi
+      .fn()
+      .mockReturnValueOnce(true) // skill-a already installed
       .mockReturnValueOnce(false); // skill-b needs install
 
     vi.doMock("../registry.js", () => ({

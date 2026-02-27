@@ -15,14 +15,16 @@ describe("importCommand", () => {
   let mockUpdateLockEntry: ReturnType<typeof vi.fn>;
   let mockValidateSlug: ReturnType<typeof vi.fn>;
 
-  function setupMocks(overrides: {
-    existsSync?: (path: string) => boolean;
-    readFileSync?: (path: string) => string;
-    isSkillInstalled?: (name: string) => boolean;
-    validateSlug?: (slug: string, label: string) => void;
-    providerFetch?: (name: string) => Promise<Array<{ path: string; content: string }>>;
-    providerInfo?: (name: string) => Promise<Record<string, unknown> | null>;
-  } = {}) {
+  function setupMocks(
+    overrides: {
+      existsSync?: (path: string) => boolean;
+      readFileSync?: (path: string) => string;
+      isSkillInstalled?: (name: string) => boolean;
+      validateSlug?: (slug: string, label: string) => void;
+      providerFetch?: (name: string) => Promise<Array<{ path: string; content: string }>>;
+      providerInfo?: (name: string) => Promise<Record<string, unknown> | null>;
+    } = {},
+  ) {
     mockExistsSync = vi.fn(overrides.existsSync ?? (() => true));
     mockReadFileSync = vi.fn(overrides.readFileSync ?? (() => '{"skills": []}'));
     mockInstallSkill = vi.fn();
@@ -89,10 +91,7 @@ describe("importCommand", () => {
 
   it("imports from valid manifest file", async () => {
     const manifest = {
-      skills: [
-        { name: "alpha", source: "test-provider" },
-        { name: "beta" },
-      ],
+      skills: [{ name: "alpha", source: "test-provider" }, { name: "beta" }],
     };
 
     setupMocks({
@@ -108,9 +107,7 @@ describe("importCommand", () => {
     expect(mockUpdateLockEntry).toHaveBeenCalledTimes(2);
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("Installed alpha"));
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("Installed beta"));
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("2 installed"),
-    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("2 installed"));
   });
 
   it("--force reinstalls existing skills", async () => {
@@ -128,9 +125,7 @@ describe("importCommand", () => {
 
     // With --force, it should install even though isSkillInstalled returns true
     expect(mockInstallSkill).toHaveBeenCalledTimes(1);
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("1 installed"),
-    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("1 installed"));
   });
 
   it("file not found exits with error", async () => {
@@ -139,9 +134,7 @@ describe("importCommand", () => {
 
     await expect(importCommand("missing.json", {})).rejects.toThrow("process.exit");
     expect(processExitSpy).toHaveBeenCalledWith(1);
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("File not found"),
-    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("File not found"));
   });
 
   it("invalid manifest format exits with error", async () => {
@@ -152,17 +145,12 @@ describe("importCommand", () => {
 
     await expect(importCommand("bad.json", {})).rejects.toThrow("process.exit");
     expect(processExitSpy).toHaveBeenCalledWith(1);
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Invalid manifest"),
-    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid manifest"));
   });
 
   it("--json outputs structured JSON result", async () => {
     const manifest = {
-      skills: [
-        { name: "installed-skill" },
-        { name: "already-here" },
-      ],
+      skills: [{ name: "installed-skill" }, { name: "already-here" }],
     };
 
     let callCount = 0;

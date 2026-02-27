@@ -28,9 +28,7 @@ interface DiffResult {
 
 function readDirRecursive(dir: string): LocalFile[] {
   const results: LocalFile[] = [];
-  const queue: Array<{ fullDir: string; relPrefix: string }> = [
-    { fullDir: dir, relPrefix: "" },
-  ];
+  const queue: Array<{ fullDir: string; relPrefix: string }> = [{ fullDir: dir, relPrefix: "" }];
 
   while (queue.length > 0) {
     const { fullDir, relPrefix } = queue.pop()!;
@@ -63,10 +61,7 @@ function readDirRecursive(dir: string): LocalFile[] {
   return results;
 }
 
-function computeLineDiff(
-  localContent: string,
-  remoteContent: string,
-): { linesAdded: number; linesRemoved: number } {
+function computeLineDiff(localContent: string, remoteContent: string): { linesAdded: number; linesRemoved: number } {
   const localLines = localContent.split("\n");
   const remoteLines = remoteContent.split("\n");
 
@@ -91,10 +86,7 @@ function computeLineDiff(
   return { linesAdded, linesRemoved };
 }
 
-export async function diffCommand(
-  skill: string,
-  opts: { provider?: string; json?: boolean },
-): Promise<void> {
+export async function diffCommand(skill: string, opts: { provider?: string; json?: boolean }): Promise<void> {
   try {
     validateSlug(skill, "skill name");
   } catch (err) {
@@ -117,9 +109,7 @@ export async function diffCommand(
   try {
     remoteFiles = await provider.fetch(skill);
   } catch (err) {
-    console.error(
-      `Failed to fetch remote skill "${skill}": ${err instanceof Error ? err.message : "unknown error"}`,
-    );
+    console.error(`Failed to fetch remote skill "${skill}": ${err instanceof Error ? err.message : "unknown error"}`);
     process.exit(1);
   }
 
@@ -166,10 +156,7 @@ export async function diffCommand(
   for (const [path, remoteContent] of remoteMap) {
     const localContent = localMap.get(path);
     if (localContent !== undefined && localContent !== remoteContent) {
-      const { linesAdded, linesRemoved } = computeLineDiff(
-        localContent,
-        remoteContent,
-      );
+      const { linesAdded, linesRemoved } = computeLineDiff(localContent, remoteContent);
       modified.push({ path, linesAdded, linesRemoved });
     }
   }
@@ -216,9 +203,7 @@ export async function diffCommand(
   if (modified.length > 0) {
     console.log(`  Modified (${modified.length}):`);
     for (const entry of modified) {
-      console.log(
-        `    ~ ${entry.path}  (+${entry.linesAdded} / -${entry.linesRemoved})`,
-      );
+      console.log(`    ~ ${entry.path}  (+${entry.linesAdded} / -${entry.linesRemoved})`);
     }
   }
 }

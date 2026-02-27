@@ -11,9 +11,7 @@ describe("outdatedCommand", () => {
 
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    processExitSpy = vi
-      .spyOn(process, "exit")
-      .mockImplementation(() => undefined as never);
+    processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
   });
 
   afterEach(() => {
@@ -129,12 +127,8 @@ describe("outdatedCommand", () => {
     await outdatedCommand({});
 
     // skill-a should be outdated (1.0.0 -> 2.0.0), skill-b should be up to date
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("1 outdated"),
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("1 up to date"),
-    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("1 outdated"));
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("1 up to date"));
   });
 
   it("outputs JSON when --json flag is set", async () => {

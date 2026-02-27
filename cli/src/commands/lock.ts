@@ -25,9 +25,7 @@ function readSkillFiles(skillDir: string): Array<{ path: string; content: string
   return files;
 }
 
-export async function lockCommand(
-  opts: { ci?: boolean; json?: boolean },
-): Promise<void> {
+export async function lockCommand(opts: { ci?: boolean; json?: boolean }): Promise<void> {
   if (opts.ci) {
     return ciMode(opts.json);
   }
@@ -101,7 +99,16 @@ async function ciMode(json?: boolean): Promise<void> {
     const lockPath = join(getInstallDir(), "..", "arcana-lock.json");
     if (!existsSync(lockPath)) {
       if (json) {
-        console.log(JSON.stringify({ action: "ci", valid: false, mismatches: [], missing: [], extra: [], error: "No lockfile found" }));
+        console.log(
+          JSON.stringify({
+            action: "ci",
+            valid: false,
+            mismatches: [],
+            missing: [],
+            extra: [],
+            error: "No lockfile found",
+          }),
+        );
       } else {
         printErrorWithHint(new Error("No lockfile found. Run `arcana lock` first to generate one."), true);
       }

@@ -65,7 +65,13 @@ describe("integrity", () => {
 
     it("should return parsed entries for valid JSON", async () => {
       const entries = [
-        { skill: "test-skill", version: "1.0.0", hash: "abc123", source: "arcana", installedAt: "2024-01-01T00:00:00.000Z" },
+        {
+          skill: "test-skill",
+          version: "1.0.0",
+          hash: "abc123",
+          source: "arcana",
+          installedAt: "2024-01-01T00:00:00.000Z",
+        },
       ];
       mockFs.readFileSync.mockReturnValue(JSON.stringify(entries));
       const { readLockfile } = await import("./integrity.js");
@@ -82,7 +88,13 @@ describe("integrity", () => {
   describe("writeLockfile", () => {
     it("should write JSON with atomic write", async () => {
       const entries = [
-        { skill: "test-skill", version: "1.0.0", hash: "abc", source: "arcana", installedAt: "2024-01-01T00:00:00.000Z" },
+        {
+          skill: "test-skill",
+          version: "1.0.0",
+          hash: "abc",
+          source: "arcana",
+          installedAt: "2024-01-01T00:00:00.000Z",
+        },
       ];
       const { writeLockfile } = await import("./integrity.js");
       writeLockfile(entries);
@@ -103,9 +115,7 @@ describe("integrity", () => {
       });
 
       const { updateLockEntry } = await import("./integrity.js");
-      updateLockEntry("my-skill", "1.0.0", "arcana", [
-        { path: "SKILL.md", content: "# My Skill" },
-      ]);
+      updateLockEntry("my-skill", "1.0.0", "arcana", [{ path: "SKILL.md", content: "# My Skill" }]);
 
       const written = mockAtomic.atomicWriteSync.mock.calls[0][1];
       const parsed = JSON.parse(written);
@@ -118,15 +128,25 @@ describe("integrity", () => {
 
     it("should update existing entry", async () => {
       const existing = [
-        { skill: "my-skill", version: "1.0.0", hash: "old-hash", source: "arcana", installedAt: "2024-01-01T00:00:00.000Z" },
-        { skill: "other-skill", version: "2.0.0", hash: "other-hash", source: "arcana", installedAt: "2024-01-02T00:00:00.000Z" },
+        {
+          skill: "my-skill",
+          version: "1.0.0",
+          hash: "old-hash",
+          source: "arcana",
+          installedAt: "2024-01-01T00:00:00.000Z",
+        },
+        {
+          skill: "other-skill",
+          version: "2.0.0",
+          hash: "other-hash",
+          source: "arcana",
+          installedAt: "2024-01-02T00:00:00.000Z",
+        },
       ];
       mockFs.readFileSync.mockReturnValue(JSON.stringify(existing));
 
       const { updateLockEntry } = await import("./integrity.js");
-      updateLockEntry("my-skill", "1.1.0", "arcana", [
-        { path: "SKILL.md", content: "# Updated" },
-      ]);
+      updateLockEntry("my-skill", "1.1.0", "arcana", [{ path: "SKILL.md", content: "# Updated" }]);
 
       const written = mockAtomic.atomicWriteSync.mock.calls[0][1];
       const parsed = JSON.parse(written);
@@ -219,7 +239,13 @@ describe("integrity", () => {
       const expectedHash = computeHash(fileContent);
 
       const entries = [
-        { skill: "my-skill", version: "1.0.0", hash: expectedHash, source: "arcana", installedAt: "2024-01-01T00:00:00.000Z" },
+        {
+          skill: "my-skill",
+          version: "1.0.0",
+          hash: expectedHash,
+          source: "arcana",
+          installedAt: "2024-01-01T00:00:00.000Z",
+        },
       ];
 
       // readFileSync is called for lockfile read and for file content read
@@ -239,7 +265,13 @@ describe("integrity", () => {
 
     it("should return 'modified' when hashes differ", async () => {
       const entries = [
-        { skill: "my-skill", version: "1.0.0", hash: "stale-hash-value", source: "arcana", installedAt: "2024-01-01T00:00:00.000Z" },
+        {
+          skill: "my-skill",
+          version: "1.0.0",
+          hash: "stale-hash-value",
+          source: "arcana",
+          installedAt: "2024-01-01T00:00:00.000Z",
+        },
       ];
 
       let callCount = 0;

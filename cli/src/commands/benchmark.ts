@@ -126,7 +126,9 @@ function benchmarkSingle(skillName: string, json?: boolean): void {
   console.log(`  Files:            ${result.fileCount}`);
   console.log(`  Total size:       ${formatKB(result.totalBytes)}`);
   console.log(`  Est. tokens:      ${formatTokens(result.estimatedTokens)}`);
-  console.log(`  Context usage:    ${result.contextPercent.toFixed(2)}% of ${(CONTEXT_WINDOW / 1000).toFixed(0)}k window`);
+  console.log(
+    `  Context usage:    ${result.contextPercent.toFixed(2)}% of ${(CONTEXT_WINDOW / 1000).toFixed(0)}k window`,
+  );
   console.log();
   console.log("  File breakdown:");
   console.log();
@@ -207,7 +209,9 @@ function benchmarkAll(installDir: string, json?: boolean): void {
   console.log(
     `  ${"Skill".padEnd(maxNameLen + 2)} ${"Files".padStart(5)}  ${"Size".padStart(10)}  ${"Tokens".padStart(8)}  ${"Context %".padStart(9)}`,
   );
-  console.log(`  ${"-".repeat(maxNameLen + 2)} ${"-".repeat(5)}  ${"-".repeat(10)}  ${"-".repeat(8)}  ${"-".repeat(9)}`);
+  console.log(
+    `  ${"-".repeat(maxNameLen + 2)} ${"-".repeat(5)}  ${"-".repeat(10)}  ${"-".repeat(8)}  ${"-".repeat(9)}`,
+  );
 
   for (const r of results) {
     const displayName = r.name.length > 30 ? r.name.slice(0, 27) + "..." : r.name;
@@ -216,7 +220,9 @@ function benchmarkAll(installDir: string, json?: boolean): void {
     );
   }
 
-  console.log(`  ${"-".repeat(maxNameLen + 2)} ${"-".repeat(5)}  ${"-".repeat(10)}  ${"-".repeat(8)}  ${"-".repeat(9)}`);
+  console.log(
+    `  ${"-".repeat(maxNameLen + 2)} ${"-".repeat(5)}  ${"-".repeat(10)}  ${"-".repeat(8)}  ${"-".repeat(9)}`,
+  );
   console.log(
     `  ${"TOTAL".padEnd(maxNameLen + 2)} ${String(results.reduce((s, r) => s + r.fileCount, 0)).padStart(5)}  ${formatKB(totalBytes).padStart(10)}  ${formatTokens(totalTokens).padStart(8)}  ${totalContextPercent.toFixed(2).padStart(8)}%`,
   );

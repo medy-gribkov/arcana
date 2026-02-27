@@ -13,13 +13,15 @@ describe("teamCommand", () => {
   let mockReadSkillMeta: ReturnType<typeof vi.fn>;
   let mockValidateSlug: ReturnType<typeof vi.fn>;
 
-  function setupMocks(overrides: {
-    existsSync?: (path: string) => boolean;
-    readFileSync?: (path: string) => string;
-    isSkillInstalled?: (name: string) => boolean;
-    readSkillMeta?: (name: string) => Record<string, unknown> | null;
-    validateSlug?: (slug: string, label: string) => void;
-  } = {}) {
+  function setupMocks(
+    overrides: {
+      existsSync?: (path: string) => boolean;
+      readFileSync?: (path: string) => string;
+      isSkillInstalled?: (name: string) => boolean;
+      readSkillMeta?: (name: string) => Record<string, unknown> | null;
+      validateSlug?: (slug: string, label: string) => void;
+    } = {},
+  ) {
     mockExistsSync = vi.fn(overrides.existsSync ?? (() => false));
     mockReadFileSync = vi.fn(overrides.readFileSync ?? (() => "{}"));
     mockMkdirSync = vi.fn();
@@ -87,9 +89,7 @@ describe("teamCommand", () => {
 
     await expect(teamCommand(undefined, undefined, {})).rejects.toThrow("process.exit");
     expect(processExitSpy).toHaveBeenCalledWith(1);
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("No team config found"),
-    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("No team config found"));
   });
 
   it("add skill to team config", async () => {
@@ -141,16 +141,11 @@ describe("teamCommand", () => {
 
   it("sync installs missing skills", async () => {
     const teamConfig = {
-      skills: [
-        { name: "new-skill", source: "test-provider" },
-        { name: "existing-skill" },
-      ],
+      skills: [{ name: "new-skill", source: "test-provider" }, { name: "existing-skill" }],
       updatedAt: "2025-01-01T00:00:00.000Z",
     };
 
-    const mockFetch = vi.fn().mockResolvedValue([
-      { path: "SKILL.md", content: "# skill content" },
-    ]);
+    const mockFetch = vi.fn().mockResolvedValue([{ path: "SKILL.md", content: "# skill content" }]);
     const mockInfo = vi.fn().mockResolvedValue({ version: "2.0.0", description: "A skill" });
     const mockInstallSkill = vi.fn();
     const mockWriteSkillMeta = vi.fn();
@@ -203,17 +198,12 @@ describe("teamCommand", () => {
     expect(mockInstallSkill).toHaveBeenCalledTimes(1);
     expect(mockWriteSkillMeta).toHaveBeenCalledTimes(1);
     expect(mockUpdateLockEntry).toHaveBeenCalledTimes(1);
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("1 installed"),
-    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("1 installed"));
   });
 
   it("list --json outputs JSON with skills array", async () => {
     const teamConfig = {
-      skills: [
-        { name: "skill-a", version: "1.0.0" },
-        { name: "skill-b" },
-      ],
+      skills: [{ name: "skill-a", version: "1.0.0" }, { name: "skill-b" }],
       updatedAt: "2025-06-01T00:00:00.000Z",
     };
 

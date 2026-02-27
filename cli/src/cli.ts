@@ -303,7 +303,10 @@ export function createCli(): Command {
     .description("Verify installed skill integrity against lockfile")
     .option("-a, --all", "Verify all installed skills")
     .option("-j, --json", "Output as JSON")
-    .addHelpText("after", "\nExamples:\n  arcana verify code-reviewer\n  arcana verify --all\n  arcana verify --all --json")
+    .addHelpText(
+      "after",
+      "\nExamples:\n  arcana verify code-reviewer\n  arcana verify --all\n  arcana verify --all --json",
+    )
     .action(async (skill, opts) => {
       const { verifyCommand } = await import("./commands/verify.js");
       return verifyCommand(skill, opts);

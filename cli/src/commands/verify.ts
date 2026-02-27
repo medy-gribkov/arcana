@@ -12,10 +12,7 @@ interface VerifyResult {
   status: "ok" | "modified" | "missing";
 }
 
-export async function verifyCommand(
-  skillNames: string[],
-  opts: { all?: boolean; json?: boolean },
-): Promise<void> {
+export async function verifyCommand(skillNames: string[], opts: { all?: boolean; json?: boolean }): Promise<void> {
   if (opts.json) {
     return verifyJson(skillNames, opts);
   }
@@ -91,19 +88,14 @@ export async function verifyCommand(
   const missingCount = results.filter((r) => r.status === "missing").length;
 
   console.log();
-  p.outro(
-    `${total} skills verified, ${okCount} OK, ${modifiedCount} modified, ${missingCount} not tracked`,
-  );
+  p.outro(`${total} skills verified, ${okCount} OK, ${modifiedCount} modified, ${missingCount} not tracked`);
 
   if (modifiedCount > 0) {
     process.exit(1);
   }
 }
 
-async function verifyJson(
-  skillNames: string[],
-  opts: { all?: boolean },
-): Promise<void> {
+async function verifyJson(skillNames: string[], opts: { all?: boolean }): Promise<void> {
   const installDir = getInstallDir();
 
   let skills: string[];

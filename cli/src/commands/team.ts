@@ -38,11 +38,7 @@ function writeTeamConfig(config: TeamConfig): void {
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
-  atomicWriteSync(
-    getTeamConfigPath(),
-    JSON.stringify(config, null, 2) + "\n",
-    0o644,
-  );
+  atomicWriteSync(getTeamConfigPath(), JSON.stringify(config, null, 2) + "\n", 0o644);
 }
 
 function output(json: boolean | undefined, message: string): void {
@@ -199,9 +195,7 @@ async function teamSync(opts: { json?: boolean }): Promise<void> {
   if (opts.json) {
     console.log(JSON.stringify({ installed, skipped, failed }));
   } else {
-    console.log(
-      `Sync complete: ${installed.length} installed, ${skipped.length} skipped, ${failed.length} failed`,
-    );
+    console.log(`Sync complete: ${installed.length} installed, ${skipped.length} skipped, ${failed.length} failed`);
   }
 
   if (failed.length > 0) process.exit(1);

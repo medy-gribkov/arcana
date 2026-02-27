@@ -225,7 +225,8 @@ const PATTERNS: Pattern[] = [
     level: "high",
     category: "Memory poisoning",
     detail: "Writing to agent config files (SOUL.md, MEMORY.md, CLAUDE.md)",
-    regex: /(?:>>?|write|append|modify|edit|update)\s+[^\n]*(?:SOUL\.md|MEMORY\.md|CLAUDE\.md|\.cursorrules|\.windsurfrules)/i,
+    regex:
+      /(?:>>?|write|append|modify|edit|update)\s+[^\n]*(?:SOUL\.md|MEMORY\.md|CLAUDE\.md|\.cursorrules|\.windsurfrules)/i,
   },
   {
     level: "high",
