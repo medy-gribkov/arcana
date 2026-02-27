@@ -11,7 +11,7 @@ type ConfigKey = (typeof VALID_KEYS)[number];
 export async function configCommand(
   action: string | undefined,
   value: string | undefined,
-  opts?: { json?: boolean }
+  opts?: { json?: boolean },
 ): Promise<void> {
   if (!opts?.json) {
     banner();
@@ -30,9 +30,15 @@ export async function configCommand(
     const envInstallDir = process.env.ARCANA_INSTALL_DIR;
     const envProvider = process.env.ARCANA_DEFAULT_PROVIDER;
     const rows: string[][] = [
-      [ui.dim("defaultProvider"), config.defaultProvider + (envProvider ? ` ${ui.warn("(overridden by ARCANA_DEFAULT_PROVIDER)")}` : "")],
-      [ui.dim("installDir"), config.installDir + (envInstallDir ? ` ${ui.warn("(overridden by ARCANA_INSTALL_DIR)")}` : "")],
-      [ui.dim("providers"), config.providers.map(p => p.name).join(", ")],
+      [
+        ui.dim("defaultProvider"),
+        config.defaultProvider + (envProvider ? ` ${ui.warn("(overridden by ARCANA_DEFAULT_PROVIDER)")}` : ""),
+      ],
+      [
+        ui.dim("installDir"),
+        config.installDir + (envInstallDir ? ` ${ui.warn("(overridden by ARCANA_INSTALL_DIR)")}` : ""),
+      ],
+      [ui.dim("providers"), config.providers.map((p) => p.name).join(", ")],
     ];
     table(rows);
     console.log();
@@ -68,7 +74,13 @@ export async function configCommand(
         rmSync(configPath, { force: true });
       } catch (err) {
         if (opts?.json) {
-          console.log(JSON.stringify({ action: "reset", success: false, error: err instanceof Error ? err.message : "Failed to remove config" }));
+          console.log(
+            JSON.stringify({
+              action: "reset",
+              success: false,
+              error: err instanceof Error ? err.message : "Failed to remove config",
+            }),
+          );
         } else {
           console.log(ui.error(`  Failed to reset config: ${err instanceof Error ? err.message : "unknown error"}`));
           console.log();
@@ -125,9 +137,11 @@ export async function configCommand(
     }
   }
   if (key === "defaultProvider") {
-    const providerNames = config.providers.map(p => p.name);
+    const providerNames = config.providers.map((p) => p.name);
     if (!providerNames.includes(value)) {
-      console.log(ui.error(`  Provider '${value}' not configured. Add it first with: arcana providers --add owner/repo`));
+      console.log(
+        ui.error(`  Provider '${value}' not configured. Add it first with: arcana providers --add owner/repo`),
+      );
       console.log();
       process.exit(1);
     }

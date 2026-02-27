@@ -21,7 +21,7 @@ const DEFAULT_CONFIG: ArcanaConfig = {
 };
 
 function cloneConfig(config: ArcanaConfig): ArcanaConfig {
-  return { ...config, providers: config.providers.map(p => ({ ...p })) };
+  return { ...config, providers: config.providers.map((p) => ({ ...p })) };
 }
 
 export function loadConfig(): ArcanaConfig {
@@ -34,7 +34,7 @@ export function loadConfig(): ArcanaConfig {
     const config: ArcanaConfig = {
       ...DEFAULT_CONFIG,
       ...loaded,
-      providers: loaded.providers ?? DEFAULT_CONFIG.providers.map(p => ({ ...p })),
+      providers: loaded.providers ?? DEFAULT_CONFIG.providers.map((p) => ({ ...p })),
     };
     return applyEnvOverrides(config);
   } catch {

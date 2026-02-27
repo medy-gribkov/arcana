@@ -13,12 +13,12 @@ function amberShade(hex: string, text: string): string {
 }
 
 const AMBER_HEXES = [
-  "#e8a84c",  // bright amber
-  "#d4943a",  // brand amber
-  "#c0842f",  // mid
-  "#a87228",  // darker
-  "#8f6020",  // dimmer
-  "#755019",  // darkest
+  "#e8a84c", // bright amber
+  "#d4943a", // brand amber
+  "#c0842f", // mid
+  "#a87228", // darker
+  "#8f6020", // dimmer
+  "#755019", // darkest
 ];
 
 const BANNER_LINES = [
@@ -136,4 +136,3 @@ export function showWelcome(version: string): void {
   p.log.info("They install on-demand and only load when relevant, not all at once.");
   console.log();
 }
-

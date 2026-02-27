@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, rmSync, statSync } from "node:fs";
-import { join, basename } from "node:path";
+import { join } from "node:path";
 import { homedir } from "node:os";
 import { ui, banner } from "../utils/ui.js";
 import { getDirSize, listSymlinks, isOrphanedProject } from "../utils/fs.js";
@@ -31,7 +31,9 @@ function purgeDir(dir: string, dryRun: boolean): number {
       const stat = statSync(full);
       reclaimed += stat.isDirectory() ? getDirSize(full) : stat.size;
       if (!dryRun) rmSync(full, { recursive: true, force: true });
-    } catch { /* skip locked files */ }
+    } catch {
+      /* skip locked files */
+    }
   }
   return reclaimed;
 }
@@ -71,12 +73,15 @@ export async function cleanCommand(opts: {
   // 1. Clean broken symlinks
   const failedSymlinks: string[] = [];
   if (!opts.json) console.log(ui.bold("  Symlinks"));
-  for (const link of listSymlinks().filter(s => s.broken)) {
+  for (const link of listSymlinks().filter((s) => s.broken)) {
     if (!dryRun) {
       try {
         rmSync(link.fullPath);
       } catch (err) {
-        if (!opts.json) console.log(`  ${ui.warn("  Could not remove:")} ${link.name} ${ui.dim(`(${err instanceof Error ? err.message : "unknown"})`)}`);
+        if (!opts.json)
+          console.log(
+            `  ${ui.warn("  Could not remove:")} ${link.name} ${ui.dim(`(${err instanceof Error ? err.message : "unknown"})`)}`,
+          );
         failedSymlinks.push(link.name);
         continue;
       }
@@ -104,7 +109,9 @@ export async function cleanCommand(opts: {
           const stat = statSync(join(projDir, file));
           if (stat.mtimeMs > newest) newest = stat.mtimeMs;
         }
-      } catch { continue; }
+      } catch {
+        continue;
+      }
 
       const daysOld = (Date.now() - newest) / (1000 * 60 * 60 * 24);
       const shouldRemove = orphaned || daysOld > STALE_PROJECT_DAYS;
@@ -130,7 +137,7 @@ export async function cleanCommand(opts: {
   if (!opts.json) {
     console.log(ui.bold("\n  Session Logs"));
     if (!aggressive) {
-      console.log(ui.dim(`    Agent logs: remove >${ agentKeepDays}d | Main sessions: remove >${mainKeepDays}d`));
+      console.log(ui.dim(`    Agent logs: remove >${agentKeepDays}d | Main sessions: remove >${mainKeepDays}d`));
     }
   }
 
@@ -147,7 +154,11 @@ export async function cleanCommand(opts: {
         if (!file.endsWith(".jsonl")) continue;
         const fullPath = join(projDir, file);
         let stat;
-        try { stat = statSync(fullPath); } catch { continue; }
+        try {
+          stat = statSync(fullPath);
+        } catch {
+          continue;
+        }
 
         const daysOld = (now - stat.mtimeMs) / (1000 * 60 * 60 * 24);
         const isAgent = isAgentLog(file);
@@ -157,11 +168,24 @@ export async function cleanCommand(opts: {
           const sizeMB = stat.size / (1024 * 1024);
           result.reclaimedBytes += stat.size;
           if (!dryRun) {
-            try { rmSync(fullPath, { force: true }); } catch { continue; }
+            try {
+              rmSync(fullPath, { force: true });
+            } catch {
+              continue;
+            }
           }
           const reason = isAgent ? "agent log" : "main session";
-          if (!opts.json) console.log(`    ${ui.dim("Remove:")} ${entry}/${file} ${ui.dim(`(${sizeMB.toFixed(1)} MB, ${Math.floor(daysOld)}d, ${reason})`)}`);
-          result.removedSessionLogs.push({ project: entry, file, sizeMB: sizeMB.toFixed(1), daysOld: Math.floor(daysOld), reason });
+          if (!opts.json)
+            console.log(
+              `    ${ui.dim("Remove:")} ${entry}/${file} ${ui.dim(`(${sizeMB.toFixed(1)} MB, ${Math.floor(daysOld)}d, ${reason})`)}`,
+            );
+          result.removedSessionLogs.push({
+            project: entry,
+            file,
+            sizeMB: sizeMB.toFixed(1),
+            daysOld: Math.floor(daysOld),
+            reason,
+          });
           logCount++;
           result.actions++;
         }
@@ -182,12 +206,23 @@ export async function cleanCommand(opts: {
             result.reclaimedBytes += size;
             if (!dryRun) rmSync(subPath, { recursive: true, force: true });
             const mb = (size / (1024 * 1024)).toFixed(1);
-            if (!opts.json) console.log(`    ${ui.dim("Remove:")} ${entry}/${sub}/ ${ui.dim(`(${mb} MB, ${Math.floor(daysOld)}d, session dir)`)}`);
-            result.removedSessionLogs.push({ project: entry, file: sub + "/", sizeMB: mb, daysOld: Math.floor(daysOld), reason: "session dir" });
+            if (!opts.json)
+              console.log(
+                `    ${ui.dim("Remove:")} ${entry}/${sub}/ ${ui.dim(`(${mb} MB, ${Math.floor(daysOld)}d, session dir)`)}`,
+              );
+            result.removedSessionLogs.push({
+              project: entry,
+              file: sub + "/",
+              sizeMB: mb,
+              daysOld: Math.floor(daysOld),
+              reason: "session dir",
+            });
             logCount++;
             result.actions++;
           }
-        } catch { continue; }
+        } catch {
+          continue;
+        }
       }
     }
   }
@@ -219,7 +254,11 @@ export async function cleanCommand(opts: {
   if (existsSync(cacheDir)) {
     for (const file of readdirSync(cacheDir)) {
       if (!dryRun) {
-        try { rmSync(join(cacheDir, file), { force: true }); } catch { continue; }
+        try {
+          rmSync(join(cacheDir, file), { force: true });
+        } catch {
+          continue;
+        }
       }
       result.removedCacheFiles.push(file);
       result.actions++;
@@ -230,10 +269,16 @@ export async function cleanCommand(opts: {
 
   // Output
   if (opts.json) {
-    console.log(JSON.stringify({
-      ...result,
-      reclaimedMB: Number((result.reclaimedBytes / (1024 * 1024)).toFixed(1)),
-    }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          ...result,
+          reclaimedMB: Number((result.reclaimedBytes / (1024 * 1024)).toFixed(1)),
+        },
+        null,
+        2,
+      ),
+    );
     return;
   }
 

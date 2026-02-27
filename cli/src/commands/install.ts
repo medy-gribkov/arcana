@@ -7,7 +7,7 @@ import { getProvider, getProviders } from "../registry.js";
 import { loadConfig } from "../utils/config.js";
 import { renderBanner } from "../utils/help.js";
 import { validateSlug } from "../utils/validate.js";
-import { scanSkillContent, formatScanResults } from "../utils/scanner.js";
+import { scanSkillContent } from "../utils/scanner.js";
 import type { SkillFile } from "../types.js";
 
 /**
@@ -15,14 +15,14 @@ import type { SkillFile } from "../types.js";
  * Returns true if install should proceed, false to block.
  */
 function preInstallScan(skillName: string, files: SkillFile[], force?: boolean): boolean {
-  const skillMd = files.find(f => f.path.endsWith("SKILL.md"));
+  const skillMd = files.find((f) => f.path.endsWith("SKILL.md"));
   if (!skillMd) return true;
 
   const issues = scanSkillContent(skillMd.content);
   if (issues.length === 0) return true;
 
-  const critical = issues.filter(i => i.level === "critical");
-  const high = issues.filter(i => i.level === "high");
+  const critical = issues.filter((i) => i.level === "critical");
+  const high = issues.filter((i) => i.level === "high");
 
   if (critical.length > 0) {
     p.log.error(`Security scan blocked ${chalk.bold(skillName)}:`);
@@ -49,7 +49,7 @@ function preInstallScan(skillName: string, files: SkillFile[], force?: boolean):
 
 export async function installCommand(
   skillNames: string[],
-  opts: { provider?: string; all?: boolean; force?: boolean; dryRun?: boolean; json?: boolean }
+  opts: { provider?: string; all?: boolean; force?: boolean; dryRun?: boolean; json?: boolean },
 ): Promise<void> {
   if (opts.json) {
     return installJson(skillNames, opts);
@@ -83,7 +83,12 @@ export async function installCommand(
   }
 }
 
-async function installOneInteractive(skillName: string, provider: Provider, dryRun?: boolean, force?: boolean): Promise<void> {
+async function installOneInteractive(
+  skillName: string,
+  provider: Provider,
+  dryRun?: boolean,
+  force?: boolean,
+): Promise<void> {
   p.intro(chalk.bold("Install skill"));
 
   try {
@@ -144,7 +149,9 @@ async function installOneInteractive(skillName: string, provider: Provider, dryR
     const sizeKB = files.reduce((s, f) => s + f.content.length, 0) / 1024;
     spin2.stop(`Installed ${chalk.bold(skillName)} (${files.length} files, ${sizeKB.toFixed(1)} KB)`);
     if (sizeKB > 50) {
-      p.log.warn(`Large skill (${sizeKB.toFixed(0)} KB, ~${Math.round(sizeKB * 256)} tokens). May use significant context.`);
+      p.log.warn(
+        `Large skill (${sizeKB.toFixed(0)} KB, ~${Math.round(sizeKB * 256)} tokens). May use significant context.`,
+      );
     }
     p.log.info(`Location: ${dir}`);
     p.outro(`Next: ${chalk.cyan("arcana validate " + skillName)}`);
@@ -155,7 +162,12 @@ async function installOneInteractive(skillName: string, provider: Provider, dryR
   }
 }
 
-async function installMultipleInteractive(skillNames: string[], provider: Provider, dryRun?: boolean, force?: boolean): Promise<void> {
+async function installMultipleInteractive(
+  skillNames: string[],
+  provider: Provider,
+  dryRun?: boolean,
+  force?: boolean,
+): Promise<void> {
   p.intro(chalk.bold(`Install ${skillNames.length} skills`));
 
   for (const name of skillNames) {
@@ -230,7 +242,9 @@ async function installMultipleInteractive(skillNames: string[], provider: Provid
 
   spin.stop(`Done`);
 
-  p.log.info(`${installedList.length} installed${skippedList.length > 0 ? `, ${skippedList.length} skipped (already installed)` : ""}${failedList.length > 0 ? `, ${failedList.length} failed` : ""}`);
+  p.log.info(
+    `${installedList.length} installed${skippedList.length > 0 ? `, ${skippedList.length} skipped (already installed)` : ""}${failedList.length > 0 ? `, ${failedList.length} failed` : ""}`,
+  );
   p.outro(`Next: ${chalk.cyan("arcana doctor")}`);
 
   if (failedList.length > 0) process.exit(1);
@@ -316,7 +330,7 @@ async function installAllInteractive(providers: Provider[], dryRun?: boolean, fo
 
 async function installJson(
   skillNames: string[],
-  opts: { provider?: string; all?: boolean; force?: boolean; dryRun?: boolean }
+  opts: { provider?: string; all?: boolean; force?: boolean; dryRun?: boolean },
 ): Promise<void> {
   if (skillNames.length === 0 && !opts.all) {
     console.log(JSON.stringify({ installed: [], skipped: [], failed: [], error: "No skill specified" }));
@@ -333,7 +347,7 @@ async function installJson(
       for (const provider of providers) {
         try {
           const skills = await provider.list();
-          wouldInstall.push(...skills.map(s => s.name));
+          wouldInstall.push(...skills.map((s) => s.name));
         } catch (err) {
           errors.push(`Failed to list ${provider.name}: ${err instanceof Error ? err.message : "unknown error"}`);
         }
@@ -433,7 +447,7 @@ async function installJson(
           sizeBytes: files.reduce((s, f) => s + f.content.length, 0),
         });
         installedList.push(skillName);
-      } catch (err) {
+      } catch (_err) {
         failedList.push(skillName);
       }
     }

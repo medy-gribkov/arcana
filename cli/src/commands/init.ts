@@ -24,7 +24,9 @@ export function detectProject(cwd: string): ProjectInfo {
       const pkg = JSON.parse(raw) as Record<string, Record<string, string> | undefined>;
       if (pkg.dependencies?.next || pkg.devDependencies?.next) return { name, type: "Next.js", lang: "typescript" };
       if (pkg.dependencies?.react || pkg.devDependencies?.react) return { name, type: "React", lang: "typescript" };
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return { name, type: "Node.js", lang: "typescript" };
   }
   return { name, type: "Unknown", lang: "general" };
@@ -148,7 +150,10 @@ conventions:
 `;
 }
 
-const TOOL_FILES: Record<ToolName, { path: string | ((cwd: string) => string); template: (p: ProjectInfo) => string; label: string }> = {
+const TOOL_FILES: Record<
+  ToolName,
+  { path: string | ((cwd: string) => string); template: (p: ProjectInfo) => string; label: string }
+> = {
   claude: { path: "CLAUDE.md", template: claudeTemplate, label: "Claude Code" },
   cursor: {
     path: join(".cursor", "rules", "project.mdc"),
@@ -163,15 +168,20 @@ const TOOL_FILES: Record<ToolName, { path: string | ((cwd: string) => string); t
 };
 
 export const SKILL_SUGGESTIONS: Record<string, string[]> = {
-  "Go": ["golang-pro", "go-linter-configuration", "testing-strategy", "security-review"],
-  "Rust": ["rust-best-practices", "testing-strategy", "security-review"],
-  "Python": ["python-best-practices", "testing-strategy", "security-review"],
+  Go: ["golang-pro", "go-linter-configuration", "testing-strategy", "security-review"],
+  Rust: ["rust-best-practices", "testing-strategy", "security-review"],
+  Python: ["python-best-practices", "testing-strategy", "security-review"],
   "Next.js": ["typescript", "typescript-advanced", "frontend-design", "performance-optimization", "security-review"],
-  "React": ["typescript", "frontend-design", "frontend-code-review", "testing-strategy"],
+  React: ["typescript", "frontend-design", "frontend-code-review", "testing-strategy"],
   "Node.js": ["typescript", "npm-package", "testing-strategy", "security-review"],
 };
 
-export const SKILL_SUGGESTIONS_DEFAULT = ["code-reviewer", "security-review", "codebase-dissection", "testing-strategy"];
+export const SKILL_SUGGESTIONS_DEFAULT = [
+  "code-reviewer",
+  "security-review",
+  "codebase-dissection",
+  "testing-strategy",
+];
 
 export async function initCommand(opts: { tool?: string }): Promise<void> {
   console.log(renderBanner());
@@ -189,9 +199,10 @@ export async function initCommand(opts: { tool?: string }): Promise<void> {
     process.exit(1);
   }
 
-  const tools: ToolName[] = opts.tool === "all" || !opts.tool
-    ? ["claude", "cursor", "codex", "gemini", "antigravity", "windsurf", "aider"]
-    : [opts.tool as ToolName];
+  const tools: ToolName[] =
+    opts.tool === "all" || !opts.tool
+      ? ["claude", "cursor", "codex", "gemini", "antigravity", "windsurf", "aider"]
+      : [opts.tool as ToolName];
 
   let created = 0;
   let skipped = 0;
@@ -238,7 +249,9 @@ export async function initCommand(opts: { tool?: string }): Promise<void> {
     try {
       const settings = JSON.parse(readFileSync(globalSettings, "utf-8"));
       hasPreCompactHook = Array.isArray(settings?.hooks?.PreCompact) && settings.hooks.PreCompact.length > 0;
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   if (!hasPreCompactHook) {
@@ -260,14 +273,19 @@ export async function initCommand(opts: { tool?: string }): Promise<void> {
         }
 
         const hooks = (settings.hooks ?? {}) as Record<string, unknown[]>;
-        hooks.PreCompact = [{
-          matcher: "",
-          hooks: [{
-            type: "command",
-            command: "bash -c 'PROJ_DIR=\"$HOME/.claude/projects\"; for d in \"$PROJ_DIR\"/*/memory; do if [ -d \"$d\" ]; then echo \"## Handover $(date +%Y-%m-%d_%H%M)\" >> \"$d/HANDOVER.md\"; echo \"Auto-compaction triggered. Review MEMORY.md for preserved context.\" >> \"$d/HANDOVER.md\"; echo \"\" >> \"$d/HANDOVER.md\"; fi; done'",
-            timeout: 10,
-          }],
-        }];
+        hooks.PreCompact = [
+          {
+            matcher: "",
+            hooks: [
+              {
+                type: "command",
+                command:
+                  'bash -c \'PROJ_DIR="$HOME/.claude/projects"; for d in "$PROJ_DIR"/*/memory; do if [ -d "$d" ]; then echo "## Handover $(date +%Y-%m-%d_%H%M)" >> "$d/HANDOVER.md"; echo "Auto-compaction triggered. Review MEMORY.md for preserved context." >> "$d/HANDOVER.md"; echo "" >> "$d/HANDOVER.md"; fi; done\'',
+                timeout: 10,
+              },
+            ],
+          },
+        ];
         settings.hooks = hooks;
 
         writeFileSync(globalSettings, JSON.stringify(settings, null, 2) + "\n", "utf-8");

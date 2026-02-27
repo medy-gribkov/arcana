@@ -63,14 +63,23 @@ function discoverSessions(): SessionInfo[] {
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024)
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
 function getDiskBreakdown(): { name: string; sizeBytes: number }[] {
   const claudeDir = join(homedir(), ".claude");
-  const dirs = ["projects", "file-history", "skills", "debug", "todos", "shell-snapshots", "plans", "cache", "usage-data"] as const;
+  const dirs = [
+    "projects",
+    "file-history",
+    "skills",
+    "debug",
+    "todos",
+    "shell-snapshots",
+    "plans",
+    "cache",
+    "usage-data",
+  ] as const;
   const breakdown: { name: string; sizeBytes: number }[] = [];
 
   for (const dirName of dirs) {
@@ -91,7 +100,7 @@ function getProjectBreakdown(): { name: string; sizeBytes: number; sessionCount:
   for (const entry of readdirSync(projectsDir)) {
     const full = join(projectsDir, entry);
     if (!statSync(full).isDirectory()) continue;
-    const jsonlCount = readdirSync(full).filter(f => f.endsWith(".jsonl")).length;
+    const jsonlCount = readdirSync(full).filter((f) => f.endsWith(".jsonl")).length;
     projects.push({ name: entry, sizeBytes: getDirSize(full), sessionCount: jsonlCount });
   }
 
@@ -121,9 +130,7 @@ export async function statsCommand(opts: { json?: boolean }): Promise<void> {
   const estimatedTokens = Math.round(totalSize / 4);
 
   const projects = new Set(sessions.map((s) => s.project));
-  const sorted = [...sessions].sort(
-    (a, b) => b.modified.getTime() - a.modified.getTime(),
-  );
+  const sorted = [...sessions].sort((a, b) => b.modified.getTime() - a.modified.getTime());
   const newest = sorted[0]!;
   const oldest = sorted[sorted.length - 1]!;
 
@@ -132,9 +139,7 @@ export async function statsCommand(opts: { json?: boolean }): Promise<void> {
   for (const s of sessions) {
     projectCounts.set(s.project, (projectCounts.get(s.project) ?? 0) + 1);
   }
-  const topProjects = [...projectCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
+  const topProjects = [...projectCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   // Disk breakdown
   const diskBreakdown = getDiskBreakdown();
@@ -144,7 +149,7 @@ export async function statsCommand(opts: { json?: boolean }): Promise<void> {
   // Calculate reclaimable space (auxiliary dirs)
   const reclaimableDirs = ["file-history", "debug", "shell-snapshots", "todos", "plans"];
   const reclaimable = diskBreakdown
-    .filter(d => reclaimableDirs.includes(d.name))
+    .filter((d) => reclaimableDirs.includes(d.name))
     .reduce((sum, d) => sum + d.sizeBytes, 0);
 
   if (opts.json) {
@@ -155,8 +160,10 @@ export async function statsCommand(opts: { json?: boolean }): Promise<void> {
       estimatedTokens,
       avgLinesPerSession: avgLines,
       topProjects: topProjects.map(([name, count]) => ({ name, sessions: count })),
-      diskBreakdown: diskBreakdown.map(d => ({ name: d.name, sizeBytes: d.sizeBytes })),
-      projectBreakdown: projectBreakdown.slice(0, 10).map(p => ({ name: p.name, sizeBytes: p.sizeBytes, sessions: p.sessionCount })),
+      diskBreakdown: diskBreakdown.map((d) => ({ name: d.name, sizeBytes: d.sizeBytes })),
+      projectBreakdown: projectBreakdown
+        .slice(0, 10)
+        .map((p) => ({ name: p.name, sizeBytes: p.sizeBytes, sessions: p.sessionCount })),
       reclaimableBytes: reclaimable,
     };
     console.log(JSON.stringify(data, null, 2));
@@ -180,11 +187,8 @@ export async function statsCommand(opts: { json?: boolean }): Promise<void> {
   console.log();
   console.log(ui.bold("  Disk Breakdown\n"));
   const diskRows = diskBreakdown
-    .filter(d => d.sizeBytes > 0)
-    .map(d => [
-      ui.dim(`~/.claude/${d.name}/`),
-      formatBytes(d.sizeBytes),
-    ]);
+    .filter((d) => d.sizeBytes > 0)
+    .map((d) => [ui.dim(`~/.claude/${d.name}/`), formatBytes(d.sizeBytes)]);
   diskRows.push([ui.bold("Total"), ui.bold(formatBytes(totalDisk))]);
   table(diskRows);
 
@@ -192,11 +196,13 @@ export async function statsCommand(opts: { json?: boolean }): Promise<void> {
   if (projectBreakdown.length > 0) {
     console.log();
     console.log(ui.bold("  Projects by Size\n"));
-    const projRows = projectBreakdown.slice(0, 5).map(p => [
-      ui.dim(p.name.length > 45 ? p.name.slice(0, 42) + "..." : p.name),
-      formatBytes(p.sizeBytes),
-      `${p.sessionCount} sessions`,
-    ]);
+    const projRows = projectBreakdown
+      .slice(0, 5)
+      .map((p) => [
+        ui.dim(p.name.length > 45 ? p.name.slice(0, 42) + "..." : p.name),
+        formatBytes(p.sizeBytes),
+        `${p.sessionCount} sessions`,
+      ]);
     table(projRows);
   }
 
@@ -221,11 +227,7 @@ export async function statsCommand(opts: { json?: boolean }): Promise<void> {
     console.log();
     console.log(ui.bold("  Recent Arcana Activity\n"));
     const recent = history.slice(-5).reverse();
-    const histRows = recent.map(e => [
-      ui.dim(new Date(e.timestamp).toLocaleDateString()),
-      e.action,
-      e.target ?? "",
-    ]);
+    const histRows = recent.map((e) => [ui.dim(new Date(e.timestamp).toLocaleDateString()), e.action, e.target ?? ""]);
     table(histRows);
   }
 

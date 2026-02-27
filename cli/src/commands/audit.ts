@@ -63,7 +63,11 @@ export function auditSkill(skillDir: string, skillName: string): AuditResult {
   // 6. Not a capabilities list (detects pattern of many "- " lines with no code between them)
   const bulletLines = (body.match(/^- /gm) || []).length;
   const isCapabilityList = bulletLines > 20 && codeBlockCount < 3;
-  checks.push({ name: "Not a capabilities list", passed: !isCapabilityList, detail: isCapabilityList ? `${bulletLines} bullets, ${Math.floor(codeBlockCount)} code blocks` : undefined });
+  checks.push({
+    name: "Not a capabilities list",
+    passed: !isCapabilityList,
+    detail: isCapabilityList ? `${bulletLines} bullets, ${Math.floor(codeBlockCount)} code blocks` : undefined,
+  });
   if (!isCapabilityList) score += 15;
 
   // 7. Reasonable length (50-500 lines)
@@ -75,7 +79,11 @@ export function auditSkill(skillDir: string, skillName: string): AuditResult {
   const hasScripts = existsSync(join(skillDir, "scripts"));
   const hasRefs = existsSync(join(skillDir, "references")) || existsSync(join(skillDir, "rules"));
   const hasExtras = hasScripts || hasRefs;
-  checks.push({ name: "Has scripts/ or references/", passed: hasExtras, detail: hasExtras ? [hasScripts && "scripts", hasRefs && "references"].filter(Boolean).join(", ") : "none" });
+  checks.push({
+    name: "Has scripts/ or references/",
+    passed: hasExtras,
+    detail: hasExtras ? [hasScripts && "scripts", hasRefs && "references"].filter(Boolean).join(", ") : "none",
+  });
   if (hasExtras) score += 10;
 
   // Rating
@@ -88,10 +96,7 @@ export function auditSkill(skillDir: string, skillName: string): AuditResult {
   return { skill: skillName, rating, score, checks };
 }
 
-export async function auditCommand(
-  skill: string | undefined,
-  opts: { all?: boolean; json?: boolean }
-): Promise<void> {
+export async function auditCommand(skill: string | undefined, opts: { all?: boolean; json?: boolean }): Promise<void> {
   if (!opts.json) banner();
 
   const installDir = getInstallDir();
@@ -107,9 +112,7 @@ export async function auditCommand(
 
   let skills: string[];
   if (opts.all) {
-    skills = readdirSync(installDir).filter(
-      (d) => statSync(join(installDir, d)).isDirectory()
-    );
+    skills = readdirSync(installDir).filter((d) => statSync(join(installDir, d)).isDirectory());
   } else if (skill) {
     skills = [skill];
   } else {
@@ -144,10 +147,14 @@ export async function auditCommand(
 
   for (const r of results) {
     counts[r.rating]++;
-    const ratingColor = r.rating === "PERFECT" ? ui.success
-      : r.rating === "STRONG" ? ui.cyan
-      : r.rating === "ADEQUATE" ? ui.warn
-      : ui.error;
+    const ratingColor =
+      r.rating === "PERFECT"
+        ? ui.success
+        : r.rating === "STRONG"
+          ? ui.cyan
+          : r.rating === "ADEQUATE"
+            ? ui.warn
+            : ui.error;
 
     console.log(`  ${ratingColor(`[${r.rating}]`)} ${ui.bold(r.skill)} ${ui.dim(`(${r.score}/100)`)}`);
 

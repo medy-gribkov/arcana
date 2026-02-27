@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import { ui, banner, table } from "../utils/ui.js";
+import { ui, banner } from "../utils/ui.js";
 import { getInstallDir, getDirSize } from "../utils/fs.js";
 
 interface Recommendation {
@@ -24,20 +24,40 @@ function readSettings(): Record<string, unknown> | null {
 function checkAutocompact(): Recommendation {
   const settings = readSettings();
   if (!settings) {
-    return { area: "Autocompact", status: "suggest", message: "No settings.json found", action: "Set CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=80 in ~/.claude/settings.json env block" };
+    return {
+      area: "Autocompact",
+      status: "suggest",
+      message: "No settings.json found",
+      action: "Set CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=80 in ~/.claude/settings.json env block",
+    };
   }
 
   const env = settings.env as Record<string, string> | undefined;
   const val = env?.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE;
   if (!val) {
-    return { area: "Autocompact", status: "suggest", message: "Not configured (defaults to high threshold)", action: "Set to 80 to compact earlier and save tokens" };
+    return {
+      area: "Autocompact",
+      status: "suggest",
+      message: "Not configured (defaults to high threshold)",
+      action: "Set to 80 to compact earlier and save tokens",
+    };
   }
   const pct = parseInt(val);
   if (pct <= 70) {
-    return { area: "Autocompact", status: "warn", message: `Set to ${pct}%. Too aggressive, may lose context.`, action: "Raise to 75-80% for better balance" };
+    return {
+      area: "Autocompact",
+      status: "warn",
+      message: `Set to ${pct}%. Too aggressive, may lose context.`,
+      action: "Raise to 75-80% for better balance",
+    };
   }
   if (pct > 85) {
-    return { area: "Autocompact", status: "suggest", message: `Set to ${pct}%. Compaction happens late, less room for reasoning.`, action: "Lower to 80% for better quality (research-backed)" };
+    return {
+      area: "Autocompact",
+      status: "suggest",
+      message: `Set to ${pct}%. Compaction happens late, less room for reasoning.`,
+      action: "Lower to 80% for better quality (research-backed)",
+    };
   }
   return { area: "Autocompact", status: "good", message: `Set to ${pct}% (optimal range)` };
 }
@@ -50,7 +70,12 @@ function checkEffortLevel(): Recommendation {
     return { area: "Effort level", status: "good", message: "Using default (high)" };
   }
   if (val === "low") {
-    return { area: "Effort level", status: "suggest", message: "Set to 'low'. Faster but may miss details.", action: "Use 'medium' for daily work, 'high' for complex tasks" };
+    return {
+      area: "Effort level",
+      status: "suggest",
+      message: "Set to 'low'. Faster but may miss details.",
+      action: "Use 'medium' for daily work, 'high' for complex tasks",
+    };
   }
   if (val === "medium") {
     return { area: "Effort level", status: "good", message: "Set to 'medium'. Good balance of speed and quality." };
@@ -65,7 +90,12 @@ function checkNonEssentialCalls(): Recommendation {
   if (val === "1" || val === "true") {
     return { area: "Non-essential calls", status: "good", message: "Disabled (saves tokens)" };
   }
-  return { area: "Non-essential calls", status: "suggest", message: "Not disabled", action: "Set DISABLE_NON_ESSENTIAL_MODEL_CALLS=1 in settings.json env to save tokens" };
+  return {
+    area: "Non-essential calls",
+    status: "suggest",
+    message: "Not disabled",
+    action: "Set DISABLE_NON_ESSENTIAL_MODEL_CALLS=1 in settings.json env to save tokens",
+  };
 }
 
 function checkSkillTokenBudget(): Recommendation {
@@ -90,7 +120,10 @@ function checkSkillTokenBudget(): Recommendation {
   const estTokens = Math.round(totalKB * 256);
   if (totalKB > 500) {
     large.sort((a, b) => b.kb - a.kb);
-    const topNames = large.slice(0, 3).map(s => s.name).join(", ");
+    const topNames = large
+      .slice(0, 3)
+      .map((s) => s.name)
+      .join(", ");
     return {
       area: "Skill token budget",
       status: "warn",
@@ -106,7 +139,11 @@ function checkSkillTokenBudget(): Recommendation {
       action: "Review installed skills with 'arcana list --installed' and remove unused ones",
     };
   }
-  return { area: "Skill token budget", status: "good", message: `${skillCount} skills, ${totalKB.toFixed(0)} KB (~${(estTokens / 1000).toFixed(0)}K tokens)` };
+  return {
+    area: "Skill token budget",
+    status: "good",
+    message: `${skillCount} skills, ${totalKB.toFixed(0)} KB (~${(estTokens / 1000).toFixed(0)}K tokens)`,
+  };
 }
 
 function checkDiskHealth(): Recommendation {
@@ -117,20 +154,27 @@ function checkDiskHealth(): Recommendation {
 
   const totalMB = getDirSize(claudeDir) / (1024 * 1024);
   if (totalMB > 1000) {
-    return { area: "Disk health", status: "warn", message: `${totalMB.toFixed(0)} MB total Claude data`, action: "Run: arcana compact (removes agent logs, keeps sessions)" };
+    return {
+      area: "Disk health",
+      status: "warn",
+      message: `${totalMB.toFixed(0)} MB total Claude data`,
+      action: "Run: arcana compact (removes agent logs, keeps sessions)",
+    };
   }
   if (totalMB > 500) {
-    return { area: "Disk health", status: "suggest", message: `${totalMB.toFixed(0)} MB total Claude data`, action: "Run: arcana compact" };
+    return {
+      area: "Disk health",
+      status: "suggest",
+      message: `${totalMB.toFixed(0)} MB total Claude data`,
+      action: "Run: arcana compact",
+    };
   }
   return { area: "Disk health", status: "good", message: `${totalMB.toFixed(0)} MB total Claude data` };
 }
 
 function checkPreCompactHook(): Recommendation {
   // Check both global and local settings for PreCompact hooks
-  const paths = [
-    join(homedir(), ".claude", "settings.json"),
-    join(homedir(), ".claude", "settings.local.json"),
-  ];
+  const paths = [join(homedir(), ".claude", "settings.json"), join(homedir(), ".claude", "settings.local.json")];
 
   for (const settingsPath of paths) {
     if (!existsSync(settingsPath)) continue;
@@ -140,7 +184,9 @@ function checkPreCompactHook(): Recommendation {
       if (hooks && Array.isArray(hooks) && hooks.length > 0) {
         return { area: "PreCompact hook", status: "good", message: "Installed. Context preserved before compaction." };
       }
-    } catch { continue; }
+    } catch {
+      continue;
+    }
   }
 
   return {
@@ -169,7 +215,9 @@ function checkMemorySize(): Recommendation {
       if (lineCount > 200) {
         oversized.push({ project: entry, lines: lineCount });
       }
-    } catch { continue; }
+    } catch {
+      continue;
+    }
   }
 
   if (oversized.length === 0) {
@@ -212,7 +260,9 @@ function checkAgentBloat(): Recommendation {
           mainBytes += size;
           mainCount++;
         }
-      } catch { continue; }
+      } catch {
+        continue;
+      }
     }
   }
 
@@ -236,7 +286,61 @@ function checkAgentBloat(): Recommendation {
       action: "Run: arcana compact",
     };
   }
-  return { area: "Agent log bloat", status: "good", message: `${agentCount} agent logs (${agentMB.toFixed(0)} MB), ${mainCount} main sessions (${(mainBytes / (1024 * 1024)).toFixed(0)} MB)` };
+  return {
+    area: "Agent log bloat",
+    status: "good",
+    message: `${agentCount} agent logs (${agentMB.toFixed(0)} MB), ${mainCount} main sessions (${(mainBytes / (1024 * 1024)).toFixed(0)} MB)`,
+  };
+}
+
+function checkLargestSkills(): Recommendation {
+  const dir = getInstallDir();
+  if (!existsSync(dir)) {
+    return { area: "Top skills by size", status: "good", message: "No skills installed" };
+  }
+
+  const skills: { name: string; kb: number }[] = [];
+
+  for (const entry of readdirSync(dir)) {
+    const skillDir = join(dir, entry);
+    if (!statSync(skillDir).isDirectory()) continue;
+    const kb = getDirSize(skillDir) / 1024;
+    skills.push({ name: entry, kb });
+  }
+
+  if (skills.length === 0) {
+    return { area: "Top skills by size", status: "good", message: "No skills installed" };
+  }
+
+  skills.sort((a, b) => b.kb - a.kb);
+  const totalKB = skills.reduce((s, sk) => s + sk.kb, 0);
+  const totalMB = totalKB / 1024;
+  const top5 = skills
+    .slice(0, 5)
+    .map((s) => `${s.name} (${s.kb.toFixed(0)} KB)`)
+    .join(", ");
+
+  if (totalMB > 3) {
+    return {
+      area: "Top skills by size",
+      status: "warn",
+      message: `${skills.length} skills, ${totalMB.toFixed(1)} MB total. Top 5: ${top5}`,
+      action: "Review large skills with 'arcana list --installed'. Uninstall unused ones.",
+    };
+  }
+  if (totalMB > 1.5) {
+    return {
+      area: "Top skills by size",
+      status: "suggest",
+      message: `${skills.length} skills, ${totalMB.toFixed(1)} MB total. Top 5: ${top5}`,
+      action: "Consider removing rarely used skills to save context tokens",
+    };
+  }
+  return {
+    area: "Top skills by size",
+    status: "good",
+    message: `${skills.length} skills, ${totalMB.toFixed(1)} MB total. Top 5: ${top5}`,
+  };
 }
 
 export async function optimizeCommand(opts: { json?: boolean }): Promise<void> {
@@ -254,6 +358,7 @@ export async function optimizeCommand(opts: { json?: boolean }): Promise<void> {
     checkMemorySize(),
     checkAgentBloat(),
     checkDiskHealth(),
+    checkLargestSkills(),
   ];
 
   if (opts.json) {
@@ -262,9 +367,8 @@ export async function optimizeCommand(opts: { json?: boolean }): Promise<void> {
   }
 
   for (const rec of recommendations) {
-    const icon = rec.status === "good" ? ui.success("[OK]")
-      : rec.status === "suggest" ? ui.cyan("[>>]")
-      : ui.warn("[!!]");
+    const icon =
+      rec.status === "good" ? ui.success("[OK]") : rec.status === "suggest" ? ui.cyan("[>>]") : ui.warn("[!!]");
 
     console.log(`  ${icon} ${ui.bold(rec.area)}: ${rec.message}`);
     if (rec.action) {
@@ -272,12 +376,16 @@ export async function optimizeCommand(opts: { json?: boolean }): Promise<void> {
     }
   }
 
-  const actionable = recommendations.filter(r => r.status !== "good");
+  const actionable = recommendations.filter((r) => r.status !== "good");
   console.log();
   if (actionable.length === 0) {
     console.log(ui.success("  Your setup is well optimized."));
   } else {
-    console.log(ui.dim(`  ${actionable.length} suggestion${actionable.length > 1 ? "s" : ""} to improve token usage and performance.`));
+    console.log(
+      ui.dim(
+        `  ${actionable.length} suggestion${actionable.length > 1 ? "s" : ""} to improve token usage and performance.`,
+      ),
+    );
   }
   console.log();
 }

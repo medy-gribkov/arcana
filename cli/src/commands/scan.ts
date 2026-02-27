@@ -4,10 +4,7 @@ import { getInstallDir } from "../utils/fs.js";
 import { scanSkillContent, formatScanResults } from "../utils/scanner.js";
 import { ui, banner } from "../utils/ui.js";
 
-export async function scanCommand(
-  skill: string | undefined,
-  opts: { all?: boolean; json?: boolean }
-): Promise<void> {
+export async function scanCommand(skill: string | undefined, opts: { all?: boolean; json?: boolean }): Promise<void> {
   if (!opts.json) {
     banner();
     console.log(ui.bold("  Security Scan\n"));
@@ -26,9 +23,7 @@ export async function scanCommand(
 
   let skills: string[];
   if (opts.all) {
-    skills = readdirSync(installDir).filter(
-      (d) => statSync(join(installDir, d)).isDirectory()
-    );
+    skills = readdirSync(installDir).filter((d) => statSync(join(installDir, d)).isDirectory());
   } else if (skill) {
     skills = [skill];
   } else {
@@ -72,9 +67,9 @@ export async function scanCommand(
         cleanCount++;
       } else {
         totalIssues += issues.length;
-        criticalCount += issues.filter(i => i.level === "critical").length;
-        highCount += issues.filter(i => i.level === "high").length;
-        mediumCount += issues.filter(i => i.level === "medium").length;
+        criticalCount += issues.filter((i) => i.level === "critical").length;
+        highCount += issues.filter((i) => i.level === "high").length;
+        mediumCount += issues.filter((i) => i.level === "medium").length;
       }
     } catch (err) {
       results.push({ skill: name, issues: [], error: err instanceof Error ? err.message : "Read failed" });
@@ -82,14 +77,27 @@ export async function scanCommand(
   }
 
   if (opts.json) {
-    console.log(JSON.stringify({
-      summary: { total: skills.length, clean: cleanCount, issues: totalIssues, critical: criticalCount, high: highCount, medium: mediumCount },
-      results: results.map(r => ({
-        skill: r.skill,
-        ...(r.error ? { error: r.error } : {}),
-        issues: r.issues.map(i => ({ level: i.level, category: i.category, detail: i.detail, line: i.line })),
-      })),
-    }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          summary: {
+            total: skills.length,
+            clean: cleanCount,
+            issues: totalIssues,
+            critical: criticalCount,
+            high: highCount,
+            medium: mediumCount,
+          },
+          results: results.map((r) => ({
+            skill: r.skill,
+            ...(r.error ? { error: r.error } : {}),
+            issues: r.issues.map((i) => ({ level: i.level, category: i.category, detail: i.detail, line: i.line })),
+          })),
+        },
+        null,
+        2,
+      ),
+    );
     if (criticalCount > 0) process.exit(1);
     return;
   }

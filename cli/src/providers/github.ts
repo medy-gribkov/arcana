@@ -38,11 +38,7 @@ export class GitHubProvider extends Provider {
   private cache: SkillInfo[] | null = null;
   private treeCache: GitHubTreeItem[] | null = null;
 
-  constructor(
-    owner: string,
-    repo: string,
-    opts?: { name?: string; displayName?: string; branch?: string }
-  ) {
+  constructor(owner: string, repo: string, opts?: { name?: string; displayName?: string; branch?: string }) {
     super();
     validateSlug(owner, "owner");
     validateSlug(repo, "repo");
@@ -103,7 +99,9 @@ export class GitHubProvider extends Provider {
     // Warn about malformed entries
     const skipped = data.plugins.length - this.cache.length;
     if (skipped > 0) {
-      console.error(`Warning: ${skipped} malformed ${skipped === 1 ? "entry" : "entries"} in ${this.name}/marketplace.json skipped`);
+      console.error(
+        `Warning: ${skipped} malformed ${skipped === 1 ? "entry" : "entries"} in ${this.name}/marketplace.json skipped`,
+      );
     }
 
     // Write to disk cache
@@ -128,27 +126,32 @@ export class GitHubProvider extends Provider {
     const tree = await this.getTree();
 
     const prefix = `skills/${skillName}/`;
-    const files = tree.filter(
-      (item) => item.path.startsWith(prefix) && item.type === "blob"
-    );
+    const files = tree.filter((item) => item.path.startsWith(prefix) && item.type === "blob");
 
     if (files.length === 0) {
       throw new Error(`Skill "${skillName}" not found in ${this.name}`);
     }
 
-    const results = await parallelMap(files, async (file) => {
-      const relativePath = file.path.slice(prefix.length);
-      if (relativePath.includes("..") || path.isAbsolute(relativePath)) {
-        return null;
-      }
-      const contentUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/${this.branch}/${file.path}`;
-      try {
-        const { body: content } = await httpGet(contentUrl);
-        return { path: relativePath, content } as SkillFile;
-      } catch (err) {
-        throw new Error(`Failed to fetch file "${relativePath}" for skill "${skillName}": ${err instanceof Error ? err.message : String(err)}`);
-      }
-    }, 6);
+    const results = await parallelMap(
+      files,
+      async (file) => {
+        const relativePath = file.path.slice(prefix.length);
+        if (relativePath.includes("..") || path.isAbsolute(relativePath)) {
+          return null;
+        }
+        const contentUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/${this.branch}/${file.path}`;
+        try {
+          const { body: content } = await httpGet(contentUrl);
+          return { path: relativePath, content } as SkillFile;
+        } catch (err) {
+          throw new Error(
+            `Failed to fetch file "${relativePath}" for skill "${skillName}": ${err instanceof Error ? err.message : String(err)}`,
+            { cause: err },
+          );
+        }
+      },
+      6,
+    );
 
     return results.filter((r): r is SkillFile => r !== null);
   }
@@ -156,11 +159,7 @@ export class GitHubProvider extends Provider {
   async search(query: string): Promise<SkillInfo[]> {
     const all = await this.list();
     const q = query.toLowerCase();
-    const exact = all.filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.description.toLowerCase().includes(q)
-    );
+    const exact = all.filter((s) => s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q));
     if (exact.length > 0) return exact;
 
     // Fuzzy fallback: match skills where Levenshtein distance to name <= 3

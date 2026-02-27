@@ -28,9 +28,18 @@ export function spinner(text: string): Ora {
 }
 
 export function noopSpinner() {
-  return { start: () => {}, stop: () => {}, succeed: (_m: string) => {}, info: (_m: string) => {}, fail: (_m: string) => {}, text: "", message: (_m: string) => {} };
+  return {
+    start: () => {},
+    stop: () => {},
+    succeed: (_m: string) => {},
+    info: (_m: string) => {},
+    fail: (_m: string) => {},
+    text: "",
+    message: (_m: string) => {},
+  };
 }
 
+// eslint-disable-next-line no-control-regex
 const ANSI_REGEX = /\x1b\[[0-9;]*m/g;
 
 function stripAnsi(str: string): string {
@@ -48,9 +57,7 @@ export function table(rows: string[][]): void {
 
   const firstRow = rows[0];
   if (!firstRow) return;
-  const colWidths = firstRow.map((_, colIdx) =>
-    Math.max(...rows.map((row) => stripAnsi(row[colIdx] ?? "").length))
-  );
+  const colWidths = firstRow.map((_, colIdx) => Math.max(...rows.map((row) => stripAnsi(row[colIdx] ?? "").length)));
 
   for (const row of rows) {
     const line = row
@@ -85,8 +92,7 @@ export function printErrorWithHint(err: unknown, showMessage = false): void {
   // Retry advice for transient errors
   if (err instanceof Error) {
     const msg = err.message;
-    const isTransient = NETWORK_PATTERNS.some(p => msg.includes(p)) ||
-      /\b(429|500|502|503|504)\b/.test(msg);
+    const isTransient = NETWORK_PATTERNS.some((p) => msg.includes(p)) || /\b(429|500|502|503|504)\b/.test(msg);
     if (isTransient) {
       console.error(ui.dim("  Try again in a moment, or check your connection."));
     }

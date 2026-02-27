@@ -29,39 +29,74 @@ const AMBER = chalk.hex("#d4943a");
 
 const SKILL_CATEGORIES: Record<string, string[]> = {
   "Code Quality & Review": [
-    "code-reviewer", "codebase-dissection", "testing-strategy",
-    "refactoring-patterns", "git-workflow", "pre-production-review",
-    "frontend-code-review", "dependency-audit", "performance-optimization",
+    "code-reviewer",
+    "codebase-dissection",
+    "testing-strategy",
+    "refactoring-patterns",
+    "git-workflow",
+    "pre-production-review",
+    "frontend-code-review",
+    "dependency-audit",
+    "performance-optimization",
   ],
   "Security & Infrastructure": [
-    "security-review", "local-security", "container-security",
-    "docker-kubernetes", "ci-cd-pipelines", "ci-cd-automation",
-    "monitoring-observability", "incident-response",
+    "security-review",
+    "local-security",
+    "container-security",
+    "docker-kubernetes",
+    "ci-cd-pipelines",
+    "ci-cd-automation",
+    "monitoring-observability",
+    "incident-response",
   ],
   "Languages & Frameworks": [
-    "golang-pro", "go-linter-configuration", "typescript", "typescript-advanced",
-    "python-best-practices", "rust-best-practices", "frontend-design",
-    "fullstack-developer", "remotion-best-practices", "npm-package",
+    "golang-pro",
+    "go-linter-configuration",
+    "typescript",
+    "typescript-advanced",
+    "python-best-practices",
+    "rust-best-practices",
+    "frontend-design",
+    "fullstack-developer",
+    "remotion-best-practices",
+    "npm-package",
   ],
   "API, Data & Docs": [
-    "api-design", "api-testing", "programming-architecture",
-    "database-design", "env-config", "cost-optimization",
-    "docx", "xlsx", "doc-generation", "update-docs",
+    "api-design",
+    "api-testing",
+    "programming-architecture",
+    "database-design",
+    "env-config",
+    "cost-optimization",
+    "docx",
+    "xlsx",
+    "doc-generation",
+    "update-docs",
   ],
   "Game Design & Production": [
-    "game-design-theory", "game-engines", "game-programming-languages",
-    "gameplay-mechanics", "level-design", "game-tools-workflows",
-    "game-servers", "networking-servers", "synchronization-algorithms",
-    "monetization-systems", "publishing-platforms", "daw-music",
+    "game-design-theory",
+    "game-engines",
+    "game-programming-languages",
+    "gameplay-mechanics",
+    "level-design",
+    "game-tools-workflows",
+    "game-servers",
+    "networking-servers",
+    "synchronization-algorithms",
+    "monetization-systems",
+    "publishing-platforms",
+    "daw-music",
   ],
   "Graphics, Audio & Performance": [
-    "graphics-rendering", "shader-techniques", "particle-systems",
-    "audio-systems", "asset-optimization", "optimization-performance",
+    "graphics-rendering",
+    "shader-techniques",
+    "particle-systems",
+    "audio-systems",
+    "asset-optimization",
+    "optimization-performance",
     "memory-management",
   ],
-  "Skill Development": [
-    "skill-creation-guide", "skill-creator", "find-skills", "project-migration",
-  ],
+  "Skill Development": ["skill-creation-guide", "skill-creator", "find-skills", "project-migration"],
 };
 
 // ---------------------------------------------------------------------------
@@ -81,8 +116,12 @@ function handleCancel(value: unknown): void {
 function countInstalled(): number {
   const dir = getInstallDir();
   if (!existsSync(dir)) return 0;
-  return readdirSync(dir).filter(d => {
-    try { return statSync(join(dir, d)).isDirectory(); } catch { return false; }
+  return readdirSync(dir).filter((d) => {
+    try {
+      return statSync(join(dir, d)).isDirectory();
+    } catch {
+      return false;
+    }
   }).length;
 }
 
@@ -100,22 +139,24 @@ function getCategoryFor(skillName: string): string | undefined {
 function getRelatedSkills(skillName: string, limit = 3): string[] {
   const cat = getCategoryFor(skillName);
   if (!cat) return [];
-  return (SKILL_CATEGORIES[cat] ?? [])
-    .filter(s => s !== skillName && !isSkillInstalled(s))
-    .slice(0, limit);
+  return (SKILL_CATEGORIES[cat] ?? []).filter((s) => s !== skillName && !isSkillInstalled(s)).slice(0, limit);
 }
 
 function getInstalledNames(): string[] {
   const dir = getInstallDir();
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
-    .filter(d => {
-      try { return statSync(join(dir, d)).isDirectory(); } catch { return false; }
+    .filter((d) => {
+      try {
+        return statSync(join(dir, d)).isDirectory();
+      } catch {
+        return false;
+      }
     })
     .sort();
 }
 
-function buildMenuOptions(installedCount: number, availableCount: number) {
+function buildMenuOptions(installedCount: number, _availableCount: number) {
   const isNew = installedCount === 0;
   const options: { value: string; label: string; hint?: string }[] = [];
 
@@ -222,7 +263,7 @@ async function skillDetailFlow(
   allSkills: SkillInfo[],
   providerName: string,
 ): Promise<"back" | "menu"> {
-  const info = allSkills.find(s => s.name === skillName);
+  const info = allSkills.find((s) => s.name === skillName);
   const installed = isSkillInstalled(skillName);
   const meta = installed ? readSkillMeta(skillName) : null;
 
@@ -292,12 +333,12 @@ async function skillDetailFlow(
 // ---------------------------------------------------------------------------
 
 async function browseByCategory(allSkills: SkillInfo[], providerName: string): Promise<void> {
-  const availableNames = new Set(allSkills.map(s => s.name));
+  const availableNames = new Set(allSkills.map((s) => s.name));
 
   while (true) {
     const categoryOptions = Object.entries(SKILL_CATEGORIES).map(([name, skills]) => {
-      const valid = skills.filter(s => availableNames.has(s));
-      const installedCount = valid.filter(s => isSkillInstalled(s)).length;
+      const valid = skills.filter((s) => availableNames.has(s));
+      const installedCount = valid.filter((s) => isSkillInstalled(s)).length;
       return {
         value: name,
         label: name,
@@ -307,20 +348,12 @@ async function browseByCategory(allSkills: SkillInfo[], providerName: string): P
 
     const category = await p.select({
       message: "Browse by category",
-      options: [
-        ...categoryOptions,
-        { value: "__back", label: "Back" },
-      ],
+      options: [...categoryOptions, { value: "__back", label: "Back" }],
     });
     handleCancel(category);
     if (category === "__back") return;
 
-    await categorySkillList(
-      category as string,
-      SKILL_CATEGORIES[category as string] ?? [],
-      allSkills,
-      providerName,
-    );
+    await categorySkillList(category as string, SKILL_CATEGORIES[category as string] ?? [], allSkills, providerName);
   }
 }
 
@@ -330,8 +363,8 @@ async function categorySkillList(
   allSkills: SkillInfo[],
   providerName: string,
 ): Promise<void> {
-  const availableNames = new Set(allSkills.map(s => s.name));
-  const validSkills = skillNames.filter(s => availableNames.has(s));
+  const availableNames = new Set(allSkills.map((s) => s.name));
+  const validSkills = skillNames.filter((s) => availableNames.has(s));
 
   if (validSkills.length === 0) {
     p.log.warn("No skills found in this category.");
@@ -339,8 +372,8 @@ async function categorySkillList(
   }
 
   while (true) {
-    const options = validSkills.map(name => {
-      const info = allSkills.find(s => s.name === name);
+    const options = validSkills.map((name) => {
+      const info = allSkills.find((s) => s.name === name);
       const installed = isSkillInstalled(name);
       return {
         value: name,
@@ -349,7 +382,7 @@ async function categorySkillList(
       };
     });
 
-    const notInstalled = validSkills.filter(s => !isSkillInstalled(s));
+    const notInstalled = validSkills.filter((s) => !isSkillInstalled(s));
     const extraOptions: { value: string; label: string; hint?: string }[] = [];
     if (notInstalled.length > 0) {
       extraOptions.push({
@@ -424,7 +457,7 @@ async function searchResultsPicker(
   providerName: string,
 ): Promise<"done" | "search"> {
   while (true) {
-    const options = results.map(skill => ({
+    const options = results.map((skill) => ({
       value: skill.name,
       label: `${skill.name}${isSkillInstalled(skill.name) ? chalk.green(" \u2713") : ""}`,
       hint: truncate(skill.description, 50),
@@ -432,11 +465,7 @@ async function searchResultsPicker(
 
     const picked = await p.select({
       message: "Pick a skill for details",
-      options: [
-        ...options,
-        { value: "__search", label: "Search again" },
-        { value: "__back", label: "Back" },
-      ],
+      options: [...options, { value: "__search", label: "Search again" }, { value: "__back", label: "Back" }],
     });
     handleCancel(picked);
 
@@ -458,7 +487,7 @@ async function quickSetup(allSkills: SkillInfo[], providerName: string): Promise
   p.log.step(`Detected: ${chalk.cyan(proj.name)} (${proj.type})`);
 
   const suggestions: string[] = SKILL_SUGGESTIONS[proj.type] ?? SKILL_SUGGESTIONS_DEFAULT;
-  const availableNames = new Set(allSkills.map(s => s.name));
+  const availableNames = new Set(allSkills.map((s) => s.name));
   const validSuggestions = suggestions.filter((s: string) => availableNames.has(s));
 
   if (validSuggestions.length === 0) {
@@ -518,19 +547,19 @@ async function manageInstalled(allSkills: SkillInfo[], providerName: string): Pr
     const categorized = new Set<string>();
 
     for (const [cat, catSkills] of Object.entries(SKILL_CATEGORIES)) {
-      const installed = catSkills.filter(s => names.includes(s));
+      const installed = catSkills.filter((s) => names.includes(s));
       if (installed.length > 0) {
         groups.push({ cat, skills: installed });
-        installed.forEach(s => categorized.add(s));
+        installed.forEach((s) => categorized.add(s));
       }
     }
 
-    const uncategorized = names.filter(s => !categorized.has(s));
+    const uncategorized = names.filter((s) => !categorized.has(s));
     if (uncategorized.length > 0) {
       groups.push({ cat: "Other", skills: uncategorized });
     }
 
-    const options = groups.map(g => ({
+    const options = groups.map((g) => ({
       value: g.cat,
       label: g.cat,
       hint: `${g.skills.length} installed`,
@@ -548,10 +577,16 @@ async function manageInstalled(allSkills: SkillInfo[], providerName: string): Pr
     handleCancel(picked);
 
     if (picked === "__back") return;
-    if (picked === "__update") { await updateAll(providerName); continue; }
-    if (picked === "__bulk_uninstall") { await bulkUninstall(names); continue; }
+    if (picked === "__update") {
+      await updateAll(providerName);
+      continue;
+    }
+    if (picked === "__bulk_uninstall") {
+      await bulkUninstall(names);
+      continue;
+    }
 
-    const group = groups.find(g => g.cat === picked);
+    const group = groups.find((g) => g.cat === picked);
     if (group) {
       await installedCategoryList(group.cat, group.skills, allSkills, providerName);
     }
@@ -565,13 +600,13 @@ async function installedCategoryList(
   providerName: string,
 ): Promise<void> {
   while (true) {
-    const stillInstalled = installedNames.filter(s => isSkillInstalled(s));
+    const stillInstalled = installedNames.filter((s) => isSkillInstalled(s));
     if (stillInstalled.length === 0) {
       p.log.info("No skills remaining in this category.");
       return;
     }
 
-    const options = stillInstalled.map(name => {
+    const options = stillInstalled.map((name) => {
       const meta = readSkillMeta(name);
       const ver = meta ? `v${meta.version}` : "";
       const date = meta?.installedAt ? new Date(meta.installedAt).toLocaleDateString() : "";
@@ -598,7 +633,7 @@ async function installedCategoryList(
 async function bulkUninstall(installedNames: string[]): Promise<void> {
   const selected = await p.multiselect({
     message: "Select skills to uninstall",
-    options: installedNames.map(name => ({ value: name, label: name })),
+    options: installedNames.map((name) => ({ value: name, label: name })),
     required: false,
     maxItems: 15,
   });
@@ -644,7 +679,7 @@ async function updateAll(providerName: string): Promise<void> {
     if (err instanceof Error) p.log.error(ui.dim(err.message));
     return;
   }
-  const remoteMap = new Map(remoteSkills.map(rs => [rs.name, rs]));
+  const remoteMap = new Map(remoteSkills.map((rs) => [rs.name, rs]));
 
   const updates: { name: string; from: string; to: string }[] = [];
   for (const name of installed) {
@@ -709,15 +744,14 @@ async function checkHealth(): Promise<void> {
   p.log.step(chalk.bold("Environment Health Check"));
 
   for (const check of checks) {
-    const icon = check.status === "pass" ? chalk.green("OK")
-      : check.status === "warn" ? chalk.yellow("!!")
-      : chalk.red("XX");
+    const icon =
+      check.status === "pass" ? chalk.green("OK") : check.status === "warn" ? chalk.yellow("!!") : chalk.red("XX");
     p.log.info(`${icon}  ${chalk.bold(check.name)}: ${check.message}`);
     if (check.fix) p.log.info(chalk.dim(`    Fix: ${check.fix}`));
   }
 
-  const fails = checks.filter(c => c.status === "fail").length;
-  const warns = checks.filter(c => c.status === "warn").length;
+  const fails = checks.filter((c) => c.status === "fail").length;
+  const warns = checks.filter((c) => c.status === "warn").length;
 
   if (fails > 0) {
     p.log.error(`${fails} issue${fails > 1 ? "s" : ""} found`);
@@ -729,10 +763,10 @@ async function checkHealth(): Promise<void> {
   }
 
   // Offer fixes once - no loop. User can re-enter health check to verify.
-  const fixChecks = checks.filter(c => c.fix && c.status !== "pass");
+  const fixChecks = checks.filter((c) => c.fix && c.status !== "pass");
   if (fixChecks.length === 0) return;
 
-  const fixOptions = fixChecks.map(c => {
+  const fixOptions = fixChecks.map((c) => {
     const cmd = c.fix!.replace(/^Run:\s*/, "");
     return { value: cmd, label: `Run: ${cmd}`, hint: c.name };
   });
@@ -746,7 +780,7 @@ async function checkHealth(): Promise<void> {
   if (fixAction !== "__skip") {
     const cmd = fixAction as string;
     const SAFE_PREFIXES = ["arcana ", "git config "];
-    if (!SAFE_PREFIXES.some(pre => cmd.startsWith(pre))) {
+    if (!SAFE_PREFIXES.some((pre) => cmd.startsWith(pre))) {
       p.log.warn(`Skipped unsafe command: ${cmd}`);
     } else {
       p.log.info(chalk.dim(`Running: ${cmd}`));
@@ -796,7 +830,7 @@ export async function showInteractiveMenu(version: string): Promise<void> {
   const providerName = config.defaultProvider;
 
   // Fetch skill list once for the session
-  let allSkills: SkillInfo[] = [];
+  const allSkills: SkillInfo[] = [];
   let availableCount = 0;
   try {
     const providers = getProviders();
@@ -821,10 +855,14 @@ export async function showInteractiveMenu(version: string): Promise<void> {
   if (availableCount > 0 && installedOnEntry > 0) {
     if (installedOnEntry > availableCount) {
       // More installed than in marketplace (local test skills, etc.)
-      console.log(`  ${chalk.dim(`${installedOnEntry} installed (${availableCount} in marketplace) | provider: ${providerName}`)}`);
+      console.log(
+        `  ${chalk.dim(`${installedOnEntry} installed (${availableCount} in marketplace) | provider: ${providerName}`)}`,
+      );
     } else {
       const pct = Math.round((installedOnEntry / availableCount) * 100);
-      console.log(`  ${chalk.dim(`${installedOnEntry}/${availableCount} installed (${pct}%) | provider: ${providerName}`)}`);
+      console.log(
+        `  ${chalk.dim(`${installedOnEntry}/${availableCount} installed (${pct}%) | provider: ${providerName}`)}`,
+      );
     }
   } else if (availableCount > 0) {
     console.log(`  ${chalk.dim(`${availableCount} skills across ${Object.keys(SKILL_CATEGORIES).length} categories`)}`);

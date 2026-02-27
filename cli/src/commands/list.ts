@@ -60,7 +60,8 @@ export async function listCommand(opts: {
       const rows = skills.map((skill) => [
         ui.bold(skill.name),
         ui.dim(`v${skill.version}`),
-        skill.description.slice(0, DESC_TRUNCATE_LENGTH) + (skill.description.length > DESC_TRUNCATE_LENGTH ? "..." : ""),
+        skill.description.slice(0, DESC_TRUNCATE_LENGTH) +
+          (skill.description.length > DESC_TRUNCATE_LENGTH ? "..." : ""),
         providers.length > 1 ? ui.dim(skill.source) : "",
         skill.installed ? ui.success("[installed]") : "",
       ]);
@@ -88,7 +89,12 @@ function listInstalled(json?: boolean): void {
   if (json) {
     const skills = dirs.map((name) => {
       const meta = readSkillMeta(name);
-      return { name, version: meta?.version ?? "unknown", source: meta?.source ?? "local", installedAt: meta?.installedAt ?? null };
+      return {
+        name,
+        version: meta?.version ?? "unknown",
+        source: meta?.source ?? "local",
+        installedAt: meta?.installedAt ?? null,
+      };
     });
     console.log(JSON.stringify({ skills }, null, 2));
     return;

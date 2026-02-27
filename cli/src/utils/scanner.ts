@@ -109,7 +109,7 @@ const PATTERNS: Pattern[] = [
     level: "high",
     category: "Prompt injection",
     detail: "System message impersonation",
-    regex: /\[system\]|\<system\>|SYSTEM:\s+/,
+    regex: /\[system\]|<system>|SYSTEM:\s+/,
   },
 
   // HIGH: Hardcoded secrets
@@ -195,7 +195,7 @@ export function scanSkillContent(content: string): ScanIssue[] {
       const joined = line.slice(0, -1) + " " + (lines[i + 1] ?? "").trim();
       for (const pattern of PATTERNS) {
         if (pattern.regex.test(joined)) {
-          const alreadyFound = issues.some(iss => iss.line === i + 1 && iss.category === pattern.category);
+          const alreadyFound = issues.some((iss) => iss.line === i + 1 && iss.category === pattern.category);
           if (!alreadyFound) {
             issues.push({
               level: pattern.level,
@@ -221,7 +221,7 @@ export function scanSkillContent(content: string): ScanIssue[] {
  * Quick check: does this content have any critical issues?
  */
 export function hasCriticalIssues(content: string): boolean {
-  return scanSkillContent(content).some(i => i.level === "critical");
+  return scanSkillContent(content).some((i) => i.level === "critical");
 }
 
 /**
@@ -231,17 +231,13 @@ export function formatScanResults(skillName: string, issues: ScanIssue[]): strin
   if (issues.length === 0) return `  [OK] ${skillName}`;
 
   const lines: string[] = [];
-  const critical = issues.filter(i => i.level === "critical").length;
-  const high = issues.filter(i => i.level === "high").length;
-  const medium = issues.filter(i => i.level === "medium").length;
-
+  const critical = issues.filter((i) => i.level === "critical").length;
+  const high = issues.filter((i) => i.level === "high").length;
   const tag = critical > 0 ? "[!!]" : high > 0 ? "[!!]" : "[i]";
   lines.push(`  ${tag} ${skillName} (${issues.length} issue${issues.length !== 1 ? "s" : ""})`);
 
   for (const issue of issues) {
-    const icon = issue.level === "critical" ? "CRIT"
-      : issue.level === "high" ? "HIGH"
-      : "MED";
+    const icon = issue.level === "critical" ? "CRIT" : issue.level === "high" ? "HIGH" : "MED";
     lines.push(`    [${icon}] ${issue.category}: ${issue.detail} (line ${issue.line})`);
   }
 

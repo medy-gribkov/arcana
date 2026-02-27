@@ -4,7 +4,7 @@ import { getProviders } from "../registry.js";
 
 export async function searchCommand(
   query: string,
-  opts: { provider?: string; cache?: boolean; json?: boolean }
+  opts: { provider?: string; cache?: boolean; json?: boolean },
 ): Promise<void> {
   if (!opts.json) banner();
 

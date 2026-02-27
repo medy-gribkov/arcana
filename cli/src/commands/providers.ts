@@ -3,11 +3,7 @@ import { loadConfig, addProvider, removeProvider } from "../utils/config.js";
 import { httpGet } from "../utils/http.js";
 import { parseProviderSlug, clearProviderCache } from "../registry.js";
 
-export async function providersCommand(opts: {
-  add?: string;
-  remove?: string;
-  json?: boolean;
-}): Promise<void> {
+export async function providersCommand(opts: { add?: string; remove?: string; json?: boolean }): Promise<void> {
   if (!opts.json) banner();
 
   if (opts.add) {
@@ -73,15 +69,17 @@ export async function providersCommand(opts: {
   const config = loadConfig();
 
   if (opts.json) {
-    console.log(JSON.stringify({
-      providers: config.providers.map((p) => ({
-        name: p.name,
-        type: p.type,
-        url: p.url,
-        enabled: p.enabled,
-        default: p.name === config.defaultProvider,
-      })),
-    }));
+    console.log(
+      JSON.stringify({
+        providers: config.providers.map((p) => ({
+          name: p.name,
+          type: p.type,
+          url: p.url,
+          enabled: p.enabled,
+          default: p.name === config.defaultProvider,
+        })),
+      }),
+    );
     return;
   }
 
@@ -89,9 +87,7 @@ export async function providersCommand(opts: {
   console.log();
 
   const rows = config.providers.map((p) => [
-    p.name === config.defaultProvider
-      ? ui.brand(p.name) + ui.dim(" (default)")
-      : ui.bold(p.name),
+    p.name === config.defaultProvider ? ui.brand(p.name) + ui.dim(" (default)") : ui.bold(p.name),
     ui.dim(p.type),
     ui.dim(p.url),
     p.enabled ? ui.success("enabled") : ui.dim("disabled"),

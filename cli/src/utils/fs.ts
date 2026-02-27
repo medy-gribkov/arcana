@@ -1,4 +1,14 @@
-import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, statSync, rmSync, renameSync, lstatSync, readlinkSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  renameSync,
+  lstatSync,
+  readlinkSync,
+} from "node:fs";
 import { join, dirname, resolve, sep } from "node:path";
 import { homedir } from "node:os";
 import type { SkillFile, SkillMeta } from "../types.js";
@@ -26,9 +36,13 @@ export function getDirSize(dir: string): number {
           if (stat.isSymbolicLink()) continue;
           if (stat.isDirectory()) queue.push(full);
           else size += stat.size;
-        } catch { /* skip unreadable entries */ }
+        } catch {
+          /* skip unreadable entries */
+        }
       }
-    } catch { /* skip unreadable dirs */ }
+    } catch {
+      /* skip unreadable dirs */
+    }
   }
   return size;
 }
@@ -48,14 +62,22 @@ export function installSkill(skillName: string, files: SkillFile[]): string {
   try {
     for (const file of files) {
       // Reject paths containing .. before resolving
-      if (file.path.includes("..") || file.path.includes("~") || file.path.startsWith("\\\\") || file.path.startsWith("//")) {
+      if (
+        file.path.includes("..") ||
+        file.path.includes("~") ||
+        file.path.startsWith("\\\\") ||
+        file.path.startsWith("//")
+      ) {
         throw new Error(`Path traversal blocked: ${file.path}`);
       }
       const filePath = resolve(tempDir, file.path);
       // Normalize to lowercase on Windows for case-insensitive comparison
       const normalizedFile = process.platform === "win32" ? filePath.toLowerCase() : filePath;
       const normalizedTemp = process.platform === "win32" ? (tempDir + sep).toLowerCase() : tempDir + sep;
-      if (!normalizedFile.startsWith(normalizedTemp) && normalizedFile !== (process.platform === "win32" ? tempDir.toLowerCase() : tempDir)) {
+      if (
+        !normalizedFile.startsWith(normalizedTemp) &&
+        normalizedFile !== (process.platform === "win32" ? tempDir.toLowerCase() : tempDir)
+      ) {
         throw new Error(`Path traversal blocked: ${file.path}`);
       }
       const dir = dirname(filePath);
@@ -72,7 +94,11 @@ export function installSkill(skillName: string, files: SkillFile[]): string {
     renameSync(tempDir, skillDir);
   } catch (err) {
     // Clean up temp dir on failure
-    try { rmSync(tempDir, { recursive: true, force: true }); } catch { /* best-effort */ }
+    try {
+      rmSync(tempDir, { recursive: true, force: true });
+    } catch {
+      /* best-effort */
+    }
     throw err;
   }
 
@@ -111,7 +137,11 @@ export interface SymlinkInfo {
 /**
  * List files in a directory matching a pattern, optionally filtered by age.
  */
-export function listFilesByAge(dir: string, ext: string, olderThanDays: number): { path: string; sizeMB: number; daysOld: number }[] {
+export function listFilesByAge(
+  dir: string,
+  ext: string,
+  olderThanDays: number,
+): { path: string; sizeMB: number; daysOld: number }[] {
   if (!existsSync(dir)) return [];
   const results: { path: string; sizeMB: number; daysOld: number }[] = [];
   const now = Date.now();
@@ -126,15 +156,26 @@ export function listFilesByAge(dir: string, ext: string, olderThanDays: number):
         try {
           const stat = lstatSync(full);
           if (stat.isSymbolicLink()) continue;
-          if (stat.isDirectory()) { queue.push(full); continue; }
+          if (stat.isDirectory()) {
+            queue.push(full);
+            continue;
+          }
           if (ext && !entry.endsWith(ext)) continue;
           const age = now - stat.mtimeMs;
           if (age > cutoff) {
-            results.push({ path: full, sizeMB: stat.size / (1024 * 1024), daysOld: Math.floor(age / (24 * 60 * 60 * 1000)) });
+            results.push({
+              path: full,
+              sizeMB: stat.size / (1024 * 1024),
+              daysOld: Math.floor(age / (24 * 60 * 60 * 1000)),
+            });
           }
-        } catch { /* skip */ }
+        } catch {
+          /* skip */
+        }
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
   }
   return results;
 }
@@ -197,7 +238,9 @@ export function listSymlinks(): SymlinkInfo[] {
         const target = readlinkSync(fullPath);
         results.push({ name: entry, fullPath, target, broken: !existsSync(target) });
       }
-    } catch { /* skip unreadable */ }
+    } catch {
+      /* skip unreadable */
+    }
   }
   return results;
 }

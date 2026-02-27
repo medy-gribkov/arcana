@@ -1,11 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, writeFileSync, mkdirSync, existsSync, rmSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { installSkill, isSkillInstalled, readSkillMeta, writeSkillMeta, getDirSize } from "./fs.js";
 import type { SkillFile, SkillMeta } from "../types.js";
 
 let testTempDir: string | null = null;
+
+// Mock getInstallDir to use our temp directory
+vi.mock("./config.js", () => ({
+  loadConfig: () => ({ installDir: testTempDir ?? "" }),
+}));
+
+// Re-import after mock setup
+const { installSkill, isSkillInstalled, readSkillMeta, writeSkillMeta, getDirSize } = await import("./fs.js");
 
 function makeTempBase(): string {
   const dir = mkdtempSync(join(tmpdir(), "arcana-test-"));
@@ -31,17 +38,13 @@ describe("installSkill", () => {
   it("blocks path traversal (file.path containing ../)", () => {
     makeTempBase();
 
-    // Path traversal is validated before directory resolution,
-    // so this test works without mocking getInstallDir
-    const files: SkillFile[] = [
-      { path: "../escape/SKILL.md", content: "Malicious content" },
-    ];
+    const files: SkillFile[] = [{ path: "../escape/SKILL.md", content: "Malicious content" }];
 
     expect(() => installSkill("test-skill", files)).toThrow("Path traversal blocked");
   });
 
   it("creates skill directory with correct files", () => {
-    const base = makeTempBase();
+    makeTempBase();
 
     const files: SkillFile[] = [
       { path: "SKILL.md", content: "---\nname: test\n---\nBody" },
@@ -62,9 +65,7 @@ describe("installSkill", () => {
   it("removes temp dir on failure", () => {
     const base = makeTempBase();
 
-    const files: SkillFile[] = [
-      { path: "../invalid", content: "Bad" },
-    ];
+    const files: SkillFile[] = [{ path: "../invalid", content: "Bad" }];
 
     try {
       installSkill("test-skill", files);
@@ -72,9 +73,10 @@ describe("installSkill", () => {
       // Expected to fail
     }
 
-    // Check that temp dir was cleaned up
-    const tempDir = join(base, "test-skill.installing");
-    expect(existsSync(tempDir)).toBe(false);
+    // Temp dirs include PID, but the key check is no leftover .installing dirs
+    const entries = existsSync(base) ? require("node:fs").readdirSync(base) : [];
+    const installingDirs = entries.filter((e: string) => e.includes(".installing"));
+    expect(installingDirs).toHaveLength(0);
   });
 });
 

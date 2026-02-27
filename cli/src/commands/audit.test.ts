@@ -40,7 +40,7 @@ describe("auditSkill", () => {
 
     expect(result.score).toBeLessThan(40);
     expect(result.rating).toBe("WEAK");
-    const headingCheck = result.checks.find(c => c.name.includes("headings"));
+    const headingCheck = result.checks.find((c) => c.name.includes("headings"));
     expect(headingCheck?.passed).toBe(false);
   });
 
@@ -61,9 +61,9 @@ describe("auditSkill", () => {
     const goodResult = auditSkill(goodDir, "good");
     const longResult = auditSkill(longDir, "long");
 
-    const shortDescCheck = shortResult.checks.find(c => c.name.includes("Description length"));
-    const goodDescCheck = goodResult.checks.find(c => c.name.includes("Description length"));
-    const longDescCheck = longResult.checks.find(c => c.name.includes("Description length"));
+    const shortDescCheck = shortResult.checks.find((c) => c.name.includes("Description length"));
+    const goodDescCheck = goodResult.checks.find((c) => c.name.includes("Description length"));
+    const longDescCheck = longResult.checks.find((c) => c.name.includes("Description length"));
 
     expect(shortDescCheck?.passed).toBe(false);
     expect(goodDescCheck?.passed).toBe(true);
@@ -83,9 +83,9 @@ describe("auditSkill", () => {
     const twoResult = auditSkill(twoDir, "two");
     const threeResult = auditSkill(threeDir, "three");
 
-    const noCheck = noResult.checks.find(c => c.name.includes("headings"));
-    const twoCheck = twoResult.checks.find(c => c.name.includes("headings"));
-    const threeCheck = threeResult.checks.find(c => c.name.includes("headings"));
+    const noCheck = noResult.checks.find((c) => c.name.includes("headings"));
+    const twoCheck = twoResult.checks.find((c) => c.name.includes("headings"));
+    const threeCheck = threeResult.checks.find((c) => c.name.includes("headings"));
 
     expect(noCheck?.passed).toBe(false);
     expect(noCheck?.detail).toBe("0 headings");
@@ -108,9 +108,9 @@ describe("auditSkill", () => {
     const oneResult = auditSkill(oneDir, "one");
     const twoResult = auditSkill(twoDir, "two");
 
-    const noCheck = noResult.checks.find(c => c.name.includes("code examples"));
-    const oneCheck = oneResult.checks.find(c => c.name.includes("code examples"));
-    const twoCheck = twoResult.checks.find(c => c.name.includes("code examples"));
+    const noCheck = noResult.checks.find((c) => c.name.includes("code examples"));
+    const oneCheck = oneResult.checks.find((c) => c.name.includes("code examples"));
+    const twoCheck = twoResult.checks.find((c) => c.name.includes("code examples"));
 
     expect(noCheck?.passed).toBe(false);
     expect(noCheck?.detail).toBe("0 blocks");
@@ -136,10 +136,10 @@ describe("auditSkill", () => {
     const beforeResult = auditSkill(beforeDir, "before");
     const doResult = auditSkill(doDir, "do");
 
-    const noCheck = noResult.checks.find(c => c.name.includes("BAD/GOOD"));
-    const badCheck = badResult.checks.find(c => c.name.includes("BAD/GOOD"));
-    const beforeCheck = beforeResult.checks.find(c => c.name.includes("BAD/GOOD"));
-    const doCheck = doResult.checks.find(c => c.name.includes("BAD/GOOD"));
+    const noCheck = noResult.checks.find((c) => c.name.includes("BAD/GOOD"));
+    const badCheck = badResult.checks.find((c) => c.name.includes("BAD/GOOD"));
+    const beforeCheck = beforeResult.checks.find((c) => c.name.includes("BAD/GOOD"));
+    const doCheck = doResult.checks.find((c) => c.name.includes("BAD/GOOD"));
 
     expect(noCheck?.passed).toBe(false);
     expect(badCheck?.passed).toBe(true);
@@ -157,8 +157,8 @@ describe("auditSkill", () => {
     const goodResult = auditSkill(goodDir, "good");
     const capResult = auditSkill(capDir, "cap");
 
-    const goodCheck = goodResult.checks.find(c => c.name.includes("capabilities list"));
-    const capCheck = capResult.checks.find(c => c.name.includes("capabilities list"));
+    const goodCheck = goodResult.checks.find((c) => c.name.includes("capabilities list"));
+    const capCheck = capResult.checks.find((c) => c.name.includes("capabilities list"));
 
     expect(goodCheck?.passed).toBe(true);
     expect(capCheck?.passed).toBe(false);
@@ -225,9 +225,9 @@ ${Array(30).fill("Content line for length.\n").join("")}
     const goodResult = auditSkill(goodDir, "good");
     const longResult = auditSkill(longDir, "long");
 
-    const shortCheck = shortResult.checks.find(c => c.name.includes("Reasonable length"));
-    const goodCheck = goodResult.checks.find(c => c.name.includes("Reasonable length"));
-    const longCheck = longResult.checks.find(c => c.name.includes("Reasonable length"));
+    const shortCheck = shortResult.checks.find((c) => c.name.includes("Reasonable length"));
+    const goodCheck = goodResult.checks.find((c) => c.name.includes("Reasonable length"));
+    const longCheck = longResult.checks.find((c) => c.name.includes("Reasonable length"));
 
     expect(shortCheck?.passed).toBe(false);
     expect(goodCheck?.passed).toBe(true);
@@ -247,10 +247,10 @@ ${Array(30).fill("Content line for length.\n").join("")}
     const refsResult = auditSkill(withRefs, "with-refs");
     const bothResult = auditSkill(withBoth, "with-both");
 
-    const noCheck = noResult.checks.find(c => c.name.includes("scripts/ or references/"));
-    const scriptsCheck = scriptsResult.checks.find(c => c.name.includes("scripts/ or references/"));
-    const refsCheck = refsResult.checks.find(c => c.name.includes("scripts/ or references/"));
-    const bothCheck = bothResult.checks.find(c => c.name.includes("scripts/ or references/"));
+    const noCheck = noResult.checks.find((c) => c.name.includes("scripts/ or references/"));
+    const scriptsCheck = scriptsResult.checks.find((c) => c.name.includes("scripts/ or references/"));
+    const refsCheck = refsResult.checks.find((c) => c.name.includes("scripts/ or references/"));
+    const bothCheck = bothResult.checks.find((c) => c.name.includes("scripts/ or references/"));
 
     expect(noCheck?.passed).toBe(false);
     expect(noCheck?.detail).toBe("none");

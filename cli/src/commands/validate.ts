@@ -9,7 +9,7 @@ import type { ValidationResult } from "../types.js";
 
 export async function validateCommand(
   skill: string | undefined,
-  opts: { all?: boolean; fix?: boolean; json?: boolean }
+  opts: { all?: boolean; fix?: boolean; json?: boolean },
 ): Promise<void> {
   if (!opts.json) banner();
 
@@ -26,9 +26,7 @@ export async function validateCommand(
 
   let skills: string[];
   if (opts.all) {
-    skills = readdirSync(installDir).filter(
-      (d) => statSync(join(installDir, d)).isDirectory()
-    );
+    skills = readdirSync(installDir).filter((d) => statSync(join(installDir, d)).isDirectory());
   } else if (skill) {
     skills = [skill];
   } else {
@@ -66,7 +64,8 @@ export async function validateCommand(
             result.fixed = true;
           }
         } catch (err) {
-          if (!opts.json) console.log(ui.dim(`    Could not fix: ${err instanceof Error ? err.message : "unknown error"}`));
+          if (!opts.json)
+            console.log(ui.dim(`    Could not fix: ${err instanceof Error ? err.message : "unknown error"}`));
         }
       }
     }
@@ -86,14 +85,31 @@ export async function validateCommand(
             result.warnings.push(msg);
           }
         }
-      } catch { /* skip if unreadable */ }
+      } catch {
+        /* skip if unreadable */
+      }
     }
 
     results.push(result);
   }
 
   if (opts.json) {
-    console.log(JSON.stringify({ results: results.map((r) => ({ skill: r.skill, valid: r.valid, errors: r.errors, warnings: r.warnings, infos: r.infos, fixed: r.fixed ?? false })) }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          results: results.map((r) => ({
+            skill: r.skill,
+            valid: r.valid,
+            errors: r.errors,
+            warnings: r.warnings,
+            infos: r.infos,
+            fixed: r.fixed ?? false,
+          })),
+        },
+        null,
+        2,
+      ),
+    );
     if (results.some((r) => !r.valid)) process.exit(1);
     return;
   }
@@ -104,9 +120,7 @@ export async function validateCommand(
   let fixed = 0;
 
   for (const r of results) {
-    const icon = r.valid
-      ? r.warnings.length > 0 ? ui.warn("[!!]") : ui.success("[OK]")
-      : ui.error("[XX]");
+    const icon = r.valid ? (r.warnings.length > 0 ? ui.warn("[!!]") : ui.success("[OK]")) : ui.error("[XX]");
 
     const fixTag = r.fixed ? ui.cyan(" [fixed]") : "";
     console.log(`  ${icon} ${ui.bold(r.skill)}${fixTag}`);

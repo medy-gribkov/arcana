@@ -25,9 +25,37 @@ jobs:
           cache-dependency-path: cli/package-lock.json
 
       - run: npm ci
-      - run: npx tsc
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npx tsc
+
       - name: Smoke test
         run: node dist/index.js --version
+
+      - name: Verify CHANGELOG entry
+        working-directory: .
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"
+          if ! grep -qE "## $VERSION|## v$VERSION|## \[$VERSION\]" CHANGELOG.md; then
+            echo "ERROR: No CHANGELOG entry for $VERSION"
+            exit 1
+          fi
+
       - run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify published
+        run: |
+          sleep 15
+          npm view @sporesec/arcana@${{ github.ref_name }} version || echo "Warning: version not yet visible on registry"

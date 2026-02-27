@@ -3,10 +3,7 @@ import { isSkillInstalled, readSkillMeta } from "../utils/fs.js";
 import { getProviders } from "../registry.js";
 import { validateSlug } from "../utils/validate.js";
 
-export async function infoCommand(
-  skillName: string,
-  opts: { provider?: string; json?: boolean }
-): Promise<void> {
+export async function infoCommand(skillName: string, opts: { provider?: string; json?: boolean }): Promise<void> {
   if (!opts.json) {
     banner();
   }
@@ -36,17 +33,19 @@ export async function infoCommand(
 
         if (opts.json) {
           const meta = installed ? readSkillMeta(skillName) : null;
-          console.log(JSON.stringify({
-            skill: {
-              name: skill.name,
-              description: skill.description,
-              version: skill.version,
-              installed,
-              installedVersion: meta?.version,
-              source: skill.source,
-              repo: skill.repo,
-            }
-          }));
+          console.log(
+            JSON.stringify({
+              skill: {
+                name: skill.name,
+                description: skill.description,
+                version: skill.version,
+                installed,
+                installedVersion: meta?.version,
+                source: skill.source,
+                repo: skill.repo,
+              },
+            }),
+          );
           return;
         }
 
@@ -54,7 +53,11 @@ export async function infoCommand(
         if (installed) {
           const meta = readSkillMeta(skillName);
           const localVersion = meta?.version ?? "unknown";
-          console.log("  " + ui.success("Installed") + (localVersion !== skill.version ? ui.warn(` (local: v${localVersion})`) : ""));
+          console.log(
+            "  " +
+              ui.success("Installed") +
+              (localVersion !== skill.version ? ui.warn(` (local: v${localVersion})`) : ""),
+          );
         }
         console.log();
         console.log("  " + skill.description);
@@ -64,9 +67,7 @@ export async function infoCommand(
           console.log(ui.dim(`  Repo:   ${skill.repo}`));
         }
         console.log();
-        console.log(
-          ui.dim(`  Install: `) + ui.cyan(`arcana install ${skill.name}`)
-        );
+        console.log(ui.dim(`  Install: `) + ui.cyan(`arcana install ${skill.name}`));
         console.log();
         return;
       }
@@ -77,16 +78,18 @@ export async function infoCommand(
       s.stop();
       const meta = readSkillMeta(skillName);
       if (opts.json) {
-        console.log(JSON.stringify({
-          skill: {
-            name: skillName,
-            description: meta?.description ?? "No description (offline)",
-            version: meta?.version ?? "unknown",
-            installed: true,
-            source: meta?.source ?? "local",
-            offline: true,
-          }
-        }));
+        console.log(
+          JSON.stringify({
+            skill: {
+              name: skillName,
+              description: meta?.description ?? "No description (offline)",
+              version: meta?.version ?? "unknown",
+              installed: true,
+              source: meta?.source ?? "local",
+              offline: true,
+            },
+          }),
+        );
         return;
       }
       console.log(ui.warn("  Showing cached data (offline)"));

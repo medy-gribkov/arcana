@@ -28,7 +28,7 @@ export class HttpError extends Error {
   constructor(
     public readonly statusCode: number,
     public readonly url: string,
-    message?: string
+    message?: string,
   ) {
     super(message ?? `HTTP ${statusCode} from ${sanitizeUrl(url)}`);
     this.name = "HttpError";
@@ -38,7 +38,7 @@ export class HttpError extends Error {
 export class RateLimitError extends HttpError {
   constructor(
     url: string,
-    public readonly resetAt: Date | null
+    public readonly resetAt: Date | null,
   ) {
     const resetMsg = resetAt ? ` Resets at ${resetAt.toLocaleTimeString()}.` : "";
     super(403, url, `GitHub API rate limit exceeded.${resetMsg} Use GITHUB_TOKEN env var for higher limits.`);
@@ -121,10 +121,16 @@ function doGet(url: string, timeout: number, redirectCount = 0): Promise<HttpRes
     if (token) {
       try {
         const hostname = new URL(url).hostname;
-        if (hostname === "github.com" || hostname.endsWith(".github.com") || hostname.endsWith(".githubusercontent.com")) {
+        if (
+          hostname === "github.com" ||
+          hostname.endsWith(".github.com") ||
+          hostname.endsWith(".githubusercontent.com")
+        ) {
           headers["Authorization"] = `token ${token}`;
         }
-      } catch { /* invalid URL, skip auth */ }
+      } catch {
+        /* invalid URL, skip auth */
+      }
     }
 
     const req = https.get(url, { headers, timeout, agent }, (res) => {
@@ -142,8 +148,14 @@ function doGet(url: string, timeout: number, redirectCount = 0): Promise<HttpRes
         // After the existing https check, add:
         try {
           const redirectUrl = new URL(location);
-          const allowedHosts = ["github.com", "raw.githubusercontent.com", "api.github.com", "objects.githubusercontent.com", "registry.npmjs.org"];
-          if (!allowedHosts.some(h => redirectUrl.hostname === h || redirectUrl.hostname.endsWith("." + h))) {
+          const allowedHosts = [
+            "github.com",
+            "raw.githubusercontent.com",
+            "api.github.com",
+            "objects.githubusercontent.com",
+            "registry.npmjs.org",
+          ];
+          if (!allowedHosts.some((h) => redirectUrl.hostname === h || redirectUrl.hostname.endsWith("." + h))) {
             reject(new Error(`Redirect to untrusted host blocked: ${redirectUrl.hostname}`));
             return;
           }

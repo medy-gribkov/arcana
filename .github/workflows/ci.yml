@@ -160,26 +160,41 @@ jobs:
           node-version: 22
       - run: npm ci
         working-directory: cli
-      - run: npm audit --audit-level=moderate
+      - run: npm audit --audit-level=high
         working-directory: cli
 
   cli-build-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: cli/package-lock.json
       - run: npm ci
         working-directory: cli
+      - name: Lint
+        run: npm run lint
+        working-directory: cli
+      - name: Format check
+        run: npm run format:check
+        working-directory: cli
       - name: Type check
         run: npx tsc --noEmit
         working-directory: cli
-      - name: Unit tests
-        run: npm test
+      - name: Unit tests with coverage
+        run: npx vitest run --coverage
         working-directory: cli
+      - name: Upload coverage
+        if: matrix.node-version == 22
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: cli/coverage/
       - name: Smoke test
         run: |
           npx tsc

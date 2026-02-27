@@ -155,20 +155,29 @@ describe("validateSkillDir", () => {
   });
 
   it("returns warning for short description", () => {
-    const dir = makeTempSkill("short-desc", "---\nname: short-desc\ndescription: Too short\n---\n# Body content goes here, needs at least 50 chars in the body section");
+    const dir = makeTempSkill(
+      "short-desc",
+      "---\nname: short-desc\ndescription: Too short\n---\n# Body content goes here, needs at least 50 chars in the body section",
+    );
     const result = validateSkillDir(dir, "short-desc");
     expect(result.valid).toBe(true);
     expect(result.warnings.some((w) => w.includes("too short"))).toBe(true);
   });
 
   it("returns warning for name mismatch", () => {
-    const dir = makeTempSkill("wrong-name", `---\nname: other-name\ndescription: ${longDesc}\n---\n## Heading\nBody content goes here, needs at least 50 chars in the body section`);
+    const dir = makeTempSkill(
+      "wrong-name",
+      `---\nname: other-name\ndescription: ${longDesc}\n---\n## Heading\nBody content goes here, needs at least 50 chars in the body section`,
+    );
     const result = validateSkillDir(dir, "wrong-name");
     expect(result.warnings.some((w) => w.includes("mismatch"))).toBe(true);
   });
 
   it("passes valid skill with no warnings", () => {
-    const dir = makeTempSkill("valid-skill", `---\nname: valid-skill\ndescription: ${longDesc}\n---\n## Heading\nBody content goes here, needs at least 50 chars in the body section`);
+    const dir = makeTempSkill(
+      "valid-skill",
+      `---\nname: valid-skill\ndescription: ${longDesc}\n---\n## Heading\nBody content goes here, needs at least 50 chars in the body section`,
+    );
     const result = validateSkillDir(dir, "valid-skill");
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);

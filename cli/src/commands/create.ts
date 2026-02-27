@@ -69,6 +69,7 @@ export async function createCommand(name: string): Promise<void> {
     validate: (val) => {
       if (!val || !val.trim()) return "Description is required";
       if (val.length < 10) return "Too short (minimum 10 chars)";
+      return undefined;
     },
   });
 

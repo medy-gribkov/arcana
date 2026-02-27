@@ -42,9 +42,21 @@ describe("buildCustomHelp", () => {
   it("contains all 15 commands", () => {
     const help = buildCustomHelp("1.0.0");
     const commands = [
-      "init", "doctor", "list", "search", "info", "install",
-      "update", "uninstall", "create", "validate", "audit",
-      "config", "providers", "clean", "stats",
+      "init",
+      "doctor",
+      "list",
+      "search",
+      "info",
+      "install",
+      "update",
+      "uninstall",
+      "create",
+      "validate",
+      "audit",
+      "config",
+      "providers",
+      "clean",
+      "stats",
     ];
     for (const cmd of commands) {
       expect(help).toContain(cmd);

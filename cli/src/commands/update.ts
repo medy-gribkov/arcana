@@ -15,7 +15,7 @@ function isNewer(remoteVersion: string, localVersion: string | undefined): boole
 
 export async function updateCommand(
   skills: string[],
-  opts: { all?: boolean; provider?: string; dryRun?: boolean; json?: boolean }
+  opts: { all?: boolean; provider?: string; dryRun?: boolean; json?: boolean },
 ): Promise<void> {
   if (!opts.json) {
     banner();
@@ -60,13 +60,20 @@ async function updateOne(
   installDir: string,
   providerName: string,
   json?: boolean,
-  dryRun?: boolean
+  dryRun?: boolean,
 ): Promise<void> {
   try {
     validateSlug(skillName, "skill name");
   } catch (err) {
     if (json) {
-      console.log(JSON.stringify({ updated: [], upToDate: [], failed: [skillName], error: err instanceof Error ? err.message : "Invalid name" }));
+      console.log(
+        JSON.stringify({
+          updated: [],
+          upToDate: [],
+          failed: [skillName],
+          error: err instanceof Error ? err.message : "Invalid name",
+        }),
+      );
     } else {
       console.log(ui.error(`  ${err instanceof Error ? err.message : "Invalid skill name"}`));
       console.log();
@@ -94,7 +101,9 @@ async function updateOne(
 
     if (!remote) {
       if (json) {
-        console.log(JSON.stringify({ updated: [], upToDate: [], failed: [skillName], error: `Not found on ${providerName}` }));
+        console.log(
+          JSON.stringify({ updated: [], upToDate: [], failed: [skillName], error: `Not found on ${providerName}` }),
+        );
       } else {
         s.fail(`Skill "${skillName}" not found on ${providerName}`);
         console.log();
@@ -115,7 +124,12 @@ async function updateOne(
 
     if (dryRun) {
       if (json) {
-        console.log(JSON.stringify({ dryRun: true, wouldUpdate: [{ name: skillName, from: meta?.version ?? "unknown", to: remote.version }] }));
+        console.log(
+          JSON.stringify({
+            dryRun: true,
+            wouldUpdate: [{ name: skillName, from: meta?.version ?? "unknown", to: remote.version }],
+          }),
+        );
       } else {
         s.info(`${ui.bold(skillName)} would be updated: v${meta?.version ?? "unknown"} -> v${remote.version}`);
         console.log();
@@ -142,7 +156,14 @@ async function updateOne(
     }
   } catch (err) {
     if (json) {
-      console.log(JSON.stringify({ updated: [], upToDate: [], failed: [skillName], error: err instanceof Error ? err.message : "Update failed" }));
+      console.log(
+        JSON.stringify({
+          updated: [],
+          upToDate: [],
+          failed: [skillName],
+          error: err instanceof Error ? err.message : "Update failed",
+        }),
+      );
     } else {
       s.fail(`Failed to update ${skillName}`);
       if (err instanceof Error) console.error(ui.dim(`  ${err.message}`));
@@ -157,14 +178,21 @@ async function updateMultiple(
   installDir: string,
   providerName: string,
   json?: boolean,
-  dryRun?: boolean
+  dryRun?: boolean,
 ): Promise<void> {
   for (const name of skillNames) {
     try {
       validateSlug(name, "skill name");
     } catch (err) {
       if (json) {
-        console.log(JSON.stringify({ updated: [], upToDate: [], failed: skillNames, error: err instanceof Error ? err.message : "Invalid name" }));
+        console.log(
+          JSON.stringify({
+            updated: [],
+            upToDate: [],
+            failed: skillNames,
+            error: err instanceof Error ? err.message : "Invalid name",
+          }),
+        );
       } else {
         console.log(ui.error(`  ${err instanceof Error ? err.message : "Invalid skill name"}`));
         console.log();
@@ -229,7 +257,9 @@ async function updateMultiple(
 
   if (dryRun) {
     if (json) {
-      console.log(JSON.stringify({ dryRun: true, wouldUpdate: dryRunUpdates, upToDate: upToDateList, failed: failedList }));
+      console.log(
+        JSON.stringify({ dryRun: true, wouldUpdate: dryRunUpdates, upToDate: upToDateList, failed: failedList }),
+      );
     } else {
       s.stop();
       if (dryRunUpdates.length === 0) {
@@ -248,16 +278,18 @@ async function updateMultiple(
     console.log(JSON.stringify({ updated: updatedList, upToDate: upToDateList, failed: failedList }));
   } else {
     s.succeed(`Update complete`);
-    console.log(ui.dim(`  ${updatedList.length} updated, ${upToDateList.length} up to date${failedList.length > 0 ? `, ${failedList.length} failed` : ""}`));
+    console.log(
+      ui.dim(
+        `  ${updatedList.length} updated, ${upToDateList.length} up to date${failedList.length > 0 ? `, ${failedList.length} failed` : ""}`,
+      ),
+    );
     console.log();
   }
   if (failedList.length > 0) process.exit(1);
 }
 
 async function updateAll(installDir: string, providerName: string, json?: boolean, dryRun?: boolean): Promise<void> {
-  const installed = readdirSync(installDir).filter(
-    (d) => statSync(join(installDir, d)).isDirectory()
-  );
+  const installed = readdirSync(installDir).filter((d) => statSync(join(installDir, d)).isDirectory());
 
   if (installed.length === 0) {
     if (json) {
@@ -342,7 +374,15 @@ async function updateAll(installDir: string, providerName: string, json?: boolea
 
   if (dryRun) {
     if (json) {
-      console.log(JSON.stringify({ dryRun: true, wouldUpdate: dryRunUpdates, upToDate: upToDateList, skipped: skippedList, failed: failedList }));
+      console.log(
+        JSON.stringify({
+          dryRun: true,
+          wouldUpdate: dryRunUpdates,
+          upToDate: upToDateList,
+          skipped: skippedList,
+          failed: failedList,
+        }),
+      );
     } else {
       s.stop();
       if (dryRunUpdates.length === 0) {
@@ -360,10 +400,16 @@ async function updateAll(installDir: string, providerName: string, json?: boolea
   }
 
   if (json) {
-    console.log(JSON.stringify({ updated: updatedList, upToDate: upToDateList, skipped: skippedList, failed: failedList }));
+    console.log(
+      JSON.stringify({ updated: updatedList, upToDate: upToDateList, skipped: skippedList, failed: failedList }),
+    );
   } else {
     s.succeed(`Update complete`);
-    console.log(ui.dim(`  ${updatedList.length} updated, ${upToDateList.length} up to date${skippedList.length > 0 ? `, ${skippedList.length} skipped (not on provider)` : ""}${failedList.length > 0 ? `, ${failedList.length} failed` : ""}`));
+    console.log(
+      ui.dim(
+        `  ${updatedList.length} updated, ${upToDateList.length} up to date${skippedList.length > 0 ? `, ${skippedList.length} skipped (not on provider)` : ""}${failedList.length > 0 ? `, ${failedList.length} failed` : ""}`,
+      ),
+    );
     console.log();
   }
   if (failedList.length > 0) process.exit(1);

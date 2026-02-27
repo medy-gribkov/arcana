@@ -1,5 +1,57 @@
 # Changelog
 
+## 2.4.1 (2026-02-27)
+
+CI hardening, test coverage, linting, npm package optimization, session pruning.
+
+### CI/CD
+- **Node matrix**: CI now tests on Node 18, 20, and 22 (was 22 only)
+- **ESLint + Prettier**: Lint and format checks enforced in CI
+- **Coverage gate**: Vitest coverage with v8 provider, thresholds enforced (60% statements, 45% branches)
+- **Publish hardening**: npm-publish.yml now runs lint, type check, and full test suite before publish
+- **CHANGELOG validation**: Publish workflow rejects releases without a CHANGELOG entry
+- **Post-publish verification**: Workflow verifies package is visible on npm after publish
+
+### Testing
+- **5 new test files**: compact, clean, optimize, init, scanner (70 new tests)
+- **146 total tests** across 13 test suites (was 76 tests across 8 suites)
+- **Coverage infrastructure**: `@vitest/coverage-v8` with text, json-summary, and lcov reporters
+
+### Code Quality
+- **ESLint flat config**: `typescript-eslint` with strict rules (no-explicit-any, eqeqeq, no-eval)
+- **Prettier**: 120-char lines, trailing commas, double quotes, enforced across all source
+- **TypeScript strict flags**: `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch`
+- **No source maps or declaration maps in dist** (saves ~215 KB in npm package)
+
+### NPM Package
+- **`files` whitelist**: Replaced `.npmignore` with `files` field (whitelist safer than blacklist)
+- **79 files / 56 KB packed** (was 189 files / 108 KB). 48% size reduction.
+- **`publishConfig`**: provenance and public access configured in package.json
+
+### New Features
+- **`arcana compact --prune`**: Deletes main sessions older than 14 days AND larger than 10 MB. Always keeps 3 newest per project. Supports `--prune-days <n>` override and `--dry-run`.
+- **`arcana optimize` top skills report**: Shows top 5 largest skills by size with estimated token cost. Warns at >3 MB total.
+
+---
+
+## 2.4.0 (2026-02-26)
+
+Session management, optimization diagnostics, and disk cleanup.
+
+### New Commands
+- **`arcana compact`**: Removes agent log files from `~/.claude/projects/`. Supports `--dry-run` and `--json`.
+- **`arcana optimize`**: Claude Code optimization report. Checks autocompact threshold, effort level, non-essential calls, PreCompact hook, skill token budget, MEMORY.md sizes, agent log bloat, and disk health. Supports `--json`.
+
+### Enhanced Commands
+- **`arcana clean`**: Tiered retention (agent logs: 7 days, main sessions: 30 days). Aggressive mode with `--aggressive`. Custom retention with `--keep-days <n>`. Orphaned project detection and cleanup. Broken symlink removal. Auxiliary directory purge (todoStorage, statsStorage, cache).
+- **`arcana stats`**: Expanded with per-project breakdown, orphaned project detection.
+
+### CLI Improvements
+- **PreCompact hook**: `arcana init --tool claude` now installs a PreCompact hook that preserves context before auto-compaction
+- **Orphaned project detection**: `isOrphanedProject()` decodes Claude's path encoding and checks if source directories still exist on disk
+
+---
+
 ## 2.3.0 (2026-03-01)
 
 Bug fixes, honest compatibility claims, and namespace rename.

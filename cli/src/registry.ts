@@ -61,24 +61,15 @@ export function getProvider(name?: string): Provider {
       providerCache.set(providerName, provider);
       return provider;
     }
-    errorAndExit(
-      `Provider "${providerName}" not found`,
-      "Run: arcana providers"
-    );
+    errorAndExit(`Provider "${providerName}" not found`, "Run: arcana providers");
   }
 
-  return createProvider(
-    providerConfig.name,
-    providerConfig.type,
-    providerConfig.url
-  );
+  return createProvider(providerConfig.name, providerConfig.type, providerConfig.url);
 }
 
 export function getProviders(name?: string): Provider[] {
   if (name) return [getProvider(name)];
 
   const config = loadConfig();
-  return config.providers
-    .filter((p) => p.enabled)
-    .map((p) => createProvider(p.name, p.type, p.url));
+  return config.providers.filter((p) => p.enabled).map((p) => createProvider(p.name, p.type, p.url));
 }

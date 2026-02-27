@@ -8,7 +8,7 @@ import { validateSlug } from "../utils/validate.js";
 
 export async function uninstallCommand(
   skillNames: string[],
-  opts: { yes?: boolean; json?: boolean } = {}
+  opts: { yes?: boolean; json?: boolean } = {},
 ): Promise<void> {
   if (opts.json) {
     return uninstallJson(skillNames);
@@ -155,7 +155,12 @@ function uninstallJson(skillNames: string[]): void {
     try {
       validateSlug(skillName, "skill name");
     } catch (err) {
-      results.push({ name: skillName, success: false, error: err instanceof Error ? err.message : "Invalid name", symlinksRemoved: 0 });
+      results.push({
+        name: skillName,
+        success: false,
+        error: err instanceof Error ? err.message : "Invalid name",
+        symlinksRemoved: 0,
+      });
       continue;
     }
 
@@ -172,7 +177,13 @@ function uninstallJson(skillNames: string[]): void {
     try {
       rmSync(skillDir, { recursive: true, force: true });
     } catch (err) {
-      results.push({ name: skillName, success: false, version: meta?.version, error: err instanceof Error ? err.message : "Failed to remove", symlinksRemoved: 0 });
+      results.push({
+        name: skillName,
+        success: false,
+        version: meta?.version,
+        error: err instanceof Error ? err.message : "Failed to remove",
+        symlinksRemoved: 0,
+      });
       continue;
     }
 
@@ -182,7 +193,11 @@ function uninstallJson(skillNames: string[]): void {
 
   if (results.length === 1) {
     const r = results[0]!;
-    const output: Record<string, unknown> = { uninstalled: r.name, success: r.success, symlinksRemoved: r.symlinksRemoved };
+    const output: Record<string, unknown> = {
+      uninstalled: r.name,
+      success: r.success,
+      symlinksRemoved: r.symlinksRemoved,
+    };
     if (r.version) output.version = r.version;
     if (r.error) output.error = r.error;
     console.log(JSON.stringify(output));

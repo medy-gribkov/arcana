@@ -40,6 +40,10 @@ export function writeCache<T>(key: string, data: T): void {
 export function clearCacheFile(key: string): void {
   const file = cacheFile(key);
   if (existsSync(file)) {
-    try { unlinkSync(file); } catch { /* best-effort */ }
+    try {
+      unlinkSync(file);
+    } catch {
+      /* best-effort */
+    }
   }
 }

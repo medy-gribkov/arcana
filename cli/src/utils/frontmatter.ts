@@ -45,7 +45,15 @@ export function parseFrontmatter(raw: string): SkillFrontmatter | null {
     if (descMatch?.[1] !== undefined) {
       let value = descMatch[1].trim();
       // Handle YAML multiline: |, >, or bare indented continuation
-      if (value === "|" || value === ">" || value === "|-" || value === "|+" || value === ">-" || value === ">+" || value === "") {
+      if (
+        value === "|" ||
+        value === ">" ||
+        value === "|-" ||
+        value === "|+" ||
+        value === ">-" ||
+        value === ">+" ||
+        value === ""
+      ) {
         const multilineLines: string[] = [];
         for (let j = i + 1; j < lines.length; j++) {
           const next = lines[j];
@@ -94,12 +102,7 @@ export function fixSkillFrontmatter(content: string): string {
   if (!parsed) return content;
 
   // Rebuild clean frontmatter with only name and description
-  const cleanFm = [
-    FM_DELIMITER,
-    `name: ${parsed.name}`,
-    `description: ${parsed.description}`,
-    FM_DELIMITER,
-  ].join("\n");
+  const cleanFm = [FM_DELIMITER, `name: ${parsed.name}`, `description: ${parsed.description}`, FM_DELIMITER].join("\n");
 
   return cleanFm + "\n" + extracted.body.replace(/^\n+/, "\n");
 }

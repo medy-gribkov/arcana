@@ -8,10 +8,7 @@ const pkg = require("../package.json") as { version: string };
 export function createCli(): Command {
   const program = new Command();
 
-  program
-    .name("arcana")
-    .description("Universal AI development CLI")
-    .version(pkg.version);
+  program.name("arcana").description("Universal AI development CLI").version(pkg.version);
 
   // Store default help formatter before overriding
   const defaultFormatHelp = program.createHelp().formatHelp.bind(program.createHelp());
@@ -41,8 +38,27 @@ export function createCli(): Command {
     if (cmd) {
       console.error();
       console.error(ui.error("  Error: ") + `unknown command '${cmd}'`);
-      const commands = ["list", "install", "info", "search", "providers", "create", "validate", "update", "uninstall", "init", "doctor", "clean", "compact", "stats", "config", "audit", "scan", "optimize"];
-      const match = commands.find(c => c.startsWith(cmd.slice(0, 3)));
+      const commands = [
+        "list",
+        "install",
+        "info",
+        "search",
+        "providers",
+        "create",
+        "validate",
+        "update",
+        "uninstall",
+        "init",
+        "doctor",
+        "clean",
+        "compact",
+        "stats",
+        "config",
+        "audit",
+        "scan",
+        "optimize",
+      ];
+      const match = commands.find((c) => c.startsWith(cmd.slice(0, 3)));
       if (match) {
         console.error(ui.dim(`  Did you mean '${match}'?`));
       }
@@ -88,7 +104,10 @@ export function createCli(): Command {
     .option("-f, --force", "Reinstall even if already installed")
     .option("--dry-run", "Show what would be installed without installing")
     .option("-j, --json", "Output as JSON")
-    .addHelpText("after", "\nExamples:\n  arcana install code-reviewer\n  arcana install skill1 skill2 skill3\n  arcana install --all --force")
+    .addHelpText(
+      "after",
+      "\nExamples:\n  arcana install code-reviewer\n  arcana install skill1 skill2 skill3\n  arcana install --all --force",
+    )
     .action(async (skills, opts) => {
       const { installCommand } = await import("./commands/install.js");
       return installCommand(skills, opts);
@@ -110,7 +129,7 @@ export function createCli(): Command {
     .option("-p, --provider <name>", "Limit search to provider")
     .option("--no-cache", "Bypass skill cache")
     .option("-j, --json", "Output as JSON")
-    .addHelpText("after", "\nExamples:\n  arcana search testing\n  arcana search \"code review\"")
+    .addHelpText("after", '\nExamples:\n  arcana search testing\n  arcana search "code review"')
     .action(async (query, opts) => {
       const { searchCommand } = await import("./commands/search.js");
       return searchCommand(query, opts);
@@ -153,7 +172,10 @@ export function createCli(): Command {
     .option("-p, --provider <name>", "Update from specific provider")
     .option("-n, --dry-run", "Show what would be updated without updating")
     .option("-j, --json", "Output as JSON")
-    .addHelpText("after", "\nExamples:\n  arcana update code-reviewer\n  arcana update skill1 skill2\n  arcana update --all --dry-run")
+    .addHelpText(
+      "after",
+      "\nExamples:\n  arcana update code-reviewer\n  arcana update skill1 skill2\n  arcana update --all --dry-run",
+    )
     .action(async (skills, opts) => {
       const { updateCommand } = await import("./commands/update.js");
       return updateCommand(skills, opts);
@@ -204,6 +226,8 @@ export function createCli(): Command {
     .command("compact")
     .description("Remove agent logs while preserving main session history")
     .option("-n, --dry-run", "Show what would be removed without deleting")
+    .option("--prune", "Also prune oversized main sessions (>14d old AND >10 MB)")
+    .option("--prune-days <days>", "Override prune age threshold (default: 14)", parseInt)
     .option("-j, --json", "Output as JSON")
     .action(async (opts) => {
       const { compactCommand } = await import("./commands/compact.js");
@@ -223,7 +247,10 @@ export function createCli(): Command {
     .command("config [action] [value]")
     .description("View or modify arcana configuration")
     .option("-j, --json", "Output as JSON")
-    .addHelpText("after", "\nExamples:\n  arcana config\n  arcana config path\n  arcana config defaultProvider arcana\n  arcana config reset")
+    .addHelpText(
+      "after",
+      "\nExamples:\n  arcana config\n  arcana config path\n  arcana config defaultProvider arcana\n  arcana config reset",
+    )
     .action(async (action, value, opts) => {
       const { configCommand } = await import("./commands/config.js");
       return configCommand(action, value, opts);

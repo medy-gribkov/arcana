@@ -1,6 +1,6 @@
 {
   "name": "@sporesec/arcana",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "Universal AI development CLI. Skills, scaffolding, diagnostics, and analytics for every agent.",
   "bin": {
     "arcana": "dist/index.js"
@@ -11,6 +11,11 @@
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\"",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -37,11 +42,13 @@
     "url": "https://github.com/medy-gribkov/arcana/issues"
   },
   "files": [
-    "dist/**/*",
-    "package.json",
-    "../LICENSE",
-    "../README.md"
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
   ],
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  },
   "type": "module",
   "engines": {
     "node": ">=18"
@@ -54,9 +61,14 @@
     "semver": "^7.7.4"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^25.3.0",
     "@types/semver": "^7.7.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^10.0.2",
+    "prettier": "^3.8.1",
     "typescript": "^5.7.3",
+    "typescript-eslint": "^8.56.1",
     "vitest": "^4.0.18"
   }
 }

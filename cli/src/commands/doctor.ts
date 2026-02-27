@@ -11,15 +11,25 @@ function checkNodeVersion(): DoctorCheck {
   if (major >= 18) {
     return { name: "Node.js", status: "pass", message: `${process.version}` };
   }
-  return { name: "Node.js", status: "fail", message: `${process.version} (need 18+)`, fix: "Install Node.js 18 or later" };
+  return {
+    name: "Node.js",
+    status: "fail",
+    message: `${process.version} (need 18+)`,
+    fix: "Install Node.js 18 or later",
+  };
 }
 
 function checkInstallDir(): DoctorCheck {
   const dir = getInstallDir();
   if (!existsSync(dir)) {
-    return { name: "Skills directory", status: "warn", message: "~/.agents/skills/ not found", fix: "Run: arcana install --all" };
+    return {
+      name: "Skills directory",
+      status: "warn",
+      message: "~/.agents/skills/ not found",
+      fix: "Run: arcana install --all",
+    };
   }
-  const skills = readdirSync(dir).filter(d => statSync(join(dir, d)).isDirectory());
+  const skills = readdirSync(dir).filter((d) => statSync(join(dir, d)).isDirectory());
   return { name: "Skills directory", status: "pass", message: `${skills.length} skills installed` };
 }
 
@@ -28,9 +38,14 @@ function checkBrokenSymlinks(): DoctorCheck {
   if (symlinks.length === 0) {
     return { name: "Symlinks", status: "pass", message: "No symlink directory" };
   }
-  const broken = symlinks.filter(s => s.broken).length;
+  const broken = symlinks.filter((s) => s.broken).length;
   if (broken > 0) {
-    return { name: "Symlinks", status: "warn", message: `${broken}/${symlinks.length} broken symlinks`, fix: "Run: arcana clean" };
+    return {
+      name: "Symlinks",
+      status: "warn",
+      message: `${broken}/${symlinks.length} broken symlinks`,
+      fix: "Run: arcana clean",
+    };
   }
   return { name: "Symlinks", status: "pass", message: `${symlinks.length} symlinks ok` };
 }
@@ -40,11 +55,21 @@ function checkGitConfig(): DoctorCheck {
     const name = execSync("git config user.name", { encoding: "utf-8" }).trim();
     const email = execSync("git config user.email", { encoding: "utf-8" }).trim();
     if (!name || !email) {
-      return { name: "Git config", status: "warn", message: "Missing user.name or user.email", fix: "git config --global user.name \"Your Name\"" };
+      return {
+        name: "Git config",
+        status: "warn",
+        message: "Missing user.name or user.email",
+        fix: 'git config --global user.name "Your Name"',
+      };
     }
     return { name: "Git config", status: "pass", message: `${name} <${email}>` };
   } catch {
-    return { name: "Git config", status: "warn", message: "Git not found", fix: "Install Git from https://git-scm.com" };
+    return {
+      name: "Git config",
+      status: "warn",
+      message: "Git not found",
+      fix: "Install Git from https://git-scm.com",
+    };
   }
 }
 
@@ -79,11 +104,17 @@ function checkDiskUsage(): DoctorCheck {
         totalSize += getDirSize(full);
       }
     }
-  } catch { /* skip */ }
+  } catch {
+    /* skip */
+  }
 
   const mb = (totalSize / (1024 * 1024)).toFixed(1);
   if (totalSize > DISK_USAGE_THRESHOLD_MB * 1024 * 1024) {
-    return { name: "Disk usage", status: "warn", message: `${mb} MB across ${dirCount} projects (threshold: ${DISK_USAGE_THRESHOLD_MB} MB). Try: arcana clean` };
+    return {
+      name: "Disk usage",
+      status: "warn",
+      message: `${mb} MB across ${dirCount} projects (threshold: ${DISK_USAGE_THRESHOLD_MB} MB). Try: arcana clean`,
+    };
   }
   return { name: "Disk usage", status: "pass", message: `${mb} MB across ${dirCount} projects` };
 }
@@ -103,14 +134,19 @@ function checkSkillValidity(): DoctorCheck {
     if (!statSync(skillDir).isDirectory()) continue;
     total++;
     const skillMd = join(skillDir, "SKILL.md");
-    if (!existsSync(skillMd)) { missingMd.push(entry); continue; }
+    if (!existsSync(skillMd)) {
+      missingMd.push(entry);
+      continue;
+    }
     try {
       const fd = openSync(skillMd, "r");
       const buf = Buffer.alloc(4);
       readSync(fd, buf, 0, 4, 0);
       closeSync(fd);
       if (!buf.toString("utf-8").startsWith("---")) badFrontmatter.push(entry);
-    } catch { badFrontmatter.push(entry); }
+    } catch {
+      badFrontmatter.push(entry);
+    }
   }
 
   const invalid = missingMd.length + badFrontmatter.length;
@@ -122,9 +158,8 @@ function checkSkillValidity(): DoctorCheck {
   let fix: string;
   if (missingMd.length > 0) {
     details.push(`${missingMd.length} missing SKILL.md (${missingMd.join(", ")})`);
-    fix = missingMd.length === 1
-      ? `Run: arcana uninstall ${missingMd[0]}`
-      : `Run: arcana uninstall ${missingMd.join(" ")}`;
+    fix =
+      missingMd.length === 1 ? `Run: arcana uninstall ${missingMd[0]}` : `Run: arcana uninstall ${missingMd.join(" ")}`;
   } else {
     fix = "Run: arcana validate --all --fix";
   }
@@ -158,15 +193,22 @@ function checkSkillSizes(): DoctorCheck {
   }
 
   if (large.length === 0) {
-    return { name: "Skill sizes", status: "pass", message: `All skills under 50 KB (total: ${totalKB.toFixed(0)} KB, ~${Math.round(totalKB * 256 / 1000)}K tokens)` };
+    return {
+      name: "Skill sizes",
+      status: "pass",
+      message: `All skills under 50 KB (total: ${totalKB.toFixed(0)} KB, ~${Math.round((totalKB * 256) / 1000)}K tokens)`,
+    };
   }
 
   large.sort((a, b) => b.kb - a.kb);
-  const top3 = large.slice(0, 3).map(s => `${s.name} (${s.kb.toFixed(0)} KB)`).join(", ");
+  const top3 = large
+    .slice(0, 3)
+    .map((s) => `${s.name} (${s.kb.toFixed(0)} KB)`)
+    .join(", ");
   return {
     name: "Skill sizes",
     status: "warn",
-    message: `${large.length} skills >50 KB (high token usage). Total: ${totalKB.toFixed(0)} KB (~${Math.round(totalKB * 256 / 1000)}K tokens). Largest: ${top3}`,
+    message: `${large.length} skills >50 KB (high token usage). Total: ${totalKB.toFixed(0)} KB (~${Math.round((totalKB * 256) / 1000)}K tokens). Largest: ${top3}`,
   };
 }
 
@@ -285,14 +327,26 @@ export async function doctorCommand(opts: { json?: boolean } = {}): Promise<void
   const checks = runDoctorChecks();
 
   if (opts.json) {
-    console.log(JSON.stringify({ checks: checks.map((c) => ({ name: c.name, status: c.status, message: c.message, ...(c.fix ? { fix: c.fix } : {}) })) }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          checks: checks.map((c) => ({
+            name: c.name,
+            status: c.status,
+            message: c.message,
+            ...(c.fix ? { fix: c.fix } : {}),
+          })),
+        },
+        null,
+        2,
+      ),
+    );
     return;
   }
 
   for (const check of checks) {
-    const icon = check.status === "pass" ? ui.success("[OK]")
-      : check.status === "warn" ? ui.warn("[!!]")
-      : ui.error("[XX]");
+    const icon =
+      check.status === "pass" ? ui.success("[OK]") : check.status === "warn" ? ui.warn("[!!]") : ui.error("[XX]");
 
     console.log(`  ${icon} ${ui.bold(check.name)}: ${check.message}`);
     if (check.fix) {
@@ -300,8 +354,8 @@ export async function doctorCommand(opts: { json?: boolean } = {}): Promise<void
     }
   }
 
-  const fails = checks.filter(c => c.status === "fail").length;
-  const warns = checks.filter(c => c.status === "warn").length;
+  const fails = checks.filter((c) => c.status === "fail").length;
+  const warns = checks.filter((c) => c.status === "warn").length;
   console.log();
 
   if (fails > 0) {
