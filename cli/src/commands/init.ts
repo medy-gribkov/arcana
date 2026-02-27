@@ -231,6 +231,55 @@ export async function initCommand(opts: { tool?: string }): Promise<void> {
   }
   if (skipped > 0) p.log.info(`${skipped} skipped (already exist)`);
 
+  // Offer to install PreCompact hook for context preservation
+  const globalSettings = join(process.env.HOME || process.env.USERPROFILE || "", ".claude", "settings.json");
+  let hasPreCompactHook = false;
+  if (existsSync(globalSettings)) {
+    try {
+      const settings = JSON.parse(readFileSync(globalSettings, "utf-8"));
+      hasPreCompactHook = Array.isArray(settings?.hooks?.PreCompact) && settings.hooks.PreCompact.length > 0;
+    } catch { /* ignore */ }
+  }
+
+  if (!hasPreCompactHook) {
+    const installHook = await p.confirm({
+      message: "Install PreCompact hook? (preserves context before auto-compaction)",
+      initialValue: true,
+    });
+
+    if (p.isCancel(installHook)) {
+      p.cancel("Cancelled");
+      process.exit(0);
+    }
+
+    if (installHook) {
+      try {
+        let settings: Record<string, unknown> = {};
+        if (existsSync(globalSettings)) {
+          settings = JSON.parse(readFileSync(globalSettings, "utf-8"));
+        }
+
+        const hooks = (settings.hooks ?? {}) as Record<string, unknown[]>;
+        hooks.PreCompact = [{
+          matcher: "",
+          hooks: [{
+            type: "command",
+            command: "bash -c 'PROJ_DIR=\"$HOME/.claude/projects\"; for d in \"$PROJ_DIR\"/*/memory; do if [ -d \"$d\" ]; then echo \"## Handover $(date +%Y-%m-%d_%H%M)\" >> \"$d/HANDOVER.md\"; echo \"Auto-compaction triggered. Review MEMORY.md for preserved context.\" >> \"$d/HANDOVER.md\"; echo \"\" >> \"$d/HANDOVER.md\"; fi; done'",
+            timeout: 10,
+          }],
+        }];
+        settings.hooks = hooks;
+
+        writeFileSync(globalSettings, JSON.stringify(settings, null, 2) + "\n", "utf-8");
+        p.log.success("Installed PreCompact hook in ~/.claude/settings.json");
+      } catch (err) {
+        p.log.warn(`Could not install hook: ${err instanceof Error ? err.message : "unknown"}`);
+      }
+    }
+  } else {
+    p.log.info("PreCompact hook already installed");
+  }
+
   const suggestions = SKILL_SUGGESTIONS[proj.type] || SKILL_SUGGESTIONS_DEFAULT;
 
   const skillList = suggestions.map((s) => `arcana install ${s}`).join("\n");

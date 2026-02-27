@@ -108,6 +108,82 @@ export interface SymlinkInfo {
   broken: boolean;
 }
 
+/**
+ * List files in a directory matching a pattern, optionally filtered by age.
+ */
+export function listFilesByAge(dir: string, ext: string, olderThanDays: number): { path: string; sizeMB: number; daysOld: number }[] {
+  if (!existsSync(dir)) return [];
+  const results: { path: string; sizeMB: number; daysOld: number }[] = [];
+  const now = Date.now();
+  const cutoff = olderThanDays * 24 * 60 * 60 * 1000;
+
+  const queue = [dir];
+  while (queue.length > 0) {
+    const current = queue.pop()!;
+    try {
+      for (const entry of readdirSync(current)) {
+        const full = join(current, entry);
+        try {
+          const stat = lstatSync(full);
+          if (stat.isSymbolicLink()) continue;
+          if (stat.isDirectory()) { queue.push(full); continue; }
+          if (ext && !entry.endsWith(ext)) continue;
+          const age = now - stat.mtimeMs;
+          if (age > cutoff) {
+            results.push({ path: full, sizeMB: stat.size / (1024 * 1024), daysOld: Math.floor(age / (24 * 60 * 60 * 1000)) });
+          }
+        } catch { /* skip */ }
+      }
+    } catch { /* skip */ }
+  }
+  return results;
+}
+
+/**
+ * Check if a Claude project directory's source project still exists on disk.
+ *
+ * Claude Code encodes paths like "c--Users-User-Coding-Personal-arcana" where
+ * hyphens replace path separators. This is ambiguous when folder names contain
+ * hyphens (e.g., "lead-scraper" becomes indistinguishable from "lead/scraper").
+ *
+ * Strategy: try all possible split points to find a path that exists on disk.
+ * If ANY interpretation resolves to a real directory, the project is not orphaned.
+ */
+export function isOrphanedProject(projectDirName: string): boolean {
+  const match = projectDirName.match(/^([A-Za-z])--(.+)$/);
+  if (!match) return false; // can't decode, assume not orphaned
+
+  const drive = match[1]!.toUpperCase();
+  const rest = match[2]!;
+  const parts = rest.split("-");
+
+  // Try building paths by joining consecutive parts with hyphens vs separators.
+  // Optimization: just check if the encoded dir name prefix matches any existing path.
+  // Build all possible paths by combining adjacent segments.
+  function tryPaths(segments: string[], depth: number, currentPath: string): boolean {
+    if (depth >= segments.length) {
+      return existsSync(currentPath);
+    }
+
+    // Try consuming 1, 2, 3... segments as a single directory name
+    const sep = process.platform === "win32" ? "\\" : "/";
+    for (let take = 1; take <= segments.length - depth; take++) {
+      const dirName = segments.slice(depth, depth + take).join("-");
+      const next = currentPath + sep + dirName;
+
+      // Prune: if this intermediate path doesn't exist, no point going deeper
+      // (only prune when we still have more segments to process)
+      if (depth + take < segments.length && !existsSync(next)) continue;
+
+      if (tryPaths(segments, depth + take, next)) return true;
+    }
+    return false;
+  }
+
+  const root = process.platform === "win32" ? `${drive}:` : `/${drive.toLowerCase()}`;
+  return !tryPaths(parts, 0, root);
+}
+
 export function listSymlinks(): SymlinkInfo[] {
   const symlinkDir = join(homedir(), ".claude", "skills");
   if (!existsSync(symlinkDir)) return [];

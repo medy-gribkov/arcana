@@ -41,7 +41,7 @@ export function createCli(): Command {
     if (cmd) {
       console.error();
       console.error(ui.error("  Error: ") + `unknown command '${cmd}'`);
-      const commands = ["list", "install", "info", "search", "providers", "create", "validate", "update", "uninstall", "init", "doctor", "clean", "stats", "config", "audit", "scan"];
+      const commands = ["list", "install", "info", "search", "providers", "create", "validate", "update", "uninstall", "init", "doctor", "clean", "compact", "stats", "config", "audit", "scan", "optimize"];
       const match = commands.find(c => c.startsWith(cmd.slice(0, 3)));
       if (match) {
         console.error(ui.dim(`  Did you mean '${match}'?`));
@@ -190,12 +190,24 @@ export function createCli(): Command {
 
   program
     .command("clean")
-    .description("Remove orphaned data and temp files")
+    .description("Remove orphaned data, old session logs, and temp files")
     .option("-n, --dry-run", "Show what would be removed without deleting")
+    .option("--aggressive", "Delete all session logs regardless of age")
+    .option("--keep-days <days>", "Keep main session logs newer than N days (default: 30)", parseInt)
     .option("--json", "Output as JSON")
     .action(async (opts) => {
       const { cleanCommand } = await import("./commands/clean.js");
       return cleanCommand(opts);
+    });
+
+  program
+    .command("compact")
+    .description("Remove agent logs while preserving main session history")
+    .option("-n, --dry-run", "Show what would be removed without deleting")
+    .option("-j, --json", "Output as JSON")
+    .action(async (opts) => {
+      const { compactCommand } = await import("./commands/compact.js");
+      return compactCommand(opts);
     });
 
   program
@@ -236,6 +248,15 @@ export function createCli(): Command {
     .action(async (skill, opts) => {
       const { scanCommand } = await import("./commands/scan.js");
       return scanCommand(skill, opts);
+    });
+
+  program
+    .command("optimize")
+    .description("Analyze Claude Code setup and suggest token/performance improvements")
+    .option("-j, --json", "Output as JSON")
+    .action(async (opts) => {
+      const { optimizeCommand } = await import("./commands/optimize.js");
+      return optimizeCommand(opts);
     });
 
   return program;
