@@ -1,5 +1,54 @@
 # Changelog
 
+## 2.5.0 (2026-02-28)
+
+Context-aware intelligence: project detection, smart recommendations, conflict checking, trust signals.
+
+### Context Engine (WS1)
+- **`detectProjectContext()`**: Reads package.json, go.mod, requirements.txt, Dockerfile, CLAUDE.md, and .claude/rules/ to build a full project profile
+- **Tech stack detection**: 35+ npm packages, 13 Go modules, 15 Python packages mapped to tags
+- **Preference extraction**: Parses CLAUDE.md for coding preferences (TypeScript strict, async/await, etc.)
+- **Rule awareness**: Reads .claude/rules/*.md filenames to detect overlap with skills
+- **Refactored `arcana init`**: detectProject() now delegates to the context engine
+
+### Marketplace Metadata (WS2)
+- **Extended SkillInfo**: 5 new optional fields (tags, conflicts, companions, verified, author)
+- **All 60 skills enriched**: Every skill in marketplace.json now has tags, verified status, author, and companion suggestions
+- **Backward compatible**: All new fields optional, existing integrations unaffected
+
+### Smart Recommendations (WS3)
+- **`arcana recommend`**: Context-aware skill suggestions based on project analysis
+- **Scoring algorithm**: Tag match (+20/tag, cap 60), category match (+10), companion boost (+15), preference alignment (+10), rule overlap penalty (-30), explicit conflict (-100)
+- **Verdicts**: "recommended" (score >= 40), "optional" (>= 15), "skip" (< 15), "conflict" (blocks)
+- **Options**: `--json`, `--limit <n>`, `--provider <name>`
+
+### Conflict Detection (WS4)
+- **Pre-install conflict check**: Runs after security scan, before file write
+- **Three conflict types**: skill-conflict (block), rule-overlap (warn), preference-clash (warn)
+- **Opposing preference pairs**: Detects contradictions (callbacks vs async/await, any vs strict typing)
+- **`--no-check` flag**: Skip conflict detection on install
+
+### Trust & Quality Signals (WS5)
+- **`arcana info`**: Shows verified badge, author, tags, companions, conflicts
+- **`arcana list`**: Verified [V] badge and tags in table output
+- **Interactive mode**: Trust info (verified/community, author, tags) in skill detail view
+
+### Enhanced Search (WS6)
+- **`--tag <tag>`**: Filter search results by tech stack tag
+- **`--smart`**: Context-aware ranking using project detection (boosts relevant results)
+- **Search display**: Verified badge and tags shown in results
+
+### Testing
+- **458 tests** across 47 test files (was 427 across 43)
+- **4 new test files**: project-context (10), scoring (9), conflict-check (8), recommend (4)
+
+### Infrastructure
+- **29 total commands** (was 28)
+- **4 new source files**, 8 new files total (including tests)
+- **ESM-only**, TypeScript strict, zero lint errors
+
+---
+
 ## 2.4.2 (2026-02-27)
 
 Deep security hardening, 10 new commands, integrity lockfile, and full modernization.

@@ -273,9 +273,21 @@ async function skillDetailFlow(
   if (info?.description) lines.push(info.description);
   lines.push("");
 
+  if (info?.verified) lines.push(`Trust: ${chalk.green("Verified")} (official)`);
+  else lines.push(`Trust: Community`);
+  if (info?.author) lines.push(`Author: ${info.author}`);
+  if (info?.tags && info.tags.length > 0) lines.push(`Tags: ${info.tags.join(", ")}`);
+
   const category = getCategoryFor(skillName);
   if (category) lines.push(`Category: ${category}`);
   if (info?.source) lines.push(`Source: ${info.source}`);
+
+  if (info?.companions && info.companions.length > 0) {
+    lines.push(`Companions: ${info.companions.join(", ")}`);
+  }
+  if (info?.conflicts && info.conflicts.length > 0) {
+    lines.push(`${chalk.red("Conflicts:")} ${info.conflicts.join(", ")}`);
+  }
 
   if (installed && meta) {
     const date = meta.installedAt ? new Date(meta.installedAt).toLocaleDateString() : "";

@@ -67,6 +67,7 @@ export function createCli(): Command {
         "team",
         "export",
         "import",
+        "recommend",
       ];
       const match = commands.find((c) => c.startsWith(cmd.slice(0, 3)));
       if (match) {
@@ -114,6 +115,7 @@ export function createCli(): Command {
     .option("-f, --force", "Reinstall even if already installed")
     .option("--dry-run", "Show what would be installed without installing")
     .option("-j, --json", "Output as JSON")
+    .option("--no-check", "Skip conflict detection")
     .addHelpText(
       "after",
       "\nExamples:\n  arcana install code-reviewer\n  arcana install skill1 skill2 skill3\n  arcana install --all --force",
@@ -138,8 +140,13 @@ export function createCli(): Command {
     .description("Search for skills across providers")
     .option("-p, --provider <name>", "Limit search to provider")
     .option("--no-cache", "Bypass skill cache")
+    .option("-t, --tag <tag>", "Filter by tech stack tag")
+    .option("-s, --smart", "Context-aware ranking (uses project detection)")
     .option("-j, --json", "Output as JSON")
-    .addHelpText("after", '\nExamples:\n  arcana search testing\n  arcana search "code review"')
+    .addHelpText(
+      "after",
+      '\nExamples:\n  arcana search testing\n  arcana search "code review"\n  arcana search react --tag typescript\n  arcana search api --smart',
+    )
     .action(async (query, opts) => {
       const { searchCommand } = await import("./commands/search.js");
       return searchCommand(query, opts);
@@ -417,6 +424,19 @@ export function createCli(): Command {
     .action(async (shell, opts) => {
       const { completionsCommand } = await import("./commands/completions.js");
       return completionsCommand(shell, opts);
+    });
+
+  // ── Smart Recommendations ──────────────────────────────────────
+  program
+    .command("recommend")
+    .description("Get smart skill recommendations for current project")
+    .option("-j, --json", "Output as JSON")
+    .option("-l, --limit <n>", "Max results per category", parseInt)
+    .option("-p, --provider <name>", "Limit to provider")
+    .addHelpText("after", "\nExamples:\n  arcana recommend\n  arcana recommend --json\n  arcana recommend --limit 5")
+    .action(async (opts) => {
+      const { recommendCommand } = await import("./commands/recommend.js");
+      return recommendCommand(opts);
     });
 
   return program;

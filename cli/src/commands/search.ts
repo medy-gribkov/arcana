@@ -1,10 +1,12 @@
 import { ui, banner, spinner, noopSpinner, table, printErrorWithHint } from "../utils/ui.js";
 import { isSkillInstalled } from "../utils/fs.js";
 import { getProviders } from "../registry.js";
+import { detectProjectContext } from "../utils/project-context.js";
+import type { SkillInfo } from "../types.js";
 
 export async function searchCommand(
   query: string,
-  opts: { provider?: string; cache?: boolean; json?: boolean },
+  opts: { provider?: string; cache?: boolean; json?: boolean; tag?: string; smart?: boolean },
 ): Promise<void> {
   if (!opts.json) banner();
 
@@ -16,16 +18,14 @@ export async function searchCommand(
   const s = opts.json ? noopSpinner() : spinner(`Searching for "${query}"...`);
   s.start();
 
-  const results: { name: string; description: string; source: string; installed: boolean }[] = [];
+  let results: (SkillInfo & { installed: boolean })[] = [];
 
   try {
     for (const provider of providers) {
       const skills = await provider.search(query);
       for (const skill of skills) {
         results.push({
-          name: skill.name,
-          description: skill.description,
-          source: skill.source,
+          ...skill,
           installed: isSkillInstalled(skill.name),
         });
       }
@@ -40,21 +40,54 @@ export async function searchCommand(
     process.exit(1);
   }
 
+  // Filter by tag
+  if (opts.tag) {
+    const tag = opts.tag.toLowerCase();
+    results = results.filter((r) => r.tags?.some((t) => t.toLowerCase() === tag));
+  }
+
+  // Smart ranking: boost results matching project context
+  if (opts.smart) {
+    const context = detectProjectContext(process.cwd());
+    results.sort((a, b) => {
+      const aScore = (a.tags ?? []).filter((t) => context.tags.includes(t)).length;
+      const bScore = (b.tags ?? []).filter((t) => context.tags.includes(t)).length;
+      return bScore - aScore;
+    });
+  }
+
   s.stop();
 
   if (opts.json) {
-    console.log(JSON.stringify({ query, results }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          query,
+          results: results.map((r) => ({
+            name: r.name,
+            description: r.description,
+            source: r.source,
+            installed: r.installed,
+            tags: r.tags,
+            verified: r.verified,
+          })),
+        },
+        null,
+        2,
+      ),
+    );
     return;
   }
 
   if (results.length === 0) {
-    console.log(ui.dim(`  No skills matching "${query}"`));
+    console.log(ui.dim(`  No skills matching "${query}"${opts.tag ? ` with tag "${opts.tag}"` : ""}`));
   } else {
     console.log(ui.bold(`  ${results.length} results for "${query}":`));
     console.log();
     const rows = results.map((r) => [
-      ui.bold(r.name),
-      r.description.slice(0, 80) + (r.description.length > 80 ? "..." : ""),
+      ui.bold(r.name) + (r.verified ? " " + ui.success("[V]") : ""),
+      r.description.slice(0, 60) + (r.description.length > 60 ? "..." : ""),
+      r.tags?.slice(0, 3).join(", ") ?? "",
       ui.dim(r.source),
       r.installed ? ui.success("[installed]") : "",
     ]);

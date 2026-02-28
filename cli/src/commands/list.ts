@@ -30,7 +30,15 @@ export async function listCommand(opts: {
   s.start();
 
   try {
-    const skills: { name: string; version: string; description: string; source: string; installed: boolean }[] = [];
+    const skills: {
+      name: string;
+      version: string;
+      description: string;
+      source: string;
+      installed: boolean;
+      verified?: boolean;
+      tags?: string[];
+    }[] = [];
 
     for (const provider of providers) {
       const results = await provider.list();
@@ -41,6 +49,8 @@ export async function listCommand(opts: {
           description: skill.description,
           source: skill.source,
           installed: isSkillInstalled(skill.name),
+          verified: skill.verified,
+          tags: skill.tags,
         });
       }
     }
@@ -58,10 +68,11 @@ export async function listCommand(opts: {
       console.log(ui.bold(`  ${skills.length} skills available:`));
       console.log();
       const rows = skills.map((skill) => [
-        ui.bold(skill.name),
+        ui.bold(skill.name) + (skill.verified ? " " + ui.success("[V]") : ""),
         ui.dim(`v${skill.version}`),
         skill.description.slice(0, DESC_TRUNCATE_LENGTH) +
           (skill.description.length > DESC_TRUNCATE_LENGTH ? "..." : ""),
+        skill.tags?.slice(0, 3).join(", ") ?? "",
         providers.length > 1 ? ui.dim(skill.source) : "",
         skill.installed ? ui.success("[installed]") : "",
       ]);

@@ -43,6 +43,11 @@ export async function infoCommand(skillName: string, opts: { provider?: string; 
                 installedVersion: meta?.version,
                 source: skill.source,
                 repo: skill.repo,
+                tags: skill.tags,
+                verified: skill.verified,
+                author: skill.author,
+                companions: skill.companions,
+                conflicts: skill.conflicts,
               },
             }),
           );
@@ -61,6 +66,24 @@ export async function infoCommand(skillName: string, opts: { provider?: string; 
         }
         console.log();
         console.log("  " + skill.description);
+        console.log();
+        if (skill.verified) {
+          console.log("  " + ui.success("[Verified]") + " Official skill");
+        } else {
+          console.log(ui.dim("  Community skill"));
+        }
+        if (skill.author) {
+          console.log(ui.dim(`  Author: ${skill.author}`));
+        }
+        if (skill.tags && skill.tags.length > 0) {
+          console.log(ui.dim(`  Tags:   ${skill.tags.join(", ")}`));
+        }
+        if (skill.companions && skill.companions.length > 0) {
+          console.log(ui.dim(`  Works with: ${skill.companions.join(", ")}`));
+        }
+        if (skill.conflicts && skill.conflicts.length > 0) {
+          console.log(ui.warn(`  Conflicts: ${skill.conflicts.join(", ")}`));
+        }
         console.log();
         console.log(ui.dim(`  Source: ${skill.source}`));
         if (skill.repo) {

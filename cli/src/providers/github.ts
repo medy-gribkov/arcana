@@ -94,6 +94,11 @@ export class GitHubProvider extends Provider {
         version: p.version,
         source: this.name,
         repo: `https://github.com/${this.owner}/${this.repo}`,
+        tags: p.tags,
+        conflicts: p.conflicts,
+        companions: p.companions,
+        verified: p.verified,
+        author: p.author,
       }));
 
     // Warn about malformed entries
@@ -159,7 +164,12 @@ export class GitHubProvider extends Provider {
   async search(query: string): Promise<SkillInfo[]> {
     const all = await this.list();
     const q = query.toLowerCase();
-    const exact = all.filter((s) => s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q));
+    const exact = all.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.description.toLowerCase().includes(q) ||
+        s.tags?.some((t) => t.toLowerCase().includes(q)),
+    );
     if (exact.length > 0) return exact;
 
     // Fuzzy fallback: match skills where Levenshtein distance to name <= 3

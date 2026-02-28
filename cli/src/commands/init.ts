@@ -1,8 +1,9 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { join, basename, dirname } from "node:path";
+import { join, dirname } from "node:path";
 import * as p from "@clack/prompts";
 import chalk from "chalk";
 import { renderBanner } from "../utils/help.js";
+import { detectProjectContext } from "../utils/project-context.js";
 
 type ToolName = "claude" | "cursor" | "codex" | "gemini" | "antigravity" | "windsurf" | "aider";
 
@@ -13,23 +14,8 @@ interface ProjectInfo {
 }
 
 export function detectProject(cwd: string): ProjectInfo {
-  const name = basename(cwd);
-  if (existsSync(join(cwd, "go.mod"))) return { name, type: "Go", lang: "go" };
-  if (existsSync(join(cwd, "Cargo.toml"))) return { name, type: "Rust", lang: "rust" };
-  if (existsSync(join(cwd, "requirements.txt")) || existsSync(join(cwd, "pyproject.toml")))
-    return { name, type: "Python", lang: "python" };
-  if (existsSync(join(cwd, "package.json"))) {
-    try {
-      const raw = readFileSync(join(cwd, "package.json"), "utf-8");
-      const pkg = JSON.parse(raw) as Record<string, Record<string, string> | undefined>;
-      if (pkg.dependencies?.next || pkg.devDependencies?.next) return { name, type: "Next.js", lang: "typescript" };
-      if (pkg.dependencies?.react || pkg.devDependencies?.react) return { name, type: "React", lang: "typescript" };
-    } catch {
-      /* ignore */
-    }
-    return { name, type: "Node.js", lang: "typescript" };
-  }
-  return { name, type: "Unknown", lang: "general" };
+  const ctx = detectProjectContext(cwd);
+  return { name: ctx.name, type: ctx.type, lang: ctx.lang };
 }
 
 function claudeTemplate(proj: ProjectInfo): string {

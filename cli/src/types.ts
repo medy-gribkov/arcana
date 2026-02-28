@@ -4,6 +4,11 @@ export interface SkillInfo {
   version: string;
   source: string;
   repo?: string;
+  tags?: string[];
+  conflicts?: string[];
+  companions?: string[];
+  verified?: boolean;
+  author?: string;
 }
 
 export interface SkillFile {
@@ -23,6 +28,11 @@ export interface MarketplacePlugin {
   source: string;
   description: string;
   version: string;
+  tags?: string[];
+  conflicts?: string[];
+  companions?: string[];
+  verified?: boolean;
+  author?: string;
 }
 
 export interface ProviderConfig {

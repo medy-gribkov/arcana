@@ -10,6 +10,8 @@ import { validateSlug } from "../utils/validate.js";
 import { scanSkillContent } from "../utils/scanner.js";
 import type { SkillFile } from "../types.js";
 import { updateLockEntry } from "../utils/integrity.js";
+import { checkConflicts } from "../utils/conflict-check.js";
+import { detectProjectContext } from "../utils/project-context.js";
 
 /**
  * Scan fetched skill files for security threats before installing.
@@ -50,7 +52,7 @@ function preInstallScan(skillName: string, files: SkillFile[], force?: boolean):
 
 export async function installCommand(
   skillNames: string[],
-  opts: { provider?: string; all?: boolean; force?: boolean; dryRun?: boolean; json?: boolean },
+  opts: { provider?: string; all?: boolean; force?: boolean; dryRun?: boolean; json?: boolean; noCheck?: boolean },
 ): Promise<void> {
   if (opts.json) {
     return installJson(skillNames, opts);
@@ -76,11 +78,11 @@ export async function installCommand(
   }
 
   if (opts.all) {
-    await installAllInteractive(providers, opts.dryRun, opts.force);
+    await installAllInteractive(providers, opts.dryRun, opts.force, opts.noCheck);
   } else if (skillNames.length === 1) {
-    await installOneInteractive(skillNames[0]!, providers[0]!, opts.dryRun, opts.force);
+    await installOneInteractive(skillNames[0]!, providers[0]!, opts.dryRun, opts.force, opts.noCheck);
   } else {
-    await installMultipleInteractive(skillNames, providers[0]!, opts.dryRun, opts.force);
+    await installMultipleInteractive(skillNames, providers[0]!, opts.dryRun, opts.force, opts.noCheck);
   }
 }
 
@@ -89,6 +91,7 @@ async function installOneInteractive(
   provider: Provider,
   dryRun?: boolean,
   force?: boolean,
+  noCheck?: boolean,
 ): Promise<void> {
   p.intro(chalk.bold("Install skill"));
 
@@ -133,6 +136,27 @@ async function installOneInteractive(
       process.exit(1);
     }
 
+    // Conflict detection
+    if (!noCheck) {
+      const context = detectProjectContext(process.cwd());
+      const remote = await provider.info(skillName);
+      const skillMd = files.find((f) => f.path.endsWith("SKILL.md"));
+      const warnings = checkConflicts(skillName, remote, skillMd?.content ?? null, context);
+      const blocks = warnings.filter((w) => w.severity === "block");
+      const warns = warnings.filter((w) => w.severity === "warn");
+
+      if (blocks.length > 0) {
+        for (const b of blocks) p.log.error(`  [CONFLICT] ${b.message}`);
+        if (!force) {
+          p.log.info("Use --force to install anyway or --no-check to skip conflict detection.");
+          process.exit(1);
+        }
+      }
+      if (warns.length > 0) {
+        for (const w of warns) p.log.warn(`  [WARN] ${w.message}`);
+      }
+    }
+
     const spin2 = p.spinner();
     spin2.start(`Installing ${chalk.bold(skillName)}...`);
     const dir = installSkill(skillName, files);
@@ -170,6 +194,7 @@ async function installMultipleInteractive(
   provider: Provider,
   dryRun?: boolean,
   force?: boolean,
+  _noCheck?: boolean,
 ): Promise<void> {
   p.intro(chalk.bold(`Install ${skillNames.length} skills`));
 
@@ -255,7 +280,12 @@ async function installMultipleInteractive(
   if (failedList.length > 0) process.exit(1);
 }
 
-async function installAllInteractive(providers: Provider[], dryRun?: boolean, force?: boolean): Promise<void> {
+async function installAllInteractive(
+  providers: Provider[],
+  dryRun?: boolean,
+  force?: boolean,
+  _noCheck?: boolean,
+): Promise<void> {
   p.intro(chalk.bold("Install all skills"));
 
   const spin = p.spinner();
