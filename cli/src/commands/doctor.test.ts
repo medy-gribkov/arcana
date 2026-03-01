@@ -39,10 +39,10 @@ vi.mock("node:fs", () => ({
 }));
 
 describe("doctor", () => {
-  let mockFs: any;
-  let mockChildProcess: any;
-  let mockFsUtils: any;
-  let mockUi: any;
+  let mockFs: typeof import("node:fs");
+  let mockChildProcess: typeof import("node:child_process");
+  let mockFsUtils: typeof import("../utils/fs.js");
+  let mockUi: typeof import("../utils/ui.js");
 
   beforeEach(async () => {
     vi.resetModules();

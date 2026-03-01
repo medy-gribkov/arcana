@@ -61,7 +61,7 @@ describe("profileCommand", () => {
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     processExitSpy = vi.spyOn(process, "exit").mockImplementation((() => {
       throw new Error("process.exit");
-    }) as any);
+    }) as never);
   });
 
   afterEach(() => {

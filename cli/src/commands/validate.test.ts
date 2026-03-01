@@ -140,7 +140,7 @@ describe("validateCommand", () => {
     const scanner = await import("../utils/scanner.js");
     vi.mocked(scanner.scanSkillContent).mockReturnValue([
       { level: "critical", category: "Path Leak", detail: "Personal path detected", line: 42 },
-    ] as any);
+    ] as never);
 
     const { validateCommand } = await import("./validate.js");
     // Critical issue makes valid: false, triggering process.exit(1)

@@ -27,13 +27,13 @@ describe("detectProjectContext", () => {
   });
 
   it("detects Go project from go.mod", async () => {
-    vi.mocked(mockFs.existsSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.existsSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.endsWith("go.mod")) return true;
       return false;
     });
 
-    vi.mocked(mockFs.readFileSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.readFileSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.endsWith("go.mod")) {
         return [
@@ -61,13 +61,13 @@ describe("detectProjectContext", () => {
   });
 
   it("detects Next.js project from package.json", async () => {
-    vi.mocked(mockFs.existsSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.existsSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.endsWith("package.json")) return true;
       return false;
     });
 
-    vi.mocked(mockFs.readFileSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.readFileSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.endsWith("package.json")) {
         return JSON.stringify({
@@ -89,13 +89,13 @@ describe("detectProjectContext", () => {
   });
 
   it("detects Python project from requirements.txt", async () => {
-    vi.mocked(mockFs.existsSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.existsSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.endsWith("requirements.txt")) return true;
       return false;
     });
 
-    vi.mocked(mockFs.readFileSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.readFileSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.endsWith("requirements.txt")) {
         return ["flask==3.0.0", "pytest>=7.0", "requests~=2.31"].join("\n");
@@ -132,13 +132,13 @@ describe("detectProjectContext", () => {
   });
 
   it("extracts tags from package.json dependencies", async () => {
-    vi.mocked(mockFs.existsSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.existsSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.endsWith("package.json")) return true;
       return false;
     });
 
-    vi.mocked(mockFs.readFileSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.readFileSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.endsWith("package.json")) {
         return JSON.stringify({
@@ -171,13 +171,13 @@ describe("detectProjectContext", () => {
       "- Not a preference",
     ].join("\n");
 
-    vi.mocked(mockFs.existsSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.existsSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.endsWith("CLAUDE.md")) return true;
       return false;
     });
 
-    vi.mocked(mockFs.readFileSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.readFileSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.endsWith("CLAUDE.md")) return claudeMd;
       throw new Error("ENOENT");
@@ -195,7 +195,7 @@ describe("detectProjectContext", () => {
   });
 
   it("reads .claude/rules/*.md files", async () => {
-    vi.mocked(mockFs.existsSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.existsSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.includes(".claude") && s.includes("rules")) return true;
       return false;
@@ -205,10 +205,10 @@ describe("detectProjectContext", () => {
       throw new Error("ENOENT");
     });
 
-    vi.mocked(mockFs.readdirSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.readdirSync).mockImplementation((p: string) => {
       const s = String(p);
-      if (s.includes("rules")) return ["coding-style.md", "testing.md", "readme.txt"] as any;
-      return [] as any;
+      if (s.includes("rules")) return ["coding-style.md", "testing.md", "readme.txt"] as string[];
+      return [] as string[];
     });
 
     const { detectProjectContext } = await import("./project-context.js");
@@ -219,7 +219,7 @@ describe("detectProjectContext", () => {
   });
 
   it("detects infrastructure tags", async () => {
-    vi.mocked(mockFs.existsSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.existsSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s.endsWith("Dockerfile")) return true;
       if (s.endsWith("workflows")) return true;
@@ -239,7 +239,7 @@ describe("detectProjectContext", () => {
   });
 
   it("returns installed skills from getInstalledNames", async () => {
-    vi.mocked(mockFs.existsSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.existsSync).mockImplementation((p: string) => {
       const s = String(p);
       if (s === "/tmp/test-install") return true;
       return false;
@@ -249,14 +249,14 @@ describe("detectProjectContext", () => {
       throw new Error("ENOENT");
     });
 
-    vi.mocked(mockFs.readdirSync).mockImplementation((p: any) => {
+    vi.mocked(mockFs.readdirSync).mockImplementation((p: string) => {
       const s = String(p);
-      if (s === "/tmp/test-install") return ["review", "scaffold", "typescript"] as any;
-      return [] as any;
+      if (s === "/tmp/test-install") return ["review", "scaffold", "typescript"] as string[];
+      return [] as string[];
     });
 
     vi.mocked(mockFs.statSync).mockImplementation(() => {
-      return { isDirectory: () => true } as any;
+      return { isDirectory: () => true } as { isDirectory: () => boolean };
     });
 
     const { detectProjectContext } = await import("./project-context.js");

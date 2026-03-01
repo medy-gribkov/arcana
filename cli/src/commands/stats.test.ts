@@ -36,11 +36,11 @@ vi.mock("../utils/ui.js", () => ({
 }));
 
 describe("statsCommand", () => {
-  let mockFs: any;
-  let mockFsUtils: any;
-  let mockUi: any;
-  let mockOs: any;
-  let statsCommand: any;
+  let mockFs: typeof import("node:fs");
+  let mockFsUtils: typeof import("../utils/fs.js");
+  let mockUi: typeof import("../utils/ui.js");
+  let mockOs: typeof import("node:os");
+  let statsCommand: (opts: Record<string, unknown>) => Promise<void>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -287,7 +287,7 @@ describe("statsCommand", () => {
     expect(parsed.diskBreakdown).toBeDefined();
     expect(parsed.diskBreakdown.length).toBeGreaterThan(0);
 
-    const projectsEntry = parsed.diskBreakdown.find((d: any) => d.name === "projects");
+    const projectsEntry = parsed.diskBreakdown.find((d: { name: string; sizeBytes: number }) => d.name === "projects");
     expect(projectsEntry).toBeDefined();
     expect(projectsEntry.sizeBytes).toBe(10000);
   });
@@ -353,7 +353,9 @@ describe("statsCommand", () => {
     expect(parsed.projectBreakdown).toBeDefined();
     expect(parsed.projectBreakdown.length).toBe(2);
 
-    const alphaProj = parsed.projectBreakdown.find((p: any) => p.name === "proj-alpha");
+    const alphaProj = parsed.projectBreakdown.find(
+      (p: { name: string; sizeBytes: number; sessions: number }) => p.name === "proj-alpha",
+    );
     expect(alphaProj).toBeDefined();
     expect(alphaProj.sizeBytes).toBe(8192);
     expect(alphaProj.sessions).toBe(2);

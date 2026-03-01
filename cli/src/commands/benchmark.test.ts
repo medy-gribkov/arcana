@@ -11,7 +11,7 @@ describe("benchmarkCommand", () => {
   function setupMocks(
     overrides: {
       installDir?: string;
-      skillMeta?: Record<string, any> | null;
+      skillMeta?: Record<string, unknown> | null;
       dirSize?: number;
       readdirResults?: Record<string, string[]>;
       statResults?: Record<string, ReturnType<typeof makeDirStat | typeof makeFileStat>>;
@@ -54,7 +54,7 @@ describe("benchmarkCommand", () => {
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     processExitSpy = vi.spyOn(process, "exit").mockImplementation((() => {
       throw new Error("process.exit");
-    }) as any);
+    }) as never);
   });
 
   afterEach(() => {

@@ -1,4 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { SkillInfo } from "../types.js";
+
+interface MockProvider {
+  info: (skillName: string) => Promise<SkillInfo | null>;
+}
+
+interface MockSkillMeta {
+  version: string;
+  name?: string;
+  description?: string;
+  source?: string;
+  installedAt?: string;
+}
 
 describe("infoCommand", () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
@@ -67,8 +80,8 @@ describe("infoCommand", () => {
           source: "marketplace",
           repo: "example/repo",
         })),
-      } as any,
-    ]);
+      } as unknown as MockProvider,
+    ] as unknown as ReturnType<typeof getProviders>);
 
     const { infoCommand } = await import("./info.js");
     await infoCommand("test-skill", { json: true });
@@ -82,7 +95,9 @@ describe("infoCommand", () => {
     const { isSkillInstalled, readSkillMeta } = await import("../utils/fs.js");
 
     vi.mocked(isSkillInstalled).mockReturnValue(true);
-    vi.mocked(readSkillMeta).mockReturnValue({ version: "1.5.0" } as any);
+    vi.mocked(readSkillMeta).mockReturnValue({
+      version: "1.5.0",
+    } as MockSkillMeta as ReturnType<typeof readSkillMeta>);
     vi.mocked(getProviders).mockReturnValue([
       {
         info: vi.fn(async () => ({
@@ -92,8 +107,8 @@ describe("infoCommand", () => {
           source: "marketplace",
           repo: "example/repo",
         })),
-      } as any,
-    ]);
+      } as unknown as MockProvider,
+    ] as unknown as ReturnType<typeof getProviders>);
 
     const { infoCommand } = await import("./info.js");
     await infoCommand("test-skill", { json: true });
@@ -111,14 +126,14 @@ describe("infoCommand", () => {
       version: "1.0.0",
       name: "test-skill",
       description: "Local skill",
-    } as any);
+    } as MockSkillMeta as ReturnType<typeof readSkillMeta>);
     vi.mocked(getProviders).mockReturnValue([
       {
         info: vi.fn(async () => {
           throw new Error("Network error");
         }),
-      } as any,
-    ]);
+      } as unknown as MockProvider,
+    ] as unknown as ReturnType<typeof getProviders>);
 
     const { infoCommand } = await import("./info.js");
     await infoCommand("test-skill", { json: true });
@@ -132,7 +147,9 @@ describe("infoCommand", () => {
     const { isSkillInstalled } = await import("../utils/fs.js");
 
     vi.mocked(isSkillInstalled).mockReturnValue(false);
-    vi.mocked(getProviders).mockReturnValue([{ info: vi.fn(async () => null) } as any]);
+    vi.mocked(getProviders).mockReturnValue([
+      { info: vi.fn(async () => null) } as unknown as MockProvider,
+    ] as unknown as ReturnType<typeof getProviders>);
 
     const { infoCommand } = await import("./info.js");
     await infoCommand("missing-skill", { json: true });

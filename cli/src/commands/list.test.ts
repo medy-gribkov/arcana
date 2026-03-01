@@ -55,12 +55,12 @@ describe("list command", () => {
     const fs = await import("node:fs");
     const fsUtils = await import("../utils/fs.js");
     vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(fs.readdirSync).mockReturnValue(["skill-a"] as any);
+    vi.mocked(fs.readdirSync).mockReturnValue(["skill-a"] as never);
     vi.mocked(fsUtils.readSkillMeta).mockReturnValue({
       version: "1.0.0",
       source: "github",
       installedAt: "2026-02-27T00:00:00.000Z",
-    } as any);
+    } as never);
 
     const { listCommand } = await import("./list.js");
     await listCommand({ installed: true, json: true });

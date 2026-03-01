@@ -18,9 +18,9 @@ vi.mock("./atomic.js", () => ({
 }));
 
 describe("cache", () => {
-  let mockFs: any;
-  let mockOs: any;
-  let mockAtomic: any;
+  let mockFs: typeof import("node:fs");
+  let mockOs: typeof import("node:os");
+  let mockAtomic: typeof import("./atomic.js");
 
   beforeEach(async () => {
     vi.resetModules();
