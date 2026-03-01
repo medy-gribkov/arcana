@@ -13,9 +13,7 @@ interface ProjectAnalysis {
   reclaimableBytes: number;
 }
 
-const PRUNE_DEFAULT_DAYS = 14;
-const PRUNE_SIZE_THRESHOLD = 10 * 1024 * 1024; // 10 MB
-const PRUNE_KEEP_NEWEST = 3;
+import { PRUNE_DEFAULT_DAYS, PRUNE_SIZE_THRESHOLD_BYTES, PRUNE_KEEP_NEWEST } from "../constants.js";
 
 function analyzeProject(projDir: string, projName: string): ProjectAnalysis {
   const now = Date.now();
@@ -96,7 +94,7 @@ function pruneMainSessions(
     const candidates = sorted.slice(PRUNE_KEEP_NEWEST); // Skip the 3 newest
 
     for (const f of candidates) {
-      if (f.daysOld > pruneDays && f.sizeBytes > PRUNE_SIZE_THRESHOLD) {
+      if (f.daysOld > pruneDays && f.sizeBytes > PRUNE_SIZE_THRESHOLD_BYTES) {
         const sizeMB = (f.sizeBytes / (1024 * 1024)).toFixed(1);
         if (!json) {
           console.log(`    ${ui.warn("Prune:")} ${f.name} ${ui.dim(`(${sizeMB} MB, ${f.daysOld}d old)`)}`);

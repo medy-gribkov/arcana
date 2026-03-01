@@ -1,6 +1,8 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import semver from "semver";
+import type { Provider } from "../providers/base.js";
+import type { SkillFile } from "../types.js";
 import { getInstallDir, installSkill, readSkillMeta, writeSkillMeta } from "../utils/fs.js";
 import { getProvider, getProviders } from "../registry.js";
 import { ui, banner, spinner, noopSpinner } from "../utils/ui.js";
@@ -14,13 +16,30 @@ function isNewer(remoteVersion: string, localVersion: string | undefined): boole
   return semver.gt(remote, local);
 }
 
+/** Fetch, write files, write meta, update lock for a single skill. */
+async function applyUpdate(
+  skillName: string,
+  remote: { version: string; description: string },
+  provider: Provider,
+): Promise<SkillFile[]> {
+  const files = await provider.fetch(skillName);
+  installSkill(skillName, files);
+  writeSkillMeta(skillName, {
+    version: remote.version,
+    installedAt: new Date().toISOString(),
+    source: provider.name,
+    description: remote.description,
+    fileCount: files.length,
+  });
+  updateLockEntry(skillName, remote.version, provider.name, files);
+  return files;
+}
+
 export async function updateCommand(
   skills: string[],
   opts: { all?: boolean; provider?: string; dryRun?: boolean; json?: boolean },
 ): Promise<void> {
-  if (!opts.json) {
-    banner();
-  }
+  if (!opts.json) banner();
 
   if (skills.length === 0 && !opts.all) {
     if (opts.json) {
@@ -48,11 +67,11 @@ export async function updateCommand(
   const providerName = opts.provider ?? loadConfig().defaultProvider;
 
   if (opts.all) {
-    await updateAll(installDir, providerName, opts.json, opts.dryRun);
+    await updateBatch(null, installDir, providerName, opts.json, opts.dryRun);
   } else if (skills.length === 1) {
     await updateOne(skills[0]!, installDir, providerName, opts.json, opts.dryRun);
   } else {
-    await updateMultiple(skills, installDir, providerName, opts.json, opts.dryRun);
+    await updateBatch(skills, installDir, providerName, opts.json, opts.dryRun);
   }
 }
 
@@ -139,16 +158,7 @@ async function updateOne(
     }
 
     s.text = `Updating ${ui.bold(skillName)}...`;
-    const files = await provider.fetch(skillName);
-    installSkill(skillName, files);
-    writeSkillMeta(skillName, {
-      version: remote.version,
-      installedAt: new Date().toISOString(),
-      source: providerName,
-      description: remote.description,
-      fileCount: files.length,
-    });
-    updateLockEntry(skillName, remote.version, providerName, files);
+    const files = await applyUpdate(skillName, remote, provider);
 
     if (json) {
       console.log(JSON.stringify({ updated: [skillName], upToDate: [], failed: [] }));
@@ -175,124 +185,42 @@ async function updateOne(
   }
 }
 
-async function updateMultiple(
-  skillNames: string[],
+/**
+ * Batch update. If `skillNames` is null, update all installed skills.
+ * If `skillNames` is provided, update only those specific skills.
+ */
+async function updateBatch(
+  skillNames: string[] | null,
   installDir: string,
   providerName: string,
   json?: boolean,
   dryRun?: boolean,
 ): Promise<void> {
-  for (const name of skillNames) {
-    try {
-      validateSlug(name, "skill name");
-    } catch (err) {
-      if (json) {
-        console.log(
-          JSON.stringify({
-            updated: [],
-            upToDate: [],
-            failed: skillNames,
-            error: err instanceof Error ? err.message : "Invalid name",
-          }),
-        );
-      } else {
-        console.log(ui.error(`  ${err instanceof Error ? err.message : "Invalid skill name"}`));
-        console.log();
-      }
-      process.exit(1);
-    }
-  }
-
-  const s = json ? noopSpinner() : spinner(`Checking ${skillNames.length} skills for updates...`);
-  s.start();
-
-  const provider = getProvider(providerName);
-  const updatedList: string[] = [];
-  const upToDateList: string[] = [];
-  const failedList: string[] = [];
-  const dryRunUpdates: { name: string; from: string; to: string }[] = [];
-
-  for (let i = 0; i < skillNames.length; i++) {
-    const skillName = skillNames[i]!;
-    const skillDir = join(installDir, skillName);
-
-    if (!existsSync(skillDir)) {
-      failedList.push(skillName);
-      if (!json) console.error(ui.dim(`  ${skillName} is not installed`));
-      continue;
-    }
-
-    try {
-      const remote = await provider.info(skillName);
-      if (!remote) {
-        failedList.push(skillName);
-        continue;
-      }
-
-      const meta = readSkillMeta(skillName);
-      if (!isNewer(remote.version, meta?.version)) {
-        upToDateList.push(skillName);
-        continue;
-      }
-
-      if (dryRun) {
-        dryRunUpdates.push({ name: skillName, from: meta?.version ?? "unknown", to: remote.version });
-        continue;
-      }
-
-      s.text = `Updating ${ui.bold(skillName)} (${i + 1}/${skillNames.length})...`;
-      const files = await provider.fetch(skillName);
-      installSkill(skillName, files);
-      writeSkillMeta(skillName, {
-        version: remote.version,
-        installedAt: new Date().toISOString(),
-        source: providerName,
-        description: remote.description,
-        fileCount: files.length,
-      });
-      updateLockEntry(skillName, remote.version, providerName, files);
-      updatedList.push(skillName);
-    } catch (err) {
-      failedList.push(skillName);
-      if (err instanceof Error && !json) console.error(ui.dim(`  Failed to update ${skillName}: ${err.message}`));
-    }
-  }
-
-  if (dryRun) {
-    if (json) {
-      console.log(
-        JSON.stringify({ dryRun: true, wouldUpdate: dryRunUpdates, upToDate: upToDateList, failed: failedList }),
-      );
-    } else {
-      s.stop();
-      if (dryRunUpdates.length === 0) {
-        console.log(ui.dim("  All skills are up to date."));
-      } else {
-        for (const u of dryRunUpdates) {
-          console.log(`  ${ui.bold(u.name)}: v${u.from} -> v${u.to}`);
+  // Validate explicit skill names
+  if (skillNames) {
+    for (const name of skillNames) {
+      try {
+        validateSlug(name, "skill name");
+      } catch (err) {
+        if (json) {
+          console.log(
+            JSON.stringify({
+              updated: [],
+              upToDate: [],
+              failed: skillNames,
+              error: err instanceof Error ? err.message : "Invalid name",
+            }),
+          );
+        } else {
+          console.log(ui.error(`  ${err instanceof Error ? err.message : "Invalid skill name"}`));
+          console.log();
         }
+        process.exit(1);
       }
-      console.log();
     }
-    return;
   }
 
-  if (json) {
-    console.log(JSON.stringify({ updated: updatedList, upToDate: upToDateList, failed: failedList }));
-  } else {
-    s.succeed(`Update complete`);
-    console.log(
-      ui.dim(
-        `  ${updatedList.length} updated, ${upToDateList.length} up to date${failedList.length > 0 ? `, ${failedList.length} failed` : ""}`,
-      ),
-    );
-    console.log();
-  }
-  if (failedList.length > 0) process.exit(1);
-}
-
-async function updateAll(installDir: string, providerName: string, json?: boolean, dryRun?: boolean): Promise<void> {
-  const installed = readdirSync(installDir).filter((d) => statSync(join(installDir, d)).isDirectory());
+  const installed = skillNames ?? readdirSync(installDir).filter((d) => statSync(join(installDir, d)).isDirectory());
 
   if (installed.length === 0) {
     if (json) {
@@ -313,69 +241,95 @@ async function updateAll(installDir: string, providerName: string, json?: boolea
   const skippedList: string[] = [];
   const dryRunUpdates: { name: string; from: string; to: string }[] = [];
 
-  const providers = getProviders(providerName === "arcana" ? undefined : providerName);
+  // For --all mode, use all providers and pre-fetch skill lists (avoids N+1 info() calls)
+  // For explicit names, use single provider with per-skill info() calls
+  const isAllMode = skillNames === null;
+  const providers = isAllMode ? getProviders(providerName === "arcana" ? undefined : providerName) : [];
+  const singleProvider = isAllMode ? null : getProvider(providerName);
 
-  // Pre-fetch skill lists to avoid N+1 info() calls
+  // Pre-fetch provider skill maps for --all mode
   const providerSkillMaps = new Map<string, Map<string, { version: string; description: string }>>();
-  for (const provider of providers) {
-    try {
-      const skills = await provider.list();
-      const map = new Map<string, { version: string; description: string }>();
-      for (const skill of skills) {
-        map.set(skill.name, { version: skill.version, description: skill.description });
+  if (isAllMode) {
+    for (const provider of providers) {
+      try {
+        const skills = await provider.list();
+        const map = new Map<string, { version: string; description: string }>();
+        for (const skill of skills) {
+          map.set(skill.name, { version: skill.version, description: skill.description });
+        }
+        providerSkillMaps.set(provider.name, map);
+      } catch (err) {
+        if (err instanceof Error && !json) console.error(ui.dim(`  Failed to list ${provider.name}: ${err.message}`));
       }
-      providerSkillMaps.set(provider.name, map);
-    } catch (err) {
-      if (err instanceof Error && !json) console.error(ui.dim(`  Failed to list ${provider.name}: ${err.message}`));
     }
   }
 
   const total = installed.length;
   for (let i = 0; i < total; i++) {
-    const skillName = installed[i]!;
-    let found = false;
+    const name = installed[i]!;
 
-    try {
-      for (const provider of providers) {
-        const skillMap = providerSkillMaps.get(provider.name);
-        const remote = skillMap?.get(skillName) ?? null;
-        if (!remote) continue;
-        found = true;
-
-        const meta = readSkillMeta(skillName);
-        if (!isNewer(remote.version, meta?.version)) {
-          upToDateList.push(skillName);
-          break;
-        }
-
-        if (dryRun) {
-          dryRunUpdates.push({ name: skillName, from: meta?.version ?? "unknown", to: remote.version });
-          break;
-        }
-
-        s.text = `Updating ${ui.bold(skillName)} (${i + 1}/${total})...`;
-        const files = await provider.fetch(skillName);
-        installSkill(skillName, files);
-        writeSkillMeta(skillName, {
-          version: remote.version,
-          installedAt: new Date().toISOString(),
-          source: provider.name,
-          description: remote.description,
-          fileCount: files.length,
-        });
-        updateLockEntry(skillName, remote.version, provider.name, files);
-        updatedList.push(skillName);
-        break;
+    // Check installation exists (for explicit names)
+    if (!isAllMode) {
+      const skillDir = join(installDir, name);
+      if (!existsSync(skillDir)) {
+        failedList.push(name);
+        if (!json) console.error(ui.dim(`  ${name} is not installed`));
+        continue;
       }
-    } catch (err) {
-      failedList.push(skillName);
-      if (err instanceof Error && !json) console.error(ui.dim(`  Failed to update ${skillName}: ${err.message}`));
-      continue;
     }
 
-    if (!found) skippedList.push(skillName);
+    try {
+      if (isAllMode) {
+        // Find across all providers
+        let found = false;
+        for (const provider of providers) {
+          const skillMap = providerSkillMaps.get(provider.name);
+          const remote = skillMap?.get(name) ?? null;
+          if (!remote) continue;
+          found = true;
+
+          const meta = readSkillMeta(name);
+          if (!isNewer(remote.version, meta?.version)) {
+            upToDateList.push(name);
+            break;
+          }
+          if (dryRun) {
+            dryRunUpdates.push({ name, from: meta?.version ?? "unknown", to: remote.version });
+            break;
+          }
+          s.text = `Updating ${ui.bold(name)} (${i + 1}/${total})...`;
+          await applyUpdate(name, remote, provider);
+          updatedList.push(name);
+          break;
+        }
+        if (!found) skippedList.push(name);
+      } else {
+        // Single provider mode
+        const remote = await singleProvider!.info(name);
+        if (!remote) {
+          failedList.push(name);
+          continue;
+        }
+        const meta = readSkillMeta(name);
+        if (!isNewer(remote.version, meta?.version)) {
+          upToDateList.push(name);
+          continue;
+        }
+        if (dryRun) {
+          dryRunUpdates.push({ name, from: meta?.version ?? "unknown", to: remote.version });
+          continue;
+        }
+        s.text = `Updating ${ui.bold(name)} (${i + 1}/${total})...`;
+        await applyUpdate(name, remote, singleProvider!);
+        updatedList.push(name);
+      }
+    } catch (err) {
+      failedList.push(name);
+      if (err instanceof Error && !json) console.error(ui.dim(`  Failed to update ${name}: ${err.message}`));
+    }
   }
 
+  // Output results
   if (dryRun) {
     if (json) {
       console.log(
@@ -383,7 +337,7 @@ async function updateAll(installDir: string, providerName: string, json?: boolea
           dryRun: true,
           wouldUpdate: dryRunUpdates,
           upToDate: upToDateList,
-          skipped: skippedList,
+          ...(isAllMode ? { skipped: skippedList } : {}),
           failed: failedList,
         }),
       );
@@ -392,8 +346,10 @@ async function updateAll(installDir: string, providerName: string, json?: boolea
       if (dryRunUpdates.length === 0) {
         console.log(ui.dim("  All skills are up to date."));
       } else {
-        console.log(ui.bold(`  ${dryRunUpdates.length} of ${total} skills have updates available:`));
-        console.log();
+        if (isAllMode) {
+          console.log(ui.bold(`  ${dryRunUpdates.length} of ${total} skills have updates available:`));
+          console.log();
+        }
         for (const u of dryRunUpdates) {
           console.log(`  ${ui.bold(u.name)}: v${u.from} -> v${u.to}`);
         }
@@ -405,15 +361,19 @@ async function updateAll(installDir: string, providerName: string, json?: boolea
 
   if (json) {
     console.log(
-      JSON.stringify({ updated: updatedList, upToDate: upToDateList, skipped: skippedList, failed: failedList }),
+      JSON.stringify({
+        updated: updatedList,
+        upToDate: upToDateList,
+        ...(isAllMode ? { skipped: skippedList } : {}),
+        failed: failedList,
+      }),
     );
   } else {
     s.succeed(`Update complete`);
-    console.log(
-      ui.dim(
-        `  ${updatedList.length} updated, ${upToDateList.length} up to date${skippedList.length > 0 ? `, ${skippedList.length} skipped (not on provider)` : ""}${failedList.length > 0 ? `, ${failedList.length} failed` : ""}`,
-      ),
-    );
+    const parts = [`${updatedList.length} updated`, `${upToDateList.length} up to date`];
+    if (skippedList.length > 0) parts.push(`${skippedList.length} skipped (not on provider)`);
+    if (failedList.length > 0) parts.push(`${failedList.length} failed`);
+    console.log(ui.dim(`  ${parts.join(", ")}`));
     console.log();
   }
   if (failedList.length > 0) process.exit(1);

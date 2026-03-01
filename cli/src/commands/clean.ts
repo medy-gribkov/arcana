@@ -17,10 +17,9 @@ interface CleanResult {
   failedSymlinks?: string[];
 }
 
+import { STALE_PROJECT_DAYS, AGENT_LOG_MAX_AGE_DAYS, MAIN_LOG_MAX_AGE_DAYS } from "../constants.js";
+
 const AUXILIARY_DIRS = ["file-history", "debug", "shell-snapshots", "todos", "plans"] as const;
-const STALE_PROJECT_DAYS = 90;
-const AGENT_LOG_MAX_AGE_DAYS = 7;
-const MAIN_LOG_MAX_AGE_DAYS = 30;
 
 function purgeDir(dir: string, dryRun: boolean): number {
   if (!existsSync(dir)) return 0;

@@ -38,38 +38,8 @@ export function createCli(): Command {
     if (cmd) {
       console.error();
       console.error(ui.error("  Error: ") + `unknown command '${cmd}'`);
-      const commands = [
-        "list",
-        "install",
-        "info",
-        "search",
-        "providers",
-        "create",
-        "validate",
-        "update",
-        "uninstall",
-        "init",
-        "doctor",
-        "clean",
-        "compact",
-        "stats",
-        "config",
-        "audit",
-        "scan",
-        "optimize",
-        "verify",
-        "lock",
-        "completions",
-        "benchmark",
-        "profile",
-        "diff",
-        "outdated",
-        "team",
-        "export",
-        "import",
-        "recommend",
-      ];
-      const match = commands.find((c) => c.startsWith(cmd.slice(0, 3)));
+      const { findClosestCommand } = await import("./command-registry.js");
+      const match = findClosestCommand(cmd);
       if (match) {
         console.error(ui.dim(`  Did you mean '${match}'?`));
       }
@@ -89,7 +59,7 @@ export function createCli(): Command {
       showWelcome(pkg.version);
       markInitialized();
     }
-    const { showInteractiveMenu } = await import("./interactive.js");
+    const { showInteractiveMenu } = await import("./interactive/index.js");
     await showInteractiveMenu(pkg.version);
   });
 

@@ -4,6 +4,7 @@ import { homedir } from "node:os";
 import * as p from "@clack/prompts";
 import chalk from "chalk";
 import { ui } from "./ui.js";
+import { getGroupedCommands } from "../command-registry.js";
 
 const noColor = !!(process.env.NO_COLOR || process.env.TERM === "dumb");
 
@@ -37,35 +38,12 @@ export function renderBanner(): string {
   return BANNER_LINES.map((line, i) => `  ${amberShade(AMBER_HEXES[i]!, line)}`).join("\n");
 }
 
-interface CommandEntry {
-  cmd: string;
-  desc: string;
-}
-
-const COMMAND_GROUPS: Record<string, CommandEntry[]> = {
-  "GETTING STARTED": [
-    { cmd: "init", desc: "Initialize arcana in current project" },
-    { cmd: "doctor", desc: "Check environment and diagnose issues" },
-  ],
-  SKILLS: [
-    { cmd: "list", desc: "List available skills" },
-    { cmd: "search <query>", desc: "Search across providers" },
-    { cmd: "info <skill>", desc: "Show skill details" },
-    { cmd: "install [skills...]", desc: "Install one or more skills" },
-    { cmd: "update [skills...]", desc: "Update installed skills" },
-    { cmd: "uninstall [skills...]", desc: "Remove one or more skills" },
-  ],
-  DEVELOPMENT: [
-    { cmd: "create <name>", desc: "Create a new skill from template" },
-    { cmd: "validate [skill]", desc: "Validate skill structure" },
-    { cmd: "audit [skill]", desc: "Audit skill quality" },
-  ],
-  CONFIGURATION: [
-    { cmd: "config [key] [val]", desc: "View or modify configuration" },
-    { cmd: "providers", desc: "Manage skill providers" },
-    { cmd: "clean", desc: "Remove orphaned data" },
-    { cmd: "stats", desc: "Show session analytics" },
-  ],
+// Help groups: subset of registry for --help display (keeps output scannable)
+const HELP_GROUPS: Record<string, string[]> = {
+  "GETTING STARTED": ["init", "doctor"],
+  SKILLS: ["list", "search", "info", "install", "update", "uninstall", "recommend"],
+  DEVELOPMENT: ["create", "validate", "audit"],
+  CONFIGURATION: ["config", "providers", "clean", "stats"],
 };
 
 const EXAMPLES = [
@@ -89,11 +67,15 @@ export function buildCustomHelp(version: string): string {
   lines.push(`  ${ui.dim("USAGE")}`);
   lines.push("    arcana <command> [options]");
 
-  for (const [group, commands] of Object.entries(COMMAND_GROUPS)) {
+  const allCommands = getGroupedCommands();
+  const allFlat = Object.values(allCommands).flat();
+  for (const [group, names] of Object.entries(HELP_GROUPS)) {
     lines.push("");
     lines.push(`  ${ui.dim(group)}`);
-    for (const { cmd, desc } of commands) {
-      lines.push(`    ${ui.cyan(padRight(cmd, 22))}${ui.dim(desc)}`);
+    for (const name of names) {
+      const entry = allFlat.find((c) => c.name === name);
+      if (!entry) continue;
+      lines.push(`    ${ui.cyan(padRight(entry.usage, 22))}${ui.dim(entry.description)}`);
     }
   }
 
