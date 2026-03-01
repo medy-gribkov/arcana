@@ -17,8 +17,8 @@ vi.mock("./atomic.js", () => ({
 }));
 
 describe("integrity", () => {
-  let mockFs: any;
-  let mockAtomic: any;
+  let mockFs: typeof import("node:fs");
+  let mockAtomic: typeof import("./atomic.js");
 
   beforeEach(async () => {
     vi.resetModules();
@@ -103,7 +103,7 @@ describe("integrity", () => {
       expect(mockAtomic.atomicWriteSync).toHaveBeenCalledWith(
         expect.stringContaining("arcana-lock.json"),
         JSON.stringify(entries, null, 2) + "\n",
-        0o644,
+        0o600,
       );
     });
   });

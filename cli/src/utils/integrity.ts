@@ -35,7 +35,7 @@ export function writeLockfile(entries: LockEntry[]): void {
   const lockPath = getLockfilePath();
   const dir = join(homedir(), ".arcana");
   mkdirSync(dir, { recursive: true });
-  atomicWriteSync(lockPath, JSON.stringify(entries, null, 2) + "\n", 0o644);
+  atomicWriteSync(lockPath, JSON.stringify(entries, null, 2) + "\n", 0o600);
 }
 
 export function updateLockEntry(
