@@ -77,17 +77,6 @@
       "conflicts": []
     },
     {
-      "name": "ci-cd-automation",
-      "source": "./skills/ci-cd-automation",
-      "description": "Continuous integration and deployment pipelines, automated testing, build automation, and team workflows for game development.",
-      "version": "1.0.0",
-      "tags": ["ci-cd", "gamedev", "devops"],
-      "verified": true,
-      "author": "arcana",
-      "companions": ["game-tools-workflows"],
-      "conflicts": []
-    },
-    {
       "name": "ci-cd-pipelines",
       "source": "./skills/ci-cd-pipelines",
       "description": "GitHub Actions and GitLab CI/CD pipeline expertise. Workflow syntax, job matrix, dependency caching (npm, pip, go, docker layers), artifact management, reusable workflows, composite actions, environment secrets, deployment patterns (blue-green, canary, rolling), Docker builds in CI, version bumping, branch protection, status checks. Use when creating CI/CD pipelines, optimizing build times, setting up deployment automation, or configuring GitHub Actions workflows.",
@@ -437,17 +426,6 @@
       "verified": true,
       "author": "arcana",
       "companions": ["typescript", "ci-cd-pipelines"],
-      "conflicts": []
-    },
-    {
-      "name": "optimization-performance",
-      "source": "./skills/optimization-performance",
-      "description": "Game optimization, performance profiling, multi-platform support, and frame rate optimization for smooth gameplay experiences.",
-      "version": "1.0.0",
-      "tags": ["gamedev", "performance"],
-      "verified": true,
-      "author": "arcana",
-      "companions": [],
       "conflicts": []
     },
     {

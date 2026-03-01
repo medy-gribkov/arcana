@@ -5,213 +5,228 @@ description: Comprehensive game design theory covering MDA framework, player psy
 
 # Game Design Theory
 
-## The MDA Framework
+Apply the MDA framework, core loop design, balance tuning, and player feedback as procedural workflows. Every design decision must trace from Aesthetics back to Mechanics.
+
+## MDA Design Workflow
+
+Follow this sequence when designing or evaluating any game system.
+
+1. Define the target Aesthetic (the feeling you want players to have)
+2. Identify the Dynamics that produce that feeling (emergent behavior)
+3. Design Mechanics that generate those dynamics (rules, constraints, actions)
+4. Playtest. Observe whether the actual aesthetic matches the target
+5. If mismatch: adjust mechanics, not aesthetics. Never chase a feeling by adding content
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    MDA FRAMEWORK                             │
-├─────────────────────────────────────────────────────────────┤
-│  MECHANICS (Rules):                                          │
-│  → Player actions, constraints, state changes               │
-│  → Example: Jump has height limit, costs stamina            │
-│                              ↓                               │
-│  DYNAMICS (Behavior):                                        │
-│  → Emergent gameplay from mechanic interactions             │
-│  → Example: Wall-jump combos, speedrun routes               │
-│                              ↓                               │
-│  AESTHETICS (Experience):                                    │
-│  → Emotional responses: Fun, tension, achievement           │
-│  → Example: Flow state, satisfaction, immersion             │
-└─────────────────────────────────────────────────────────────┘
+# MDA traceability check
+aesthetic = "tension"          # What the player should feel
+dynamic   = "resource scarcity under time pressure"
+mechanic  = "ammo caps + respawn timer + shrinking zone"
+
+# Validate: does the mechanic chain produce the aesthetic?
+# If players feel frustration instead of tension, the mechanic is wrong.
 ```
 
-## Core Game Loop
-
+**BAD: Designing mechanics first, hoping fun emerges**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    ENGAGEMENT LOOP                           │
-├─────────────────────────────────────────────────────────────┤
-│  1. INPUT    → Player takes action                          │
-│  2. PROCESS  → Game calculates results                      │
-│  3. FEEDBACK → Immediate visual/audio response              │
-│  4. REWARD   → Progress, points, unlocks                    │
-│  5. REPEAT   → Loop invites next iteration                  │
-│                                                              │
-│  Loop Quality Criteria:                                      │
-│  ✓ Fast feedback (< 100ms)                                  │
-│  ✓ Clear causation                                          │
-│  ✓ Rewarding outcomes                                       │
-│  ✓ Compelling repetition                                    │
-└─────────────────────────────────────────────────────────────┘
+# No target aesthetic. Just adding systems.
+add_system("crafting")
+add_system("skill_tree")
+add_system("pet_companion")
+# Result: bloated, unfocused, "wide as an ocean, deep as a puddle"
 ```
 
-## Flow Channel (Csikszentmihalyi)
-
+**GOOD: Aesthetic-first design**
 ```
-     Anxiety
-         ↑
-  Hard   │     ████
-         │   ██████   ← FLOW CHANNEL
-Skill    │ ████████      (Optimal Engagement)
-Level    │████████████
-  Easy   │██████████████
-         └──────────────────→
-           Low    Challenge    High
-
-TARGET: Match challenge to player skill
+target_aesthetic = "mastery and flow"
+# What dynamics create mastery? Tight input-to-outcome loops with escalating challenge.
+mechanic_jump    = { height: variable, cost: none, recovery: 0.1s }
+mechanic_enemy   = { pattern: learnable, telegraph: 0.4s, punish_window: 0.2s }
+# Every mechanic exists because it serves the target feeling.
 ```
 
-## Player Psychology
+## Core Loop Design Process
 
-### Bartle's Player Types
+Design the loop players repeat every 10-60 seconds. This is the heartbeat of your game.
 
-| Type | Motivation | Design For |
-|------|------------|------------|
-| Achiever | Goals, progression | Achievements, levels |
-| Explorer | Discovery, secrets | Hidden content, lore |
-| Socializer | Community | Chat, guilds, co-op |
-| Killer | Competition | PvP, leaderboards |
-
-### Motivation Drivers
+1. Define the action (what the player does)
+2. Define the feedback (what happens within 100ms)
+3. Define the reward (what the player gains)
+4. Define the escalation (why they do it again, harder)
+5. Test loop in isolation before building anything else
 
 ```
-SELF-DETERMINATION THEORY:
-┌─────────────────────────────────────────────────────────────┐
-│  AUTONOMY:   Choice and control over actions               │
-│  COMPETENCE: Mastery and skill demonstration               │
-│  RELATEDNESS: Connection to characters/community           │
-└─────────────────────────────────────────────────────────────┘
+# Core loop template
+loop:
+  action    -> player swings sword
+  feedback  -> hit flash, damage number, screen shake (< 100ms)
+  reward    -> XP tick, loot drop chance, combo counter increment
+  escalate  -> enemies get tougher, combos unlock new moves
+  repeat    -> next enemy group, higher stakes
 ```
 
-## Reward Systems
-
+**BAD: Slow feedback, unclear causation**
 ```
-REWARD TYPES:
-┌─────────────────────────────────────────────────────────────┐
-│  INTRINSIC (Internal):                                       │
-│  • Achievement satisfaction                                 │
-│  • Creative expression                                      │
-│  • Curiosity fulfillment                                    │
-│  • Skill mastery                                            │
-├─────────────────────────────────────────────────────────────┤
-│  EXTRINSIC (External):                                       │
-│  • Points, scores                                           │
-│  • Unlocks, cosmetics                                       │
-│  • Leaderboard position                                     │
-│  • Currency rewards                                         │
-└─────────────────────────────────────────────────────────────┘
-
-REWARD SCHEDULING:
-• Fixed Ratio: Every N actions (predictable)
-• Variable Ratio: Random timing (engaging but ethical concerns)
-• Fixed Interval: Every N seconds
-• Milestone: At progression checkpoints
+# Player kills enemy. Nothing happens for 2 seconds.
+# XP bar updates silently. No particle effect. No sound.
+# Player doesn't connect action to reward. Loop breaks.
+on_enemy_death():
+    player.xp += 10          # silent update
+    save_to_database()        # 2 second delay
 ```
 
-## Balance Principles
-
-| Aspect | Goal | Technique |
-|--------|------|-----------|
-| Mechanical | All options viable | Counter-play, trade-offs |
-| Economic | Meaningful scarcity | Sinks and faucets |
-| Difficulty | Appropriate challenge | Dynamic scaling |
-| Competitive | Fair play | Mirror balance, no dominance |
-
-### Balance Formula Examples
-
-**Damage calculation:**
+**GOOD: Immediate, layered feedback**
 ```
-Base Damage = Weapon Power × (1 + Attack Stat / 100)
-Final Damage = Base Damage × (1 - Enemy Defense / (Enemy Defense + 100))
-
-Example: 50 power weapon, 75 attack, 30 enemy defense
-Base = 50 × (1 + 75/100) = 87.5
-Final = 87.5 × (1 - 30/130) = 67.3 damage
+on_enemy_death():
+    play_sound("impact_crunch")                    # 0ms
+    spawn_particles(enemy.pos, "burst_gold")       # 0ms
+    show_damage_number(enemy.pos, damage)          # 0ms
+    animate_xp_bar(player.xp, player.xp + 10)     # 50ms ease
+    if check_level_up(player):
+        trigger_level_up_fanfare()                 # 200ms delay, big moment
 ```
 
-**XP curve (exponential):**
-```
-XP for level N = Base × (N ^ Growth)
-Base = 100, Growth = 1.5 (gentle), 2.0 (standard), 2.5 (steep)
+## Balance Tuning Methodology
 
-Level 1: 100 XP
-Level 2: 100 × (2 ^ 2.0) = 400 XP
-Level 5: 100 × (5 ^ 2.0) = 2500 XP
-Level 10: 100 × (10 ^ 2.0) = 10000 XP
-```
+Follow this process when tuning numbers. Never guess. Always model, then validate with data.
 
-**Drop rate probability:**
-```
-Drop Chance = Base Rate × (1 + Luck / 100) × Pity Multiplier
-Pity increases by 1% per failed attempt
+1. Build a spreadsheet model of the system (damage, health, economy)
+2. Calculate time-to-kill, time-to-level, resource earn-rate vs spend-rate
+3. Run simulations or paper playtests against target benchmarks
+4. Collect real playtest data. Compare to model predictions
+5. Adjust in small increments (5-15% per pass). Large swings mask root causes
 
-Base 5% drop, 50 luck, 10 failed attempts:
-Chance = 0.05 × (1 + 50/100) × 1.10 = 8.25%
-```
-
-## 🔧 Troubleshooting
+### Damage Calculation
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ PROBLEM: Players find game boring                           │
-├─────────────────────────────────────────────────────────────┤
-│ ROOT CAUSES:                                                 │
-│ • Challenge too easy (below flow channel)                   │
-│ • No clear goals or progression                             │
-│ • Feedback loop too slow                                    │
-├─────────────────────────────────────────────────────────────┤
-│ SOLUTIONS:                                                   │
-│ → Increase challenge curve                                  │
-│ → Add clear milestones and rewards                          │
-│ → Speed up core loop, add variety                           │
-└─────────────────────────────────────────────────────────────┘
+base_damage  = weapon_power * (1 + attack_stat / 100)
+final_damage = base_damage * (1 - defense / (defense + 100))
 
-┌─────────────────────────────────────────────────────────────┐
-│ PROBLEM: Players frustrated / quitting                      │
-├─────────────────────────────────────────────────────────────┤
-│ ROOT CAUSES:                                                 │
-│ • Difficulty spike (above flow channel)                     │
-│ • Unclear mechanics or feedback                             │
-│ • Unfair or random feeling deaths                           │
-├─────────────────────────────────────────────────────────────┤
-│ SOLUTIONS:                                                   │
-│ → Smooth difficulty curve                                   │
-│ → Improve tutorial and feedback                             │
-│ → Make deaths feel fair and educational                     │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│ PROBLEM: Dominant strategy / no variety                     │
-├─────────────────────────────────────────────────────────────┤
-│ SOLUTIONS:                                                   │
-│ → Add counter-play to dominant options                      │
-│ → Buff underused alternatives                               │
-│ → Create situational advantages                             │
-└─────────────────────────────────────────────────────────────┘
+# Example: 50 power, 75 attack, 30 defense
+# base  = 50 * 1.75 = 87.5
+# final = 87.5 * (1 - 30/130) = 67.3
+# Time-to-kill = enemy_hp / final_damage. Target: 2-4 hits for trash, 10+ for bosses.
 ```
 
-## Design Checklist
+### XP Curve
 
 ```
-PRE-PRODUCTION:
-□ Target audience defined
-□ Core loop documented
-□ Unique selling point clear
-□ Reference games analyzed
+xp_for_level(n) = base * (n ** growth)
+# growth = 1.5 (gentle), 2.0 (standard), 2.5 (steep)
 
-PRODUCTION:
-□ Mechanics serve aesthetics
-□ Feedback loops verified
-□ Balance spreadsheets maintained
-□ Playtest schedule in place
+# Standard curve at growth=2.0, base=100:
+# Level 1:  100 XP    Level 5:  2500 XP
+# Level 10: 10000 XP  Level 20: 40000 XP
 
-POLISH:
-□ First-time user experience tested
-□ Difficulty curve validated
-□ Reward timing optimized
-□ Edge cases handled
+# Tuning rule: time-per-level should increase 15-25% per level.
+# If it doubles, your curve is too steep. Players will churn at the midgame.
 ```
 
----
+**BAD: Flat difficulty, no escalation**
+```
+# Every enemy has the same stats. Player power scales but challenge doesn't.
+# By level 5, everything is trivial. Player quits from boredom.
+enemy_hp = 100      # constant forever
+player_damage = level * 10  # grows without limit
+```
 
-**Use this skill**: When designing game systems, understanding player psychology, or balancing gameplay.
+**GOOD: Difficulty curve tracks player power**
+```
+enemy_hp(zone)    = base_hp * (1.12 ** zone)     # 12% per zone
+enemy_damage(zone)= base_dmg * (1.10 ** zone)    # 10% per zone
+player_power(lvl) = base_power * (1.11 ** lvl)   # 11% per level
+
+# Player stays slightly ahead. Challenge is real but manageable.
+# Boss zones spike to 1.5x normal, then drop back. Creates rhythm.
+```
+
+## Player Feedback Implementation
+
+Use this checklist when implementing feedback for any player action.
+
+1. Identify every action the player can take
+2. For each action, define feedback in three tiers:
+   - Tier 1 (0ms): visual flash, sound cue, controller rumble
+   - Tier 2 (50-200ms): particle effect, UI update, camera response
+   - Tier 3 (500ms+): reward popup, stat change, state transition
+3. Test with audio muted. If the action still feels responsive, tier 1 visuals work
+4. Test with eyes closed. If the action still feels responsive, tier 1 audio works
+5. Remove feedback one layer at a time until the action feels flat. That's your minimum
+
+**BAD: All feedback is the same weight**
+```
+# Every action gets the same screen shake, same sound, same particle.
+# Player can't distinguish important events from noise.
+on_any_action():
+    screen_shake(0.5)
+    play_sound("generic_hit")
+    spawn_particles("default")
+```
+
+**GOOD: Feedback scales with significance**
+```
+on_light_attack_hit():
+    screen_shake(0.05)
+    play_sound("tap_light")
+    spawn_particles("small_spark", count=3)
+
+on_critical_hit():
+    screen_shake(0.3)
+    play_sound("impact_heavy")
+    spawn_particles("burst_fire", count=20)
+    pause_frame(0.05)          # hit stop, sells the impact
+    camera_zoom(0.95, 0.1)     # subtle zoom in, 100ms
+
+on_boss_kill():
+    screen_shake(0.8)
+    play_sound("boss_death_fanfare")
+    slow_motion(0.2, duration=1.5)
+    spawn_particles("explosion_gold", count=100)
+    camera_cinematic("pull_back_wide")
+```
+
+## Reward Loop Design
+
+1. Map all sources of rewards (kills, quests, exploration, time)
+2. Assign each a value tier: small (per-action), medium (per-session-goal), large (milestone)
+3. Schedule small rewards on a fixed ratio (every N actions)
+4. Schedule medium rewards as milestone completions
+5. Schedule large rewards at progression gates (new zone, new ability)
+6. Never use variable-ratio schedules on monetized rewards. That is a loot box
+
+**BAD: Front-loaded rewards that dry up**
+```
+# Player gets 10 rewards in first hour, then 1 per hour after.
+# Dopamine cliff. Player feels the game "got worse."
+rewards_per_hour = [10, 8, 3, 1, 1, 1, 1]  # severe dropoff
+```
+
+**GOOD: Consistent reward density with periodic spikes**
+```
+# Steady drip with milestone peaks. Player always has something close.
+rewards_per_hour = [6, 5, 5, 8, 5, 5, 5, 10, 5, 5]
+#                              ^milestone     ^boss clear
+# Rule: never go more than 3 minutes without some reward signal.
+# Reward can be small (resource pickup) but must exist.
+```
+
+## Diagnostic: Players Not Having Fun
+
+When playtesters report boredom or frustration, run this diagnostic.
+
+1. Check the core loop. Is feedback under 100ms? Is the action-reward chain obvious?
+2. Check the flow channel. Plot player skill vs challenge. Are they matched?
+3. Check reward pacing. Graph rewards-over-time. Any dead zones longer than 3 minutes?
+4. Check player agency. Does the player have meaningful choices, or is there one optimal path?
+5. Check clarity. Can a new player explain what they're supposed to do within 30 seconds?
+
+```
+# Quick diagnostic pseudocode
+def diagnose(playtest_data):
+    if avg_feedback_latency > 100:       return "FIX: feedback too slow"
+    if challenge_delta > 0.3:            return "FIX: difficulty spike"
+    if max_reward_gap > 180:             return "FIX: reward desert"
+    if dominant_strategy_usage > 0.7:    return "FIX: balance, buff alternatives"
+    if tutorial_completion_rate < 0.5:   return "FIX: onboarding clarity"
+    return "PASS: look deeper at content quality"
+```

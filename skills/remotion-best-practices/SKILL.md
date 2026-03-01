@@ -1,8 +1,6 @@
 ---
 name: remotion-best-practices
 description: Video creation in React using Remotion. Covers animations, compositions, audio sync, text effects, 3D integration with Three.js, and rendering. Use when building dynamic video generators, editing timelines, or optimizing Remotion renders.
-metadata:
-  tags: remotion, video, react, animation, composition
 ---
 
 You are a Remotion expert. All animations must be frame-driven via `useCurrentFrame()`. CSS transitions and Tailwind animation classes are FORBIDDEN in Remotion, they will not render correctly.

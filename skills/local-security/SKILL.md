@@ -3,129 +3,212 @@ name: local-security
 description: Developer workstation security covering SSH key management, GPG signing, credential stores, file permissions, agent forwarding, IDE hardening, and browser extension auditing.
 ---
 
-## Purpose
+Treat the developer workstation as a critical supply chain node. A compromised dev machine means compromised code, credentials, and infrastructure access. Follow these workflows to harden each surface.
 
-Secure the developer workstation as a critical node in the software supply chain. A compromised dev machine means compromised code, credentials, and infrastructure access.
+## SSH Hardening Workflow
 
-## SSH Key Management
+1. **Generate** an Ed25519 key per service. One key for GitHub, another for production servers, another for cloud.
+2. **Protect** the private key with a passphrase. Load it into `ssh-agent` so you type it once.
+3. **Lock permissions** on the `.ssh` directory and all key files.
+4. **Configure** `~/.ssh/config` to use ProxyJump instead of agent forwarding.
+5. **Rotate** keys annually. Remove old public keys from every authorized service.
 
-- Generate keys with `ssh-keygen -t ed25519 -C "purpose@host"`. Ed25519 is faster and more secure than RSA.
-- Use one key per service or environment. Do not reuse the same key for GitHub, servers, and cloud providers.
-- Protect private keys with a strong passphrase. Use `ssh-agent` to avoid retyping it.
-- Set permissions: `chmod 700 ~/.ssh`, `chmod 600 ~/.ssh/id_*`, `chmod 644 ~/.ssh/*.pub`.
-- Rotate keys annually. Remove old public keys from authorized services after rotation.
-- Audit `~/.ssh/authorized_keys` on servers you manage. Remove keys for departed team members immediately.
-- Use `ssh-keygen -l -f key.pub` to verify key fingerprints before trusting them.
+```bash
+# Step 1: Generate a dedicated key
+ssh-keygen -t ed25519 -C "github@workstation" -f ~/.ssh/id_ed25519_github
+
+# Step 2: Add to agent with passphrase caching
+ssh-add ~/.ssh/id_ed25519_github
+
+# Step 3: Lock permissions
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_ed25519_*
+chmod 644 ~/.ssh/*.pub
+
+# Step 5: Verify fingerprint before trusting a key
+ssh-keygen -l -f ~/.ssh/id_ed25519_github.pub
+```
+
+**BAD - Single key reused everywhere, no passphrase, open permissions:**
+```bash
+ssh-keygen -t rsa -b 2048 -N "" -f ~/.ssh/id_rsa
+chmod 755 ~/.ssh
+# Same key added to GitHub, AWS, production bastion, personal VPS
+```
+
+**GOOD - Dedicated Ed25519 key, passphrase, tight permissions:**
+```bash
+ssh-keygen -t ed25519 -C "github@workstation" -f ~/.ssh/id_ed25519_github
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_ed25519_github
+```
+
+**BAD - Agent forwarding to untrusted host:**
+```
+Host bastion
+  HostName bastion.example.com
+  ForwardAgent yes
+```
+
+**GOOD - ProxyJump through bastion, no agent exposure:**
+```
+Host bastion
+  HostName bastion.example.com
+
+Host production
+  HostName 10.0.1.50
+  ProxyJump bastion
+```
 
 ### Windows OpenSSH Agent Setup
 
 ```powershell
-# Enable OpenSSH Agent service
+# Enable and start the agent service (persists across reboots)
 Get-Service ssh-agent | Set-Service -StartupType Automatic
 Start-Service ssh-agent
 
-# Add key to agent
-ssh-add $HOME\.ssh\id_ed25519
+# Add key once
+ssh-add $HOME\.ssh\id_ed25519_github
 
-# Configure Git to use OpenSSH (not Git's bundled ssh)
+# Point Git to Windows OpenSSH instead of bundled ssh
 git config --global core.sshCommand "C:/Windows/System32/OpenSSH/ssh.exe"
 
-# Verify agent is running and key is loaded
+# Verify
 ssh-add -l
 ```
 
-On Windows, the OpenSSH agent persists keys across reboots. You only need to add keys once after enabling the service.
+## GPG Signing Setup
 
-## GPG Commit Signing
+1. **Install** GPG tooling (Gpg4win on Windows, gnupg on Linux/macOS).
+2. **Generate** a key with RSA 4096 or Ed25519. Set expiration to 1-2 years.
+3. **Configure** Git to sign all commits automatically.
+4. **Export** the public key and upload to GitHub/GitLab.
+5. **Back up** the private key to an encrypted offline location.
 
-- Generate a GPG key: `gpg --full-generate-key`. Use RSA 4096 or Ed25519.
-- Configure Git to sign commits: `git config --global commit.gpgsign true`.
-- Set the signing key: `git config --global user.signingkey <KEY_ID>`.
-- Upload the public key to GitHub/GitLab. Signed commits get a "Verified" badge.
-- Back up the private key securely. Losing it means you cannot prove authorship of past commits.
-- Set an expiration date on GPG keys (1-2 years). Extend before expiry rather than creating new keys.
-- Use `gpg --list-secret-keys --keyid-format=long` to find your key ID.
-
-### Gpg4win for Windows
-
-```powershell
-# Install Gpg4win (includes Kleopatra GUI)
-winget install GnuPG.Gpg4win
-
-# Generate key via Kleopatra or CLI
+```bash
+# Step 2: Generate key
 gpg --full-generate-key
 
-# Configure Git to use GPG
-git config --global gpg.program "C:\Program Files (x86)\GnuPG\bin\gpg.exe"
-git config --global commit.gpgsign true
-git config --global user.signingkey <KEY_ID>
+# Step 2b: Find your key ID
+gpg --list-secret-keys --keyid-format=long
+# Output: sec   ed25519/ABC123DEF456 2024-01-01 [SC] [expires: 2026-01-01]
 
-# Export public key for GitHub
-gpg --armor --export <KEY_ID> | clip
-# Paste into GitHub Settings > SSH and GPG keys > New GPG key
+# Step 3: Configure Git
+git config --global commit.gpgsign true
+git config --global user.signingkey ABC123DEF456
+
+# Step 4: Export public key (pipe to clipboard or file)
+gpg --armor --export ABC123DEF456 > gpg-public.asc
+
+# Windows: point Git to Gpg4win binary
+git config --global gpg.program "C:/Program Files (x86)/GnuPG/bin/gpg.exe"
 ```
 
-Kleopatra provides a GUI for key management, making it easier to back up, import, and manage GPG keys on Windows.
+**BAD - No expiration, no signing configured:**
+```bash
+gpg --gen-key   # Defaults to no expiration
+# Never configure git commit.gpgsign
+# Commits show as "Unverified" on GitHub
+```
 
-## Credential Managers
+**GOOD - Expiring key, auto-signing enabled:**
+```bash
+gpg --full-generate-key  # Choose Ed25519, set 2-year expiry
+git config --global commit.gpgsign true
+git config --global user.signingkey ABC123DEF456
+# Commits show "Verified" badge on GitHub
+```
 
-- Use a dedicated credential manager. Never store secrets in plaintext files or shell history.
-- 1Password CLI (`op`): `op read "op://vault/item/field"` injects secrets into scripts without exposing them.
-- `pass` (password-store): GPG-encrypted, Git-backed. Good for teams that prefer open-source tooling.
-- Git credential helpers: `git config --global credential.helper manager` on Windows, `osxkeychain` on macOS.
-- Environment variables from `.env` files: use `.gitignore` to exclude them. Use `direnv` for automatic loading.
-- Never commit credentials. Run `gitleaks detect` as a pre-commit hook to catch accidental leaks.
+## Credential Management
 
-## File Permissions
+1. **Configure** a Git credential helper for your OS.
+2. **Eliminate** plaintext secrets from shell history, dotfiles, and scripts.
+3. **Install** gitleaks as a pre-commit hook to catch accidental leaks.
+4. **Use** a secrets manager for scripts that need credentials at runtime.
 
-- Home directory: `chmod 750 ~`. Prevent other users from reading your files.
-- Config files with secrets: `chmod 600`. This includes `.netrc`, `.npmrc` with tokens, cloud CLI configs.
-- Scripts: `chmod 755` for shared scripts, `chmod 700` for personal scripts with sensitive logic.
-- Check for world-readable sensitive files: look for config files with permissions ending in 4 or higher.
-- On Windows, use NTFS ACLs. Remove "Everyone" and "Users" from sensitive directories.
-- Audit permissions after cloning repositories. Git does not preserve full Unix permissions.
+```bash
+# Step 1: Git credential helper
+git config --global credential.helper manager   # Windows
+git config --global credential.helper osxkeychain  # macOS
+git config --global credential.helper store      # Linux (plaintext fallback)
 
-## Agent Forwarding Risks
+# Step 3: Install gitleaks pre-commit
+gitleaks detect --source . --verbose
 
-- `ssh -A` forwards your SSH agent to the remote host. Anyone with root on that host can use your keys.
-- Prefer `ProxyJump` (`ssh -J bastion target`) over agent forwarding for bastion host access.
-- If agent forwarding is necessary, use `ssh-add -c` to require confirmation for each key use.
-- Limit which keys are loaded in the agent. Use `ssh-add -l` to list currently loaded keys.
-- Set `AddKeysToAgent yes` in `~/.ssh/config` to auto-load keys only when used.
-- Never forward agents to shared or untrusted hosts.
+# Step 4: Inject secrets from 1Password CLI (never in env or code)
+op read "op://Development/github-token/credential"
+```
 
-## IDE and Editor Security
+**BAD - Token hardcoded in script:**
+```bash
+GITHUB_TOKEN="ghp_abc123secrettoken"
+curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
+```
 
-- Review installed extensions quarterly. Remove unused ones. Extensions have broad file system access.
-- Pin extension versions in team settings to prevent supply chain attacks via auto-updates.
-- Disable telemetry in IDE settings if working on sensitive projects.
-- Use workspace-scoped settings for project-specific configurations. Do not leak global paths.
-- Check that `.vscode/settings.json` and `.idea/` directories do not contain tokens or local paths before committing.
-- Enable automatic security updates for the IDE itself.
-- Use remote development (SSH, containers) for sensitive codebases to isolate the environment.
+**GOOD - Token pulled from credential store at runtime:**
+```bash
+GITHUB_TOKEN=$(op read "op://Development/github-token/credential")
+curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
+```
 
-## Browser Extension Auditing
+## File Permissions Audit
 
-- Audit browser extensions every quarter. Remove any you do not actively use.
-- Check permissions: extensions requesting "Read and change all your data on all websites" are high risk.
-- Developer-relevant extensions to scrutinize: OAuth token managers, API clients, JSON viewers.
-- Use separate browser profiles for development and personal browsing.
-- Disable extensions in incognito/private mode by default.
-- Watch for extension ownership transfers. A trusted extension can become malicious after acquisition.
-- Prefer extensions from known publishers with public source code.
+1. **Scan** home directory for world-readable sensitive files.
+2. **Fix** permissions on SSH keys, cloud configs, token files.
+3. **Verify** after cloning repos. Git does not preserve full Unix permissions.
 
-## Network Security
+```bash
+# Step 1: Find sensitive files with bad permissions
+find ~ -maxdepth 3 -name ".netrc" -o -name ".npmrc" -o -name "credentials" \
+  -o -name ".env" -o -name "*.pem" | xargs ls -la
 
-- Use a VPN or SSH tunnel when working on public networks. Coffee shop WiFi is not secure.
-- Configure firewall rules to block inbound connections. Only open ports you actively need.
-- Disable unused network services: file sharing, remote desktop, mDNS.
-- Use DNS-over-HTTPS or DNS-over-TLS to prevent DNS snooping.
-- Monitor outbound connections with `lsof -i` or `netstat`. Look for unexpected traffic.
+# Step 2: Lock down sensitive files
+chmod 600 ~/.netrc ~/.npmrc ~/.config/gh/hosts.yml
+chmod 600 ~/.aws/credentials ~/.config/gcloud/*.json
+chmod 700 ~/.gnupg
 
-## Maintenance Routine
+# Step 3: Verify SSH directory after any change
+ls -la ~/.ssh/
+```
 
-- Monthly: rotate any temporary credentials, review SSH agent keys, check for OS updates.
-- Quarterly: audit browser extensions, review IDE extensions, scan for leaked credentials in repos.
-- Annually: rotate SSH and GPG keys, review file permissions, update threat model.
-- After any incident: assume compromise, rotate all credentials, audit access logs.
-- Document your security setup so you can rebuild a clean workstation quickly.
+**BAD - World-readable credentials:**
+```
+-rw-r--r-- 1 dev dev 256 Jan 1 ~/.netrc
+-rwxrwxrwx 1 dev dev 512 Jan 1 ~/.ssh/id_ed25519
+drwxr-xr-x 2 dev dev 4096 Jan 1 ~/.aws
+```
+
+**GOOD - Owner-only access:**
+```
+-rw------- 1 dev dev 256 Jan 1 ~/.netrc
+-rw------- 1 dev dev 512 Jan 1 ~/.ssh/id_ed25519
+drwx------ 2 dev dev 4096 Jan 1 ~/.aws
+```
+
+## IDE and Extension Hardening
+
+1. **List** all installed extensions. Remove any unused ones immediately.
+2. **Pin** extension versions in team workspace settings.
+3. **Check** `.vscode/settings.json` and `.idea/` for leaked tokens or local paths before committing.
+4. **Use** remote development (SSH, containers) for sensitive codebases.
+
+```bash
+# List VS Code extensions
+code --list-extensions
+
+# Check workspace settings for leaked paths or tokens
+grep -r "token\|secret\|password\|C:\\\\Users" .vscode/ .idea/ 2>/dev/null
+```
+
+## Maintenance Schedule
+
+```
+Monthly:   Rotate temp credentials. Review ssh-add -l. Check OS updates.
+Quarterly: Audit browser + IDE extensions. Run gitleaks detect on all repos.
+Annually:  Rotate SSH and GPG keys. Full permissions audit. Update threat model.
+Incident:  Assume compromise. Rotate ALL credentials. Audit access logs.
+```
+
+---
+
+**Use this skill**: When setting up a new workstation, onboarding a team member, or after any security incident that may have exposed developer credentials.

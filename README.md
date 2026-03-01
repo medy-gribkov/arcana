@@ -10,7 +10,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/@sporesec/arcana"><img src="https://img.shields.io/npm/v/@sporesec/arcana?style=for-the-badge&color=d4943a" alt="npm"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-d4943a?style=for-the-badge" alt="MIT"/></a>
-  <a href="#skills"><img src="https://img.shields.io/badge/Skills-60-d4943a?style=for-the-badge" alt="Skills"/></a>
+  <a href="#skills"><img src="https://img.shields.io/badge/Skills-58-d4943a?style=for-the-badge" alt="Skills"/></a>
   <a href="#compatibility"><img src="https://img.shields.io/badge/Platforms-7-d4943a?style=for-the-badge" alt="Platforms"/></a>
 </p>
 
@@ -18,7 +18,7 @@
 
 ## What Makes Arcana Different
 
-**60 battle-tested skills** with code examples, BAD/GOOD pairs, and procedural workflows in every section. Not capability lists. Not vague instructions. Real patterns you can copy.
+**58 battle-tested skills** with code examples, BAD/GOOD pairs, and procedural workflows in every section. Not capability lists. Not vague instructions. Real patterns you can copy.
 
 **Validation scripts** that run as zero-cost automation. Security review checks generated auth code. Database design lints migration files. TypeScript scans for `any` usage. All executed, never loaded as context.
 
@@ -32,7 +32,7 @@
 # Install globally
 npm i -g @sporesec/arcana
 
-# Install all 60 skills
+# Install all 58 skills
 arcana install --all
 
 # Or install specific skills
@@ -95,8 +95,7 @@ All commands support `--json` for machine-readable output and respect `NO_COLOR`
 | frontend-design | Design | Production interfaces. CSS custom properties, accessibility, DON'T/DO guidelines |
 | container-security | DevOps | Dockerfile BAD/GOOD, rootless containers, image scanning, runtime security config |
 | cost-optimization | DevOps | HPA config, spot instances, right-sizing, CDN caching, cost calculation examples |
-| ci-cd-automation | DevOps | Multi-language CI. Go, Node, Python pipelines, Docker build caching, artifacts |
-| ci-cd-pipelines | DevOps | GitHub Actions and GitLab CI. Matrix strategy, caching gotchas, deployment patterns |
+| ci-cd-pipelines | DevOps | GitHub Actions and GitLab CI. Matrix strategy, caching, deployment patterns, Unity CI |
 | docker-kubernetes | DevOps | Multi-stage builds (Go, Node, Python), K8s manifests, health checks, security context |
 | dependency-audit | DevOps | npm audit, go mod tidy, pip-audit, license compliance, CI automation |
 | doc-generation | Docs | OpenAPI, JSDoc, godoc, Mermaid diagrams, procedural walkthrough |
@@ -119,7 +118,6 @@ All commands support `--json` for machine-readable output and respect `NO_COLOR`
 | memory-management | Game Dev | Object pooling, GC optimization, Rust ownership comparison, budgets |
 | monetization-systems | Game Dev | IAP manager, battle pass design, A/B test revenue formulas, KPIs |
 | networking-servers | Game Dev | Lag compensation, netcode, synchronization, anti-cheat patterns |
-| optimization-performance | Game Dev | Profiling, multi-platform, frame rate optimization, LCP srcset |
 | particle-systems | Game Dev | VFX, physics simulation, LOD strategy, post-processing |
 | programming-architecture | Game Dev | ECS, data-oriented design, clean architecture, concrete implementations |
 | publishing-platforms | Game Dev | Steam, Epic, console submission. Revenue splits, certification checklists |
@@ -141,7 +139,7 @@ All commands support `--json` for machine-readable output and respect `NO_COLOR`
 | monitoring-observability | Monitoring | JSON logging, Prometheus, OpenTelemetry, Grafana dashboard JSON, SLO alerts |
 | project-migration | Migration | Project folder migration preserving Claude Code session data and paths |
 | npm-package | Packages | tsup bundling, ESM/CJS exports, wrong-exports debugging, monorepo setup |
-| performance-optimization | Performance | Core Web Vitals, bundle analysis, caching, memory leak detection |
+| performance-optimization | Performance | Core Web Vitals, bundle analysis, caching, memory leaks, game frame budgets |
 | pre-production-review | Review | 8-domain codebase analysis with health scoring and phased remediation |
 | testing-strategy | Testing | Test pyramid, pytest/Vitest/Jest/Go, flakiness detection, TDD workflow |
 | remotion-best-practices | Video | React video creation. Composition, spring(), interpolate, Sequence, Audio |
@@ -156,7 +154,7 @@ All commands support `--json` for machine-readable output and respect `NO_COLOR`
 | Multi-platform init | 7 platforms | 17+ agents | Manual |
 | Skill validation | `validate --all --fix` | No | No |
 | Security scanning | Built-in | No | No |
-| Skill count | 60 curated | Community | DIY |
+| Skill count | 58 curated | Community | DIY |
 
 ## Compatibility
 
