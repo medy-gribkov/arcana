@@ -19,12 +19,10 @@
 ## Demo
 
 <p align="center">
-  <video src="assets/arcana-promo.mp4" width="720" autoplay loop muted>
-    Your browser does not support the video tag.
-  </video>
+  <img src="assets/arcana-promo.gif" alt="Arcana CLI demo" width="720"/>
 </p>
 
-<sub>This video was built with arcana's own <code>remotion-best-practices</code> skill.</sub>
+<sub>Built with arcana's own <code>remotion-best-practices</code> skill.</sub>
 
 ## Why Arcana
 
