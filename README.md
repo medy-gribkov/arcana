@@ -4,7 +4,7 @@
 
 <p align="center">
   <strong>The AI development toolkit.</strong><br/>
-  Skills, scripts, diagnostics, and security scanning for every coding agent.
+  58 production-ready skills for every coding agent.
 </p>
 
 <p align="center">
@@ -16,45 +16,46 @@
 
 ---
 
-## What Makes Arcana Different
-
-**58 battle-tested skills** with code examples, BAD/GOOD pairs, and procedural workflows in every section. Not capability lists. Not vague instructions. Real patterns you can copy.
-
-**Validation scripts** that run as zero-cost automation. Security review checks generated auth code. Database design lints migration files. TypeScript scans for `any` usage. All executed, never loaded as context.
-
-**Environment management.** `doctor` diagnoses issues. `clean` removes stale data. `stats` shows session analytics. `init` scaffolds config for 7 platforms. `validate` catches broken skills before they waste tokens.
-
-**Format-portable.** Skills are markdown. Any LLM can read them. Claude Code loads them natively. Other platforms get config scaffolding via `arcana init`.
-
 ## Demo
 
-Generate the 30-second promo video (built with arcana's own `remotion-best-practices` skill):
+<p align="center">
+  <video src="assets/arcana-promo.mp4" width="720" autoplay loop muted>
+    Your browser does not support the video tag.
+  </video>
+</p>
 
-```bash
-cd promo && npm install && npm run render
-```
+<sub>This video was built with arcana's own <code>remotion-best-practices</code> skill.</sub>
 
-Output: `promo/out/arcana-promo.mp4` (1920x1080, 30fps)
+## Why Arcana
+
+Every skill includes code examples, BAD/GOOD pairs, and step-by-step workflows. No capability lists. No vague instructions. Patterns you can copy directly.
+
+Validation scripts run as zero-cost automation. Security review checks auth code. Database design lints migrations. TypeScript scans for `any` usage. Executed at build time, never loaded as context.
+
+`doctor` diagnoses issues. `clean` removes stale data. `stats` shows session analytics. `init` scaffolds config for 7 platforms. `validate` catches broken skills before they waste tokens.
+
+Skills are markdown files. Any LLM can read them. Claude Code loads them natively. Other platforms get config scaffolding via `arcana init`.
 
 ## Quick Start
 
 ```bash
-# Install globally
 npm i -g @sporesec/arcana
-
-# Install all 58 skills
 arcana install --all
+```
 
-# Or install specific skills
+Or install specific skills:
+
+```bash
 arcana install golang-pro security-review typescript-advanced
 ```
 
-Or without installing:
+Without global install:
+
 ```bash
 npx @sporesec/arcana install --all
 ```
 
-Skills are installed to `~/.agents/skills/`, the standard location for all compatible tools.
+Skills install to `~/.agents/skills/`.
 
 ## CLI Commands
 
@@ -76,7 +77,7 @@ Skills are installed to `~/.agents/skills/`, the standard location for all compa
 
 | Command | Description |
 |---------|-------------|
-| `arcana init` | Scaffold AI tool config (CLAUDE.md, .cursor/rules/, etc.) |
+| `arcana init` | Scaffold config for Claude Code, Cursor, Codex, Gemini, Windsurf, Antigravity, Aider |
 | `arcana doctor` | Diagnose environment issues |
 | `arcana clean --dry-run` | Preview cleanup of stale data |
 | `arcana stats` | Session analytics and token usage |
@@ -154,18 +155,6 @@ All commands support `--json` for machine-readable output and respect `NO_COLOR`
 | testing-strategy | Testing | Test pyramid, pytest/Vitest/Jest/Go, flakiness detection, TDD workflow |
 | remotion-best-practices | Video | React video creation. Composition, spring(), interpolate, Sequence, Audio |
 
-## How It Compares
-
-| Feature | Arcana | Skills.sh | Manual |
-|---------|--------|-----------|--------|
-| Skill install | Yes | Yes | Copy files |
-| Validation scripts | Yes (zero token cost) | No | No |
-| Environment doctor | Yes | No | No |
-| Multi-platform init | 7 platforms | 17+ agents | Manual |
-| Skill validation | `validate --all --fix` | No | No |
-| Security scanning | Built-in | No | No |
-| Skill count | 58 curated | Community | DIY |
-
 ## Compatibility
 
 Skills are plain markdown with YAML frontmatter. Claude Code loads them natively from `~/.agents/skills/`. Other platforms read them as project context after running `arcana init`.
@@ -180,27 +169,25 @@ Skills are plain markdown with YAML frontmatter. Claude Code loads them natively
 | Antigravity | `AGENT.md` | Config scaffold via `arcana init` |
 | Aider | `.aider.conf.yml` | Config scaffold via `arcana init` |
 
-## Support This Project
+## Support
 
-I build and maintain these skills in my free time. If they save you time, consider supporting the project.
+If these skills save you time, consider supporting the project.
 
 - [GitHub Sponsors](https://github.com/sponsors/medy-gribkov)
 - [Buy Me a Coffee](https://buymeacoffee.com/mahdygribkov)
 - [Ko-fi](https://ko-fi.com/mahdygribkov)
 
-Starring the repo also helps.
-
 ## Contributing
 
-Want to add a skill or improve an existing one? Check [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security
 
-Found a vulnerability? See [SECURITY.md](SECURITY.md).
+Report vulnerabilities via [SECURITY.md](SECURITY.md).
 
-## Credits
+## Contact
 
-Created by [Mahdy Gribkov](https://mahdygribkov.vercel.app).
+Mahdy Gribkov - [medygribkov@gmail.com](mailto:medygribkov@gmail.com) - [mahdygribkov.vercel.app](https://mahdygribkov.vercel.app)
 
 ## License
 
