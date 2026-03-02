@@ -89,7 +89,11 @@ export function auditSkill(skillDir: string, skillName: string): AuditResult {
   // 9. Section diversity (3+ unique ## headings)
   const uniqueHeadings = new Set((body.match(/^## .+$/gm) || []).map((h) => h.toLowerCase()));
   const goodDiversity = uniqueHeadings.size >= 3;
-  checks.push({ name: "Section diversity (3+ unique headings)", passed: goodDiversity, detail: `${uniqueHeadings.size} unique sections` });
+  checks.push({
+    name: "Section diversity (3+ unique headings)",
+    passed: goodDiversity,
+    detail: `${uniqueHeadings.size} unique sections`,
+  });
   if (goodDiversity) score += 5;
 
   // 10. Numbered steps (task decomposition signal)

@@ -2,12 +2,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import {
-  jaccardSimilarity,
-  validateCompanions,
-  validateDescriptionSync,
-  crossValidate,
-} from "./quality.js";
+import { jaccardSimilarity, validateCompanions, validateDescriptionSync, crossValidate } from "./quality.js";
 import type { MarketplacePlugin } from "../types.js";
 
 function makeTestSetup(
@@ -103,12 +98,20 @@ describe("validateDescriptionSync", () => {
 
   it("passes when descriptions are similar", () => {
     expect(
-      validateDescriptionSync("test", "Build REST APIs with Node.js and Express", "Build REST APIs with Node.js Express and routing"),
+      validateDescriptionSync(
+        "test",
+        "Build REST APIs with Node.js and Express",
+        "Build REST APIs with Node.js Express and routing",
+      ),
     ).toBeNull();
   });
 
   it("detects description drift", () => {
-    const issue = validateDescriptionSync("test", "Completely unrelated topic about cooking", "Advanced quantum physics simulation engine");
+    const issue = validateDescriptionSync(
+      "test",
+      "Completely unrelated topic about cooking",
+      "Advanced quantum physics simulation engine",
+    );
     expect(issue).not.toBeNull();
     expect(issue!.category).toBe("marketplace-drift");
   });
@@ -180,10 +183,7 @@ describe("crossValidate", () => {
   });
 
   it("handles empty marketplace gracefully", () => {
-    const { skillsDir, marketplacePath } = makeTestSetup(
-      [{ name: "skill-a", description: "Some description" }],
-      [],
-    );
+    const { skillsDir, marketplacePath } = makeTestSetup([{ name: "skill-a", description: "Some description" }], []);
     const issues = crossValidate(skillsDir, marketplacePath);
     expect(issues.some((i) => i.category === "orphan")).toBe(true);
   });

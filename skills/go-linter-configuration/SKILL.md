@@ -12,9 +12,10 @@ go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 # GOOD: install latest with go install
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
-# Or use installation script for specific version
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-  | sh -s -- -b $(go env GOPATH)/bin v1.61.0
+# Or install via package manager
+# macOS: brew install golangci-lint
+# Windows: choco install golangci-lint
+# Linux: snap install golangci-lint --classic
 ```
 
 Verify installation:

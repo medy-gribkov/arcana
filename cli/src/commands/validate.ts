@@ -223,7 +223,8 @@ export async function validateCommand(
   if (warned > 0) parts.push(ui.warn(`${warned} warnings`));
   if (failed > 0) parts.push(ui.error(`${failed} failed`));
   if (fixed > 0) parts.push(ui.cyan(`${fixed} fixed`));
-  if (hasCrossErrors) parts.push(ui.error(`${crossIssues.filter((i) => i.level === "error").length} cross-validation errors`));
+  if (hasCrossErrors)
+    parts.push(ui.error(`${crossIssues.filter((i) => i.level === "error").length} cross-validation errors`));
   console.log(`  ${parts.join(ui.dim(" | "))}`);
   console.log();
 

@@ -104,7 +104,7 @@ export function crossValidate(skillsDir: string, marketplacePath: string): Cross
   const pluginMap = new Map(marketplace.plugins.map((p) => [p.name, p]));
 
   // Get skill directories
-  let skillDirs: string[] = [];
+  let skillDirs: string[];
   try {
     skillDirs = readdirSync(skillsDir).filter((d) => {
       try {
