@@ -3,13 +3,17 @@ export interface SkillData {
   category: string;
 }
 
+export const TOTAL_SKILLS = 58;
+
 export const SKILLS: SkillData[] = [
   { name: "golang-pro", category: "Languages" },
   { name: "typescript", category: "Languages" },
+  { name: "typescript-advanced", category: "Languages" },
   { name: "rust-best-practices", category: "Languages" },
   { name: "python-best-practices", category: "Languages" },
   { name: "security-review", category: "Security" },
   { name: "local-security", category: "Security" },
+  { name: "container-security", category: "DevOps" },
   { name: "database-design", category: "Database" },
   { name: "docker-kubernetes", category: "DevOps" },
   { name: "ci-cd-pipelines", category: "DevOps" },
@@ -20,6 +24,8 @@ export const SKILLS: SkillData[] = [
   { name: "frontend-design", category: "Design" },
   { name: "api-design", category: "API" },
   { name: "performance-optimization", category: "Performance" },
+  { name: "fullstack-developer", category: "Full-Stack" },
+  { name: "remotion-best-practices", category: "Video" },
 ];
 
 export const CATEGORY_COLORS: Record<string, string> = {
@@ -33,6 +39,8 @@ export const CATEGORY_COLORS: Record<string, string> = {
   Design: "#fb923c",
   API: "#38bdf8",
   Performance: "#34d399",
+  "Full-Stack": "#818cf8",
+  Video: "#f97316",
 };
 
 export const PLATFORMS = [

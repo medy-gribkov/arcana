@@ -1,7 +1,6 @@
 import React from "react";
 import { Terminal } from "../components/Terminal";
-import { DARK } from "../styles/colors";
-import { SUCCESS, DIM } from "../styles/colors";
+import { DARK, SUCCESS, DIM } from "../styles/colors";
 
 export const CliDemo: React.FC = () => {
   return (
@@ -19,17 +18,21 @@ export const CliDemo: React.FC = () => {
       <Terminal
         lines={[
           { text: "arcana install --all", delay: 10, color: undefined },
-          { text: "Installing 59 skills...", delay: 40, color: DIM },
-          { text: "  golang-pro          installed", delay: 60, color: SUCCESS },
-          { text: "  security-review     installed", delay: 70, color: SUCCESS },
-          { text: "  typescript-advanced  installed", delay: 80, color: SUCCESS },
-          { text: "  database-design     installed", delay: 90, color: SUCCESS },
-          { text: "  ...and 55 more", delay: 100, color: DIM },
-          { text: "", delay: 120 },
-          { text: "arcana doctor", delay: 130, color: undefined },
-          { text: "  Claude Code    OK", delay: 160, color: SUCCESS },
-          { text: "  Skills (59)    OK", delay: 170, color: SUCCESS },
-          { text: "  Config         OK", delay: 180, color: SUCCESS },
+          { text: "Installing 58 skills...", delay: 40, color: DIM },
+          { text: "  golang-pro          installed", delay: 55, color: SUCCESS },
+          { text: "  security-review     installed", delay: 63, color: SUCCESS },
+          { text: "  typescript-advanced  installed", delay: 71, color: SUCCESS },
+          { text: "  database-design     installed", delay: 79, color: SUCCESS },
+          { text: "  ...and 54 more", delay: 87, color: DIM },
+          { text: "", delay: 100 },
+          { text: "arcana validate --all", delay: 110, color: undefined },
+          { text: "  58 skills validated, 0 errors", delay: 135, color: SUCCESS },
+          { text: "", delay: 145 },
+          { text: "arcana doctor", delay: 155, color: undefined },
+          { text: "  Claude Code    OK", delay: 175, color: SUCCESS },
+          { text: "  Skills (58)    OK", delay: 182, color: SUCCESS },
+          { text: "  Config         OK", delay: 189, color: SUCCESS },
+          { text: "  Security       OK", delay: 196, color: SUCCESS },
         ]}
       />
     </div>

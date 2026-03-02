@@ -15,7 +15,11 @@ export const CallToAction: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
-  const logoOpacity = interpolate(frame, [2.5 * fps, 3.5 * fps], [0, 1], {
+  const logoOpacity = interpolate(frame, [2 * fps, 2.8 * fps], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+
+  const madeWithOpacity = interpolate(frame, [3.2 * fps, 4 * fps], [0, 1], {
     extrapolateRight: "clamp",
   });
 
@@ -30,7 +34,7 @@ export const CallToAction: React.FC = () => {
         justifyContent: "center",
         width: "100%",
         height: "100%",
-        gap: 32,
+        gap: 24,
       }}
     >
       <div
@@ -66,10 +70,26 @@ export const CallToAction: React.FC = () => {
           fontSize: 48,
           fontWeight: 700,
           color: AMBER,
-          marginTop: 20,
+          marginTop: 12,
+          textShadow: "0 0 30px rgba(212,148,58,0.3)",
         }}
       >
         arcana
+      </div>
+
+      {/* Self-referential tagline */}
+      <div
+        style={{
+          opacity: madeWithOpacity,
+          fontFamily: SANS,
+          fontSize: 14,
+          color: DIM,
+          marginTop: 16,
+          letterSpacing: 1,
+          textAlign: "center",
+        }}
+      >
+        This video was built with arcana + remotion-best-practices
       </div>
     </div>
   );

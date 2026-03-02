@@ -1,7 +1,7 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
 import { SkillCard } from "../components/SkillCard";
-import { SKILLS } from "../data/skills";
+import { SKILLS, TOTAL_SKILLS } from "../data/skills";
 import { DARK, AMBER, TEXT } from "../styles/colors";
 import { MONO, SANS } from "../styles/fonts";
 
@@ -10,11 +10,17 @@ export const SkillShowcase: React.FC = () => {
   const { fps } = useVideoConfig();
 
   const count = Math.min(
-    Math.floor(interpolate(frame, [0, 5 * fps], [0, 59], {
+    Math.floor(interpolate(frame, [0, 5 * fps], [0, TOTAL_SKILLS], {
       extrapolateRight: "clamp",
     })),
-    59
+    TOTAL_SKILLS
   );
+
+  const headerScale = spring({
+    frame,
+    fps,
+    config: { damping: 12, stiffness: 80 },
+  });
 
   return (
     <div
@@ -34,10 +40,12 @@ export const SkillShowcase: React.FC = () => {
       <div
         style={{
           fontFamily: MONO,
-          fontSize: 72,
+          fontSize: 80,
           fontWeight: 700,
           color: AMBER,
-          marginBottom: 8,
+          marginBottom: 4,
+          transform: `scale(${headerScale})`,
+          textShadow: "0 0 40px rgba(212,148,58,0.3)",
         }}
       >
         {count}
@@ -45,10 +53,11 @@ export const SkillShowcase: React.FC = () => {
       <div
         style={{
           fontFamily: SANS,
-          fontSize: 20,
+          fontSize: 22,
           color: TEXT,
           marginBottom: 40,
           opacity: 0.7,
+          letterSpacing: 2,
         }}
       >
         battle-tested skills
@@ -61,11 +70,11 @@ export const SkillShowcase: React.FC = () => {
           flexWrap: "wrap",
           gap: 12,
           justifyContent: "center",
-          maxWidth: 1000,
+          maxWidth: 1100,
         }}
       >
         {SKILLS.map((skill, i) => (
-          <SkillCard key={skill.name} skill={skill} delay={i * 5} />
+          <SkillCard key={skill.name} skill={skill} delay={i * 4} />
         ))}
       </div>
     </div>

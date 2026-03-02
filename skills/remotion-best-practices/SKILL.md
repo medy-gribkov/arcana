@@ -99,6 +99,8 @@ const scale = spring({ frame, fps, config: { mass: 1, damping: 10, stiffness: 10
 
 **Interpolate** (map frame range to value range):
 ```tsx
+import { interpolate, Easing } from "remotion";
+
 const translateY = interpolate(frame, [0, 2 * fps], [50, 0], {
   extrapolateRight: "clamp",
   easing: Easing.out(Easing.cubic),

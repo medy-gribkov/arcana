@@ -26,6 +26,16 @@
 
 **Format-portable.** Skills are markdown. Any LLM can read them. Claude Code loads them natively. Other platforms get config scaffolding via `arcana init`.
 
+## Demo
+
+Generate the 30-second promo video (built with arcana's own `remotion-best-practices` skill):
+
+```bash
+cd promo && npm install && npm run render
+```
+
+Output: `promo/out/arcana-promo.mp4` (1920x1080, 30fps)
+
 ## Quick Start
 
 ```bash
