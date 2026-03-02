@@ -288,7 +288,7 @@
     {
       "name": "game-servers",
       "source": "./skills/game-servers",
-      "description": "Game server architecture, matchmaking, and backend systems for online games.",
+      "description": "Game server architecture, matchmaking, WebSocket reconnection, and scalable backend systems for online games.",
       "version": "1.0.0",
       "tags": ["gamedev", "networking"],
       "verified": true,

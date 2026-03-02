@@ -1,10 +1,10 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { getInstallDir } from "../utils/fs.js";
 import { extractFrontmatter, parseFrontmatter } from "../utils/frontmatter.js";
 import { ui, banner } from "../utils/ui.js";
 
-interface AuditResult {
+export interface AuditResult {
   skill: string;
   rating: "PERFECT" | "STRONG" | "ADEQUATE" | "WEAK";
   score: number;
@@ -86,9 +86,21 @@ export function auditSkill(skillDir: string, skillName: string): AuditResult {
   });
   if (hasExtras) score += 10;
 
-  // Rating
+  // 9. Section diversity (3+ unique ## headings)
+  const uniqueHeadings = new Set((body.match(/^## .+$/gm) || []).map((h) => h.toLowerCase()));
+  const goodDiversity = uniqueHeadings.size >= 3;
+  checks.push({ name: "Section diversity (3+ unique headings)", passed: goodDiversity, detail: `${uniqueHeadings.size} unique sections` });
+  if (goodDiversity) score += 5;
+
+  // 10. Numbered steps (task decomposition signal)
+  const numberedSteps = (body.match(/^\d+\.\s/gm) || []).length;
+  const hasSteps = numberedSteps >= 3;
+  checks.push({ name: "Has numbered steps (3+)", passed: hasSteps, detail: `${numberedSteps} steps` });
+  if (hasSteps) score += 5;
+
+  // Rating (max possible: 110)
   let rating: AuditResult["rating"];
-  if (score >= 85) rating = "PERFECT";
+  if (score >= 90) rating = "PERFECT";
   else if (score >= 65) rating = "STRONG";
   else if (score >= 40) rating = "ADEQUATE";
   else rating = "WEAK";
@@ -96,11 +108,14 @@ export function auditSkill(skillDir: string, skillName: string): AuditResult {
   return { skill: skillName, rating, score, checks };
 }
 
-export async function auditCommand(skill: string | undefined, opts: { all?: boolean; json?: boolean }): Promise<void> {
+export async function auditCommand(
+  skill: string | undefined,
+  opts: { all?: boolean; json?: boolean; source?: string },
+): Promise<void> {
   if (!opts.json) banner();
 
-  const installDir = getInstallDir();
-  if (!existsSync(installDir)) {
+  const baseDir = opts.source ? resolve(opts.source) : getInstallDir();
+  if (!existsSync(baseDir)) {
     if (opts.json) {
       console.log(JSON.stringify({ results: [] }));
     } else {
@@ -112,7 +127,13 @@ export async function auditCommand(skill: string | undefined, opts: { all?: bool
 
   let skills: string[];
   if (opts.all) {
-    skills = readdirSync(installDir).filter((d) => statSync(join(installDir, d)).isDirectory());
+    skills = readdirSync(baseDir).filter((d) => {
+      try {
+        return statSync(join(baseDir, d)).isDirectory();
+      } catch {
+        return false;
+      }
+    });
   } else if (skill) {
     skills = [skill];
   } else {
@@ -130,7 +151,7 @@ export async function auditCommand(skill: string | undefined, opts: { all?: bool
   const results: AuditResult[] = [];
 
   for (const name of skills.sort()) {
-    const skillDir = join(installDir, name);
+    const skillDir = join(baseDir, name);
     if (!existsSync(skillDir)) {
       results.push({ skill: name, rating: "WEAK", score: 0, checks: [{ name: "Exists", passed: false }] });
       continue;
@@ -156,7 +177,7 @@ export async function auditCommand(skill: string | undefined, opts: { all?: bool
             ? ui.warn
             : ui.error;
 
-    console.log(`  ${ratingColor(`[${r.rating}]`)} ${ui.bold(r.skill)} ${ui.dim(`(${r.score}/100)`)}`);
+    console.log(`  ${ratingColor(`[${r.rating}]`)} ${ui.bold(r.skill)} ${ui.dim(`(${r.score}/110)`)}`);
 
     for (const check of r.checks) {
       if (!check.passed) {

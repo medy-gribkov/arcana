@@ -154,14 +154,14 @@ describe("validateSkillDir", () => {
     expect(result.errors).toContain("Missing SKILL.md");
   });
 
-  it("returns warning for short description", () => {
+  it("returns error for short description", () => {
     const dir = makeTempSkill(
       "short-desc",
       "---\nname: short-desc\ndescription: Too short\n---\n# Body content goes here, needs at least 50 chars in the body section",
     );
     const result = validateSkillDir(dir, "short-desc");
-    expect(result.valid).toBe(true);
-    expect(result.warnings.some((w) => w.includes("too short"))).toBe(true);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes("too short"))).toBe(true);
   });
 
   it("returns warning for name mismatch", () => {
@@ -176,7 +176,7 @@ describe("validateSkillDir", () => {
   it("passes valid skill with no warnings", () => {
     const dir = makeTempSkill(
       "valid-skill",
-      `---\nname: valid-skill\ndescription: ${longDesc}\n---\n## Heading\nBody content goes here, needs at least 50 chars in the body section`,
+      `---\nname: valid-skill\ndescription: ${longDesc}\n---\n## Heading\nBody content goes here, needs at least 50 chars in the body section\n\n\`\`\`js\nconst x = 1;\n\`\`\``,
     );
     const result = validateSkillDir(dir, "valid-skill");
     expect(result.valid).toBe(true);
