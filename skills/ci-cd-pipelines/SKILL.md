@@ -91,7 +91,7 @@ Set `fail-fast: false` to see all failures, not just the first. Exclude combinat
 ```yaml
 - uses: actions/setup-go@v5
   with:
-    go-version: "1.23"
+    go-version: "1.26"
     cache: true  # Caches ~/go/pkg/mod and ~/.cache/go-build
 ```
 
@@ -99,7 +99,7 @@ Set `fail-fast: false` to see all failures, not just the first. Exclude combinat
 ```yaml
 - uses: actions/setup-python@v5
   with:
-    python-version: "3.12"
+    python-version: "3.14"
     cache: "pip"
     cache-dependency-path: requirements*.txt
 ```
@@ -250,12 +250,12 @@ Kubernetes `RollingUpdate` with `maxSurge: 1` and `maxUnavailable: 0` for zero-d
 
 ### Multi-stage Dockerfile optimized for CI
 ```dockerfile
-FROM node:20-alpine AS deps
+FROM node:24-alpine AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile --prod
 
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -326,7 +326,7 @@ cache:
 
 test:
   stage: test
-  image: python:3.12
+  image: python:3.14
   script:
     - pip install -r requirements.txt
     - pytest --cov=src --junitxml=report.xml

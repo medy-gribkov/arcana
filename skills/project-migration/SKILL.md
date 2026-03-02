@@ -5,6 +5,44 @@ description: Migrate project folders while preserving Claude Code session data. 
 
 ## Path Encoding Rules
 
+**BAD** - Naive path encoding (breaks on spaces, drives, symlinks):
+```python
+encoded = path.replace("/", "-").replace("\\", "-")
+# C:\My Projects\app → C:-My Projects-app (WRONG: space, colon)
+```
+
+**GOOD** - Handle all edge cases:
+```python
+path = str(Path(path).resolve())          # Resolve symlinks
+path = path.replace('\\', '-').replace('/', '-')
+if len(path) > 1 and path[1] == ':':     # Windows drive letter
+    path = path[0].lower() + '-' + path[2:]
+path = path.lstrip('-').replace(' ', '-') # Normalize
+# C:\My Projects\app → c--My-Projects-app (CORRECT)
+```
+
+**BAD** - Migration with no rollback:
+```python
+shutil.move(source, dest)  # If anything fails after this, data is split
+rename_claude_data(old, new)
+update_history(old, new)
+```
+
+**GOOD** - Migration with rollback on failure:
+```python
+try:
+    shutil.move(source, dest)
+    rename_claude_data(old_key, new_key)
+    update_history(old_path, new_path)
+except Exception as e:
+    # Rollback: move project back
+    if dest.exists() and not source.exists():
+        shutil.move(dest, source)
+    if new_data.exists() and not old_data.exists():
+        new_data.rename(old_data)
+    raise RuntimeError(f"Migration failed, rolled back: {e}")
+```
+
 Claude Code encodes project paths as directory names in `~/.claude/projects/`:
 
 ```python

@@ -4,13 +4,13 @@
 
 <p align="center">
   <strong>The AI development toolkit.</strong><br/>
-  58 production-ready skills for every coding agent.
+  73 production-ready skills for every coding agent.
 </p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@sporesec/arcana"><img src="https://img.shields.io/npm/v/@sporesec/arcana?style=for-the-badge&color=d4943a" alt="npm"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-d4943a?style=for-the-badge" alt="MIT"/></a>
-  <a href="#skills"><img src="https://img.shields.io/badge/Skills-58-d4943a?style=for-the-badge" alt="Skills"/></a>
+  <a href="#skills"><img src="https://img.shields.io/badge/Skills-73-d4943a?style=for-the-badge" alt="Skills"/></a>
   <a href="#compatibility"><img src="https://img.shields.io/badge/Platforms-7-d4943a?style=for-the-badge" alt="Platforms"/></a>
 </p>
 
@@ -94,64 +94,79 @@ All commands support `--json` for machine-readable output and respect `NO_COLOR`
 
 | Skill | Category | Description |
 |-------|----------|-------------|
-| api-design | API | REST and GraphQL design. Resource naming, status codes, pagination, versioning, DataLoader |
+| accessibility-wcag | Design | WCAG 2.1 AA compliance, semantic HTML, ARIA patterns, keyboard navigation, color contrast |
+| api-design | API | REST and GraphQL design. Resource naming, status codes, pagination, versioning |
 | api-testing | API | Contract testing (Pact), API mocking (MSW), load testing (k6), BAD/GOOD patterns |
-| code-reviewer | Code Quality | Code review with concrete examples. Severity definitions, inline comments, review output |
-| codebase-dissection | Code Quality | 4-phase systematic analysis. Architecture mapping, data flow, dead code, anti-patterns |
-| frontend-code-review | Code Quality | Frontend review checklist. cn() usage, memoization, accessibility, inline rules |
-| refactoring-patterns | Code Quality | Before/after diffs for extract method, replace conditional, dead code, DI patterns |
-| database-design | Database | Schema design, normalization, indexing, EXPLAIN ANALYZE, GORM for Go, migrations |
-| frontend-design | Design | Production interfaces. CSS custom properties, accessibility, DON'T/DO guidelines |
-| container-security | DevOps | Dockerfile BAD/GOOD, rootless containers, image scanning, runtime security config |
-| cost-optimization | DevOps | HPA config, spot instances, right-sizing, CDN caching, cost calculation examples |
-| ci-cd-pipelines | DevOps | GitHub Actions and GitLab CI. Matrix strategy, caching, deployment patterns, Unity CI |
-| docker-kubernetes | DevOps | Multi-stage builds (Go, Node, Python), K8s manifests, health checks, security context |
-| dependency-audit | DevOps | npm audit, go mod tidy, pip-audit, license compliance, CI automation |
-| doc-generation | Docs | OpenAPI, JSDoc, godoc, Mermaid diagrams, procedural walkthrough |
-| env-config | DevOps | .env management, Zod validation, dotenv-vault, AWS SSM, 12-factor patterns |
-| git-workflow | DevOps | Merge vs rebase decision tree, worktrees, SSH signing, sparse checkout |
-| update-docs | Docs | MDX workflow for Next.js docs, screenshot patterns, PR-based updates |
-| docx | Documents | Word document creation/editing. XML reference, tracked changes, page setup |
-| xlsx | Documents | Spreadsheet operations. Pivot tables, chart formulas, financial models |
-| fullstack-developer | Full-Stack | React, Node.js, databases, auth flow (JWT), API error handling patterns |
-| asset-optimization | Game Dev | Compression workflows, WebP/AVIF conversion, before/after optimization |
+| asset-optimization | Game Dev | Compression workflows, WebP/AVIF conversion, streaming, batch processing |
 | audio-systems | Game Dev | FMOD, Wwise, spatial audio, dynamic mixing, Unity/Godot integration code |
-| daw-music | Game Dev | MIDI processing, audio synthesis, interactive music, game audio code |
-| game-design-theory | Game Dev | MDA framework, balance formulas, XP curves, player psychology |
+| aws-essentials | Cloud | Lambda, S3, RDS, CloudFront, IAM, SQS/SNS, DynamoDB, least-privilege policies |
+| ci-cd-pipelines | DevOps | GitHub Actions and GitLab CI. Matrix strategy, caching, deployment patterns |
+| code-reviewer | Code Quality | Code review with concrete examples. Severity definitions, inline comments |
+| codebase-analysis | Code Quality | 4-phase dissection + 8-domain health scoring. Architecture mapping, dead code |
+| container-security | DevOps | Dockerfile BAD/GOOD, rootless containers, image scanning, runtime security |
+| cost-optimization | DevOps | HPA config, spot instances, right-sizing, CDN caching, cost calculations |
+| data-visualization | Frontend | Recharts, Chart.js, D3.js. Chart selection, responsive layouts, dashboards |
+| database-design | Database | Schema design, normalization, indexing, EXPLAIN ANALYZE, migrations |
+| doc-generation | Docs | OpenAPI, JSDoc, godoc, Mermaid diagrams, procedural walkthrough |
+| docker-kubernetes | DevOps | Multi-stage builds (Go, Node, Python), K8s manifests, health checks, Helm |
+| docx | Documents | Word document creation/editing. XML reference, tracked changes, page setup |
+| email-notifications | Integration | SendGrid, AWS SES, React Email templates, SPF/DKIM/DMARC, bounce handling |
+| env-config | DevOps | .env management, Zod validation, secret management, 12-factor patterns |
+| flutter-mobile | Mobile | Widget composition, Riverpod state, GoRouter, platform channels, performance |
+| framer-motion | Design | Framer Motion animations. Variants, gestures, layout animations, spring physics |
+| frontend-code-review | Code Quality | Frontend review checklist. cn() usage, memoization, accessibility, inline rules |
+| frontend-design | Design | Production interfaces. CSS custom properties, accessibility, DON'T/DO guidelines |
+| fullstack-developer | Full-Stack | React, Node.js, databases, auth flow (JWT), API error handling patterns |
 | game-engines | Game Dev | Unity, Unreal, Godot 4.x. Architecture patterns, GDScript 2.0, C# code |
+| game-programming-languages | Languages | C# 12, C++ 23, GDScript 2.0. Syntax, patterns, engine idioms |
 | game-servers | Game Dev | Server architecture, matchmaking, WebSocket reconnection, cost analysis |
-| game-tools-workflows | Game Dev | Git LFS, build automation, asset pipelines, bandwidth gotchas |
-| gameplay-mechanics | Game Dev | Input buffering, feedback loops, balance spreadsheets, production code |
+| gameplay-design | Game Dev | MDA framework, balance formulas, combat systems, progression curves |
+| git-workflow | DevOps | Merge vs rebase decision tree, worktrees, SSH signing, sparse checkout |
+| go-linter-configuration | Linting | golangci-lint setup, .golangci.yml, import resolution, troubleshooting |
+| godot-4 | Game Dev | Godot 4 with GDScript 2.0. Typed syntax, physics, state machines, exports |
+| golang-pro | Languages | Go 1.26+. Error handling, HTTP routing, concurrency, testing, profiling |
 | graphics-rendering | Game Dev | PBR shaders, WebGPU, VFX recipes, optimization matrix |
+| i18n-localization | Web | next-intl, react-intl, ICU message syntax, plurals, RTL, dynamic locales |
+| incident-response | Ops | Severity levels, runbooks, PagerDuty/OpsGenie webhooks, blameless postmortems |
 | level-design | Game Dev | Whitebox workflow, pacing graphs, procedural generation seeds |
+| llm-integration | AI | OpenAI and Anthropic APIs. Structured output, tool calling, streaming, prompts |
+| local-security | Security | SSH, GPG, credential managers, Windows OpenSSH agent, file permissions |
 | memory-management | Game Dev | Object pooling, GC optimization, Rust ownership comparison, budgets |
 | monetization-systems | Game Dev | IAP manager, battle pass design, A/B test revenue formulas, KPIs |
-| networking-servers | Game Dev | Lag compensation, netcode, synchronization, anti-cheat patterns |
+| monitoring-observability | Monitoring | JSON logging, Prometheus, OpenTelemetry, Grafana dashboard JSON, SLO alerts |
+| multiplayer-netcode | Game Dev | Client prediction, server reconciliation, rollback netcode, lag compensation |
+| nextjs-16 | Framework | Turbopack, Cache Components, proxy.ts, Server Actions, React 19.2, App Router |
+| npm-package | Packages | tsup bundling, ESM/CJS exports, semver, changesets, monorepo setup |
+| oauth-auth | Security | OAuth2 PKCE, OIDC, JWT validation, session management, refresh token rotation |
 | particle-systems | Game Dev | VFX, physics simulation, LOD strategy, post-processing |
+| performance-optimization | Performance | Core Web Vitals, bundle analysis, caching, memory leaks, game frame budgets |
+| playwright-testing | Testing | E2E testing, page objects, role-based locators, visual regression, CI integration |
+| postgres-advanced | Database | Window functions, CTEs, JSONB, full-text search, partitioning, PgBouncer |
 | programming-architecture | Game Dev | ECS, data-oriented design, clean architecture, concrete implementations |
+| project-migration | Migration | Project folder migration preserving Claude Code session data and paths |
 | publishing-platforms | Game Dev | Steam, Epic, console submission. Revenue splits, certification checklists |
-| shader-techniques | Game Dev | HLSL/GLSL, mobile GPU gotchas, custom materials, optimization |
-| synchronization-algorithms | Game Dev | Rollback netcode, client prediction, server reconciliation code |
-| game-programming-languages | Languages | C# 12, C++ 23, GDScript 2.0. Syntax, patterns, engine idioms |
-| golang-pro | Languages | Go 1.23+. Error handling, HTTP routing, concurrency, testing, profiling |
-| python-best-practices | Languages | Python 3.12+. Type hints, ruff, uv, async, dataclasses, pyright config |
+| python-best-practices | Languages | Python 3.14+. Type hints, ruff, uv, async, Pydantic v2, pyproject.toml |
+| react-native | Mobile | Expo, React Navigation, Zustand, FlatList optimization, Reanimated |
+| redis-patterns | Database | Caching, sessions, rate limiting, pub/sub, sorted sets, distributed locks |
+| refactoring-patterns | Code Quality | Before/after diffs for extract method, replace conditional, dead code, DI |
+| remotion-best-practices | Video | React video creation. Composition, spring(), interpolate, Sequence, Audio |
 | rust-best-practices | Languages | Ownership, lifetimes, error handling, async Tokio, lifetime diagrams |
+| scraping-automation | Tooling | Playwright, Puppeteer. Stealth mode, proxy rotation, structured extraction |
+| security-review | Security | OWASP Top 10, injection prevention, secrets rotation, csrf-csrf patterns |
+| seo-meta | Web | Next.js metadata API, Open Graph, JSON-LD structured data, sitemaps |
+| shader-techniques | Game Dev | HLSL/GLSL, mobile GPU gotchas, custom materials, optimization |
+| skill-creator | Meta | Create or update skills. References layout, frontmatter rules, validation |
+| spec-driven-dev | Planning | Specification-first development. Requirements, task breakdown, quality gates |
+| stripe-payments | Integration | Checkout Sessions, subscriptions, webhook verification, SCA/3D Secure |
+| tailwind-css | Design | Config, plugins, cn() utility, responsive design, dark mode, theming |
+| terraform-iac | DevOps | State management, modules, workspaces, lifecycle rules, CI/CD, AWS patterns |
+| testing-strategy | Testing | Test pyramid, pytest/Vitest/Jest/Go, flakiness detection, TDD workflow |
 | typescript | Languages | Strict types, generics constraints, utility types, discriminated unions |
 | typescript-advanced | Languages | Branded types, conditional types, satisfies operator, type-level programming |
-| go-linter-configuration | Linting | golangci-lint setup, .golangci.yml, import resolution, troubleshooting |
-| find-skills | Meta | Skill discovery. Searches installed and available skills by keyword |
-| skill-creation-guide | Meta | How to create effective skills. Validation, edge cases, progressive disclosure |
-| skill-creator | Meta | Create or update skills. References layout, frontmatter rules |
-| incident-response | Ops | Severity levels, runbooks, PagerDuty/OpsGenie webhooks, blameless postmortems |
-| local-security | Security | SSH, GPG, credential managers, Windows OpenSSH agent, file permissions |
-| security-review | Security | OWASP Top 10, injection prevention, secrets rotation, csrf-csrf patterns |
-| monitoring-observability | Monitoring | JSON logging, Prometheus, OpenTelemetry, Grafana dashboard JSON, SLO alerts |
-| project-migration | Migration | Project folder migration preserving Claude Code session data and paths |
-| npm-package | Packages | tsup bundling, ESM/CJS exports, wrong-exports debugging, monorepo setup |
-| performance-optimization | Performance | Core Web Vitals, bundle analysis, caching, memory leaks, game frame budgets |
-| pre-production-review | Review | 8-domain codebase analysis with health scoring and phased remediation |
-| testing-strategy | Testing | Test pyramid, pytest/Vitest/Jest/Go, flakiness detection, TDD workflow |
-| remotion-best-practices | Video | React video creation. Composition, spring(), interpolate, Sequence, Audio |
+| update-docs | Docs | MDX workflow for Next.js docs, screenshot patterns, PR-based updates |
+| vercel-deploy | DevOps | Edge Functions, middleware, preview deployments, caching, monorepo config |
+| websocket-realtime | Networking | Reconnection, heartbeat, SSE, Socket.io rooms, Redis pub/sub scaling |
+| xlsx | Documents | Spreadsheet operations. Pivot tables, chart formulas, financial models |
 
 ## Compatibility
 

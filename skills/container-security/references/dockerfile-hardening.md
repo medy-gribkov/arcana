@@ -14,7 +14,7 @@ CMD ["/app"]
 **GOOD:** Use distroless for runtime. Zero shell, zero package manager.
 
 ```dockerfile
-FROM golang:1.23 AS builder
+FROM golang:1.26 AS builder
 WORKDIR /build
 COPY . .
 RUN CGO_ENABLED=0 go build -o app
@@ -27,7 +27,7 @@ CMD ["/app"]
 **For Node.js apps:**
 
 ```dockerfile
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /build
 COPY package*.json ./
 RUN npm ci --only=production
@@ -42,7 +42,7 @@ CMD ["server.js"]
 **For statically compiled binaries (Go, Rust):**
 
 ```dockerfile
-FROM golang:1.23 AS builder
+FROM golang:1.26 AS builder
 WORKDIR /build
 COPY . .
 RUN CGO_ENABLED=0 go build -o app
@@ -57,7 +57,7 @@ CMD ["/app"]
 **BAD:** Running as root. Attackers who escape the container have root on the host.
 
 ```dockerfile
-FROM node:20-alpine
+FROM node:24-alpine
 COPY . /app
 CMD ["node", "server.js"]
 ```
@@ -65,7 +65,7 @@ CMD ["node", "server.js"]
 **GOOD:** Create a non-root user and switch to it.
 
 ```dockerfile
-FROM node:20-alpine
+FROM node:24-alpine
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 COPY --chown=appuser:appgroup . .
@@ -101,7 +101,7 @@ CMD bash start.sh
 
 ```dockerfile
 # syntax=docker/dockerfile:1
-FROM node:20-alpine@sha256:abc123... AS builder
+FROM node:24-alpine@sha256:abc123... AS builder
 WORKDIR /build
 COPY package*.json ./
 RUN npm ci --only=production

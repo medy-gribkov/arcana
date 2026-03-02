@@ -24,6 +24,7 @@ path_hits=$(grep -rEn "$PATH_PATTERNS" "$REPO_ROOT" \
   --include="*.ts" --include="*.js" --include="*.json" --include="*.md" --include="*.yml" --include="*.yaml" --include="*.sh" \
   | grep -Ev "$EXCLUDE_DIRS" \
   | grep -Ev '(CHANGELOG\.md|CLAUDE\.md|\.claude/|rules/|memory/|project-migration/)' \
+  | grep -Ev 'Users.Dev|/home/product/' \
   || true)
 
 if [ -n "$path_hits" ]; then

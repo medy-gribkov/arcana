@@ -36,7 +36,7 @@ Always create a non-root user and switch to it. For distroless, use the built-in
 **BAD:** Baking secrets into the image. They persist in layers even if deleted.
 
 ```dockerfile
-FROM node:20-alpine
+FROM node:24-alpine
 ENV DATABASE_PASSWORD=supersecret
 COPY . /app
 CMD ["node", "server.js"]
@@ -139,20 +139,20 @@ cosign attach sbom --sbom sbom.json myregistry.com/myapp:v1.0.0
 **BAD:** Using mutable tags. Tags can be overwritten.
 
 ```dockerfile
-FROM node:20-alpine
+FROM node:24-alpine
 ```
 
 **GOOD:** Pin by digest. Digest is immutable.
 
 ```dockerfile
-FROM node:20-alpine@sha256:abc123...
+FROM node:24-alpine@sha256:abc123...
 ```
 
 Find digests with:
 
 ```bash
-docker pull node:20-alpine
-docker inspect node:20-alpine | jq -r '.[0].RepoDigests[0]'
+docker pull node:24-alpine
+docker inspect node:24-alpine | jq -r '.[0].RepoDigests[0]'
 ```
 
 ## Runtime Policies

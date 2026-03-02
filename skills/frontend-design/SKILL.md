@@ -61,9 +61,110 @@ Focus on:
 
 NEVER use generic AI-generated aesthetics like overused font families (Inter, Roboto, Arial, system fonts), cliched color schemes (particularly purple gradients on white backgrounds), predictable layouts and component patterns, and cookie-cutter design that lacks context-specific character.
 
-Interpret creatively and make unexpected choices that feel genuinely designed for the context. No design should be the same. Vary between light and dark themes, different fonts, different aesthetics. NEVER converge on common choices (Space Grotesk, for example) across generations.
+## Component Patterns
 
-**IMPORTANT**: Match implementation complexity to the aesthetic vision. Maximalist designs need elaborate code with extensive animations and effects. Minimalist or refined designs need restraint, precision, and careful attention to spacing, typography, and subtle details. Elegance comes from executing the vision well.
+**BAD** - Generic card with no design intent:
+```tsx
+function Card({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div style={{ border: "1px solid #ccc", padding: 16, borderRadius: 8 }}>
+      <h3>{title}</h3>
+      <p>{desc}</p>
+    </div>
+  );
+}
+```
+
+**GOOD** - Card with intentional design system, motion, and composition:
+```tsx
+function Card({ title, desc, accent }: CardProps) {
+  return (
+    <motion.div
+      className="group relative overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        style={{ background: `radial-gradient(circle at var(--mouse-x) var(--mouse-y), ${accent}15, transparent 60%)` }}
+      />
+      <div className="relative p-8 border border-white/10 rounded-2xl backdrop-blur-sm">
+        <h3 className="font-display text-xl tracking-tight">{title}</h3>
+        <p className="mt-3 text-sm leading-relaxed text-white/60">{desc}</p>
+      </div>
+    </motion.div>
+  );
+}
+```
+
+## CSS Architecture
+
+**BAD** - Inline styles and magic numbers:
+```css
+.header { margin-top: 23px; font-size: 14.5px; color: #333; }
+.sidebar { width: 247px; padding: 13px 17px; }
+```
+
+**GOOD** - Design tokens and systematic spacing:
+```css
+:root {
+  --space-1: 0.25rem;  --space-2: 0.5rem;  --space-3: 0.75rem;
+  --space-4: 1rem;     --space-6: 1.5rem;   --space-8: 2rem;
+  --space-12: 3rem;    --space-16: 4rem;
+
+  --text-xs: 0.75rem;  --text-sm: 0.875rem; --text-base: 1rem;
+  --text-lg: 1.125rem; --text-xl: 1.25rem;  --text-2xl: 1.5rem;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.header { margin-top: var(--space-6); font-size: var(--text-sm); color: var(--color-text); }
+.sidebar { width: 16rem; padding: var(--space-3) var(--space-4); }
+```
+
+## Layout Patterns
+
+**BAD** - Same grid everywhere:
+```css
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+```
+
+**GOOD** - Responsive, context-aware layouts:
+```css
+/* Fluid grid that adapts to content */
+.auto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: var(--space-6);
+}
+
+/* Asymmetric hero layout */
+.hero {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: var(--space-12);
+  align-items: end;
+}
+
+/* Overlapping composition */
+.overlap-stack > * {
+  grid-area: 1 / 1;
+}
+```
+
+## Procedural Workflow
+
+1. **Audit the brief.** Define purpose, audience, constraints, one memorable detail.
+2. **Pick a direction.** Choose tone (brutalist, luxury, editorial, etc.). Commit fully.
+3. **Set tokens.** Define color, spacing, typography scales in CSS custom properties.
+4. **Build mobile-first.** Start at 320px. Add complexity at breakpoints.
+5. **Add motion last.** Entrance animations, hover states, scroll triggers. Respect `prefers-reduced-motion`.
+6. **Test contrast.** WCAG 2.1 AA minimum. Use browser DevTools audit.
+
+**IMPORTANT**: Match implementation complexity to the aesthetic vision. Maximalist designs need elaborate code. Minimalist designs need restraint and precision. Elegance comes from executing the vision well.
 
 ## Accessibility Checklist
 
