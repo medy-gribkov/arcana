@@ -43,7 +43,7 @@ export async function manageInstalled(allSkills: SkillInfo[], providerName: stri
     }));
 
     const picked = await p.select({
-      message: `Installed skills (${names.length})`,
+      message: `Your skills > Select category`,
       options: [
         ...options,
         { value: "__update", label: chalk.cyan("Check for updates") },
@@ -95,7 +95,7 @@ async function installedCategoryList(
     });
 
     const picked = await p.select({
-      message: `${categoryName} (${stillInstalled.length} installed)`,
+      message: `Your skills > ${categoryName}`,
       options: [...options, { value: "__back", label: "Back" }],
     });
     handleCancel(picked);
@@ -127,7 +127,7 @@ async function bulkUninstall(installedNames: string[]): Promise<void> {
 
   let removed = 0;
   for (const name of names) {
-    if (doUninstall(name)) removed++;
+    if (doUninstall(name).success) removed++;
   }
   p.log.success(`Removed ${removed} skill${removed !== 1 ? "s" : ""}`);
 }

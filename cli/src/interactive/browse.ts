@@ -49,7 +49,7 @@ export async function browseByCategory(allSkills: SkillInfo[], providerName: str
     });
 
     const category = await p.select({
-      message: "Browse by category",
+      message: "Browse > Select category",
       options: [...categoryOptions, { value: "__back", label: "Back" }],
     });
     handleCancel(category);
@@ -96,7 +96,7 @@ async function categorySkillList(
     extraOptions.push({ value: "__back", label: "Back to categories" });
 
     const picked = await p.select({
-      message: `${categoryName} (${validSkills.length} skills)`,
+      message: `Browse > ${categoryName}`,
       options: [...options, ...extraOptions],
     });
     handleCancel(picked);
