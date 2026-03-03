@@ -2,91 +2,673 @@
   "name": "arcana",
   "owner": {
     "name": "Mahdy Gribkov",
-    "github": "mahdy-gribkov"
+    "github": "medy-gribkov"
   },
   "metadata": {
     "description": "Agent skills that work across AI coding tools",
-    "version": "2.0.0",
+    "version": "2.3.0",
     "homepage": "https://mahdygribkov.vercel.app"
   },
   "plugins": [
     {
-      "name": "codebase-dissection",
-      "source": "./skills/codebase-dissection",
-      "description": "Systematic codebase analysis: architecture mapping, data flow, dead code detection, concurrency auditing",
-      "version": "1.0.0"
+      "name": "api-testing",
+      "source": "./skills/api-testing",
+      "description": "API testing expertise covering contract testing with Pact, API mocking with MSW and Prism, load testing with k6 and Locust, OpenAPI schema validation, REST and GraphQL test strategies, Postman/Insomnia collections, request chaining, environment management, and CI integration for API test suites.",
+      "version": "1.0.0",
+      "tags": ["api", "testing", "rest", "graphql"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["api-design", "testing-strategy"],
+      "conflicts": []
+    },
+    {
+      "name": "api-design",
+      "source": "./skills/api-design",
+      "description": "REST API and GraphQL design best practices including resource naming, HTTP methods, status codes, pagination (cursor vs offset), filtering, error responses (RFC 7807), versioning strategies, OpenAPI specs, authentication (JWT, API keys, OAuth2), rate limiting, HATEOAS, GraphQL schema design, resolvers, N+1 problem, and subscriptions. Use when designing, reviewing, or documenting APIs.",
+      "version": "1.0.0",
+      "tags": ["api", "rest", "graphql"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["api-testing", "security-review"],
+      "conflicts": []
+    },
+    {
+      "name": "asset-optimization",
+      "source": "./skills/asset-optimization",
+      "description": "Asset pipeline optimization, compression, streaming, and resource management for efficient game development and delivery.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "performance"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "audio-systems",
+      "source": "./skills/audio-systems",
+      "description": "Game audio systems, music, spatial audio, sound effects, and voice implementation. Build immersive audio experiences with professional middleware integration.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "audio"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "container-security",
+      "source": "./skills/container-security",
+      "description": "Container security best practices including image scanning with Trivy and Grype, minimal base images, rootless containers, secrets management in containers, supply chain security with Cosign and SBOM generation, Dockerfile hardening, runtime security policies, and container registry security.",
+      "version": "1.0.0",
+      "tags": ["docker", "security", "devops"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["docker-kubernetes", "security-review"],
+      "conflicts": []
+    },
+    {
+      "name": "cost-optimization",
+      "source": "./skills/cost-optimization",
+      "description": "Cloud and infrastructure cost optimization covering container right-sizing, CDN caching strategies, database query cost analysis, serverless function cold start reduction, reserved vs spot instance strategies, storage tiering, bandwidth optimization, and cost monitoring with alerts.",
+      "version": "1.0.0",
+      "tags": ["cloud", "devops"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "ci-cd-automation",
+      "source": "./skills/ci-cd-automation",
+      "description": "Continuous integration and deployment pipelines, automated testing, build automation, and team workflows for game development.",
+      "version": "1.0.0",
+      "tags": ["ci-cd", "gamedev", "devops"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["game-tools-workflows"],
+      "conflicts": []
+    },
+    {
+      "name": "ci-cd-pipelines",
+      "source": "./skills/ci-cd-pipelines",
+      "description": "GitHub Actions and GitLab CI/CD pipeline expertise. Workflow syntax, job matrix, dependency caching (npm, pip, go, docker layers), artifact management, reusable workflows, composite actions, environment secrets, deployment patterns (blue-green, canary, rolling), Docker builds in CI, version bumping, branch protection, status checks. Use when creating CI/CD pipelines, optimizing build times, setting up deployment automation, or configuring GitHub Actions workflows.",
+      "version": "1.0.0",
+      "tags": ["ci-cd", "github-actions", "devops"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["testing-strategy", "docker-kubernetes"],
+      "conflicts": []
     },
     {
       "name": "code-reviewer",
       "source": "./skills/code-reviewer",
-      "description": "Review local changes or remote PRs for correctness, maintainability, and security",
-      "version": "1.0.0"
+      "description": "Code review workflow for local changes and remote PRs. Reviews focus on correctness, maintainability, security, and test coverage with concrete examples and inline comments.",
+      "version": "1.0.1",
+      "tags": ["code-review"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["testing-strategy", "security-review"],
+      "conflicts": []
     },
     {
-      "name": "frontend-code-review",
-      "source": "./skills/frontend-code-review",
-      "description": "Review frontend files (TSX, TS, JS) with code quality, performance, and business logic checklists",
-      "version": "1.0.0"
+      "name": "codebase-dissection",
+      "source": "./skills/codebase-dissection",
+      "description": "Systematic methodology for analyzing, understanding, and diagnosing problems in any codebase. Covers architecture mapping, data flow analysis, dead code detection, concurrency auditing, and actionable remediation planning.",
+      "version": "1.0.1",
+      "tags": ["code-review", "architecture"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["refactoring-patterns"],
+      "conflicts": []
     },
     {
-      "name": "frontend-design",
-      "source": "./skills/frontend-design",
-      "description": "Create distinctive frontend interfaces with high design quality, no generic AI aesthetics",
-      "version": "1.0.0"
+      "name": "database-design",
+      "source": "./skills/database-design",
+      "description": "Database architecture and query optimization for PostgreSQL and SQLite. Covers schema design, normalization to 3NF, denormalization trade-offs, indexing strategy (B-tree, GIN, partial, covering indexes), EXPLAIN ANALYZE interpretation, migrations with up/down patterns, connection pooling, ORM configuration (Prisma, Drizzle, SQLAlchemy), transactions, isolation levels, and anti-patterns like N+1 queries, missing indexes, and over-normalization. Use when designing schemas, optimizing queries, writing migrations, or debugging database performance.",
+      "version": "1.0.0",
+      "tags": ["database", "postgresql", "sqlite"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["security-review"],
+      "conflicts": []
     },
     {
-      "name": "golang-pro",
-      "source": "./skills/golang-pro",
-      "description": "Modern Go 1.21+ patterns, advanced concurrency, performance optimization, microservices",
-      "version": "1.0.0"
+      "name": "dependency-audit",
+      "source": "./skills/dependency-audit",
+      "description": "Dependency auditing and management covering npm audit, go mod tidy, pip-audit, license compliance with SPDX identifiers, lockfile hygiene, Dependabot and Renovate configuration, vulnerability triage, transitive dependency analysis, and supply chain security best practices.",
+      "version": "1.0.0",
+      "tags": ["security", "npm", "go", "python"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["security-review"],
+      "conflicts": []
     },
     {
-      "name": "typescript",
-      "source": "./skills/typescript",
-      "description": "TypeScript strict style, type safety patterns, code structure guidelines",
-      "version": "1.0.0"
+      "name": "doc-generation",
+      "source": "./skills/doc-generation",
+      "description": "Documentation generation from code including OpenAPI and GraphQL schema docs, architecture diagrams with Mermaid and C4 model, README generation, changelog automation with conventional commits, JSDoc and GoDoc patterns, Storybook for component docs, and documentation CI pipelines.",
+      "version": "1.0.0",
+      "tags": ["documentation", "api"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "daw-music",
+      "source": "./skills/daw-music",
+      "description": "Digital Audio Workstation usage, music composition, interactive music systems, and game audio implementation for immersive soundscapes.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "audio"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "env-config",
+      "source": "./skills/env-config",
+      "description": "Environment configuration patterns covering .env file management, environment variable validation with Zod and envalid, secret management strategies, 12-factor app configuration, Docker env injection, config hierarchies, and secure defaults for development and production environments.",
+      "version": "1.0.0",
+      "tags": ["devops", "configuration"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "docker-kubernetes",
+      "source": "./skills/docker-kubernetes",
+      "description": "Production Docker and Kubernetes patterns including multi-stage builds, minimal base images, non-root users, layer caching, docker-compose for development, K8s Deployments, Services, Ingress, ConfigMaps, Secrets, health checks, resource limits, HPA autoscaling, security contexts, and Helm chart basics. Use when containerizing apps or deploying to Kubernetes.",
+      "version": "1.0.0",
+      "tags": ["docker", "kubernetes", "devops"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["container-security", "ci-cd-pipelines"],
+      "conflicts": []
     },
     {
       "name": "docx",
       "source": "./skills/docx",
-      "description": "Create, read, edit Word documents programmatically with formatting, tables, images",
-      "version": "1.0.0"
-    },
-    {
-      "name": "xlsx",
-      "source": "./skills/xlsx",
-      "description": "Create, read, edit spreadsheets (xlsx, csv, tsv) with formulas, formatting, charts",
-      "version": "1.0.0"
-    },
-    {
-      "name": "remotion-best-practices",
-      "source": "./skills/remotion-best-practices",
-      "description": "Remotion video creation in React: animations, compositions, audio sync, 3D, rendering",
-      "version": "1.0.0"
-    },
-    {
-      "name": "skill-creator",
-      "source": "./skills/skill-creator",
-      "description": "Create or update agent skills with proper structure, frontmatter, scripts, and references",
-      "version": "1.0.0"
-    },
-    {
-      "name": "skill-creation-guide",
-      "source": "./skills/skill-creation-guide",
-      "description": "How to build effective skills from scratch: principles, anatomy, quality standards",
-      "version": "1.0.0"
+      "description": "\"Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of \\\"Word doc\\\", \\\"word document\\\", \\\".docx\\\", or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx files, inserting or replacing images in documents, performing find-and-replace in Word files, working with tracked changes or comments, or converting content into a polished Word document. If the user asks for a \\\"report\\\", \\\"memo\\\", \\\"letter\\\", \\\"template\\\", or similar deliverable as a Word or .docx file, use this skill. Do NOT use for PDFs, spreadsheets, Google Docs, or general coding tasks unrelated to document generation.\"",
+      "version": "1.0.1",
+      "tags": ["documentation", "office"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
     },
     {
       "name": "find-skills",
       "source": "./skills/find-skills",
-      "description": "Discover and install agent skills from the ecosystem when you need new capabilities",
-      "version": "1.0.0"
+      "description": "Helps users discover and install agent skills when they ask questions like \"how do I do X\", \"find a skill for X\", \"is there a skill that can...\", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.",
+      "version": "1.0.1",
+      "tags": ["meta"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "frontend-code-review",
+      "source": "./skills/frontend-code-review",
+      "description": "\"Trigger when the user requests a review of frontend files (e.g., `.tsx`, `.ts`, `.js`). Support both pending-change reviews and focused file reviews while applying the checklist rules.\"",
+      "version": "1.0.1",
+      "tags": ["react", "typescript", "web"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["frontend-design", "typescript"],
+      "conflicts": []
+    },
+    {
+      "name": "frontend-design",
+      "source": "./skills/frontend-design",
+      "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.",
+      "version": "1.0.1",
+      "tags": ["react", "typescript", "css", "web"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["frontend-code-review", "typescript"],
+      "conflicts": []
+    },
+    {
+      "name": "fullstack-developer",
+      "source": "./skills/fullstack-developer",
+      "description": "Modern web development expertise covering React, Node.js, databases, and full-stack architecture. Use when: building web applications, developing APIs, creating frontends, setting up databases, deploying web apps, or when user mentions React, Next.js, Express, REST API, GraphQL, MongoDB, PostgreSQL, or full-stack development.",
+      "version": "1.0.0",
+      "tags": ["react", "node", "typescript", "database", "web"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["database-design", "api-design"],
+      "conflicts": []
+    },
+    {
+      "name": "game-design-theory",
+      "source": "./skills/game-design-theory",
+      "description": "Comprehensive game design theory covering MDA framework, player psychology, balance principles, and progression systems. Master why games are fun.",
+      "version": "1.0.0",
+      "tags": ["gamedev"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "game-engines",
+      "source": "./skills/game-engines",
+      "description": "Master game engines - Unity, Unreal Engine, Godot. Engine-specific workflows, systems architecture, and production best practices.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "unity", "unreal", "godot"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["game-programming-languages", "game-tools-workflows"],
+      "conflicts": []
+    },
+    {
+      "name": "game-programming-languages",
+      "source": "./skills/game-programming-languages",
+      "description": "Game programming languages - C#, C++, GDScript. Learn syntax, patterns, and engine-specific idioms for professional game development.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "csharp", "cpp", "gdscript"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["game-engines"],
+      "conflicts": []
+    },
+    {
+      "name": "game-servers",
+      "source": "./skills/game-servers",
+      "description": "Game server architecture, scalability, matchmaking, and backend systems for online games. Build robust, scalable multiplayer infrastructure.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "networking"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "game-tools-workflows",
+      "source": "./skills/game-tools-workflows",
+      "description": "Game development tools, asset pipelines, version control, build systems, and team development workflows for efficient production.",
+      "version": "1.0.0",
+      "tags": ["gamedev"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "gameplay-mechanics",
+      "source": "./skills/gameplay-mechanics",
+      "description": "Core gameplay mechanics implementation, system interactions, feedback loops, and iterative balance refinement for engaging player experiences.",
+      "version": "1.0.0",
+      "tags": ["gamedev"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "git-workflow",
+      "source": "./skills/git-workflow",
+      "description": "Git workflow expertise covering conventional commits, branch strategies (GitFlow, trunk-based, GitHub Flow), rebase and merge conflict resolution, git hooks with Husky and lint-staged, monorepo patterns, interactive rebase, cherry-pick workflows, and git bisect for debugging.",
+      "version": "1.0.0",
+      "tags": ["git"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "go-linter-configuration",
+      "source": "./skills/go-linter-configuration",
+      "description": "Configure and troubleshoot golangci-lint for Go projects. Handle import resolution issues, type-checking problems, and optimize configurations for both local and CI environments.",
+      "version": "1.0.0",
+      "tags": ["go", "golang", "linting"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["golang-pro"],
+      "conflicts": []
+    },
+    {
+      "name": "golang-pro",
+      "source": "./skills/golang-pro",
+      "description": "Master Go 1.21+ with modern patterns, advanced concurrency, performance optimization, and production-ready microservices. Expert in the latest Go ecosystem including generics, workspaces, and cutting-edge frameworks. Use PROACTIVELY for Go development, architecture design, or performance optimization.",
+      "version": "1.0.1",
+      "tags": ["go", "golang"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["go-linter-configuration", "testing-strategy"],
+      "conflicts": []
+    },
+    {
+      "name": "incident-response",
+      "source": "./skills/incident-response",
+      "description": "Incident response procedures covering on-call runbooks, postmortem templates, status page management, rollback procedures, communication protocols, severity classification, escalation paths, blameless retrospectives, and chaos engineering practices for resilience testing.",
+      "version": "1.0.0",
+      "tags": ["devops", "monitoring"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["monitoring-observability"],
+      "conflicts": []
+    },
+    {
+      "name": "graphics-rendering",
+      "source": "./skills/graphics-rendering",
+      "description": "3D graphics, shaders, VFX, lighting, rendering optimization. Create stunning visuals with production-ready techniques.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "graphics"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "local-security",
+      "source": "./skills/local-security",
+      "description": "Developer workstation security covering SSH key management, GPG commit signing, credential managers, file permissions, agent forwarding security, multi-IDE security practices, browser extension auditing, disk encryption, and secure development environment setup.",
+      "version": "1.0.0",
+      "tags": ["security"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "level-design",
+      "source": "./skills/level-design",
+      "description": "Level design fundamentals, pacing, difficulty progression, environmental storytelling, and spatial design for engaging gameplay experiences.",
+      "version": "1.0.0",
+      "tags": ["gamedev"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "memory-management",
+      "source": "./skills/memory-management",
+      "description": "Game memory optimization, object pooling, garbage collection tuning, and efficient resource management for target platforms.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "performance"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "monetization-systems",
+      "source": "./skills/monetization-systems",
+      "description": "Game monetization strategies, in-app purchases, battle passes, ads integration, and player retention mechanics. Ethical monetization that respects players.",
+      "version": "1.0.0",
+      "tags": ["gamedev"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "monitoring-observability",
+      "source": "./skills/monitoring-observability",
+      "description": "Production observability and monitoring expertise including structured logging with JSON and correlation IDs, Prometheus metrics (counters, histograms, gauges), distributed tracing with OpenTelemetry and Jaeger, Grafana dashboard design, SLO/SLI-based alerting rules, Sentry error tracking, health check endpoints, readiness vs liveness probes, and on-call runbook patterns. Use when setting up monitoring, debugging production issues, designing dashboards, or implementing observability in Go, Node.js, or Python services.",
+      "version": "1.0.0",
+      "tags": ["monitoring", "devops", "go", "node"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["incident-response"],
+      "conflicts": []
+    },
+    {
+      "name": "networking-servers",
+      "source": "./skills/networking-servers",
+      "description": "Multiplayer systems, netcode, game servers, synchronization, and anti-cheat. Build scalable, responsive multiplayer experiences.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "networking"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "npm-package",
+      "source": "./skills/npm-package",
+      "description": "npm and pnpm package authoring expertise. Covers tsup and unbuild bundling, dual ESM/CJS exports, package.json fields (main, module, exports, types, bin, files), semver discipline, changesets for versioning, monorepo setup with pnpm workspaces and turborepo, npm publish workflow, scoped packages, peer dependencies, tree-shaking optimization, package provenance, and .npmrc configuration. Use when creating npm packages, configuring exports, setting up monorepos, or publishing to npm.",
+      "version": "1.0.0",
+      "tags": ["typescript", "node", "npm"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["typescript", "ci-cd-pipelines"],
+      "conflicts": []
+    },
+    {
+      "name": "optimization-performance",
+      "source": "./skills/optimization-performance",
+      "description": "Game optimization, performance profiling, multi-platform support, and frame rate optimization for smooth gameplay experiences.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "performance"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "particle-systems",
+      "source": "./skills/particle-systems",
+      "description": "Creating visual effects using particle systems, physics simulation, and post-processing for polished, dynamic game graphics.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "graphics"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "pre-production-review",
+      "source": "./skills/pre-production-review",
+      "description": "Systematic pre-production codebase review across 8 domains: security, data layer, backend/API, external services, frontend, infrastructure, performance, and code quality. Dispatches parallel sub-agents for deep analysis, synthesizes findings into a scored health report with phased remediation plan.",
+      "version": "1.0.0",
+      "tags": ["code-review", "security"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["security-review", "testing-strategy"],
+      "conflicts": []
+    },
+    {
+      "name": "performance-optimization",
+      "source": "./skills/performance-optimization",
+      "description": "Web and backend performance optimization including Core Web Vitals (LCP, FID, INP, CLS), bundle analysis with webpack-bundle-analyzer, code splitting, lazy loading, image optimization (WebP, AVIF, responsive srcset), caching strategies (HTTP Cache-Control, CDN, Redis, application-level), database query optimization (indexing, EXPLAIN ANALYZE, N+1), memory leak detection with Chrome DevTools and Node --inspect, connection pooling, and async processing patterns. Use when diagnosing slow pages, reducing bundle size, optimizing API response times, or fixing memory leaks.",
+      "version": "1.0.0",
+      "tags": ["web", "node", "database"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "programming-architecture",
+      "source": "./skills/programming-architecture",
+      "description": "Game code architecture, design patterns, scalable systems, and maintainable code structure for complex games.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "architecture"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
     },
     {
       "name": "project-migration",
       "source": "./skills/project-migration",
-      "description": "Migrate project folders while preserving Claude Code session data, path encoding, history",
-      "version": "1.0.0"
+      "description": "Migrate project folders while preserving Claude Code session data. Use when moving, renaming, or reorganizing project directories. Handles path encoding, data migration, history.jsonl updates, and orphan cleanup.",
+      "version": "1.0.1",
+      "tags": ["meta"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "refactoring-patterns",
+      "source": "./skills/refactoring-patterns",
+      "description": "Code refactoring patterns including extract method and class, inline refactoring, move and rename, dead code elimination, dependency injection, SOLID principles applied, strangler fig pattern, feature flags for safe refactoring, and IDE-assisted refactoring workflows.",
+      "version": "1.0.0",
+      "tags": ["code-review", "architecture"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["codebase-dissection", "testing-strategy"],
+      "conflicts": []
+    },
+    {
+      "name": "publishing-platforms",
+      "source": "./skills/publishing-platforms",
+      "description": "Platform submission processes, certification requirements, and distribution across Steam, Epic, console, and mobile platforms.",
+      "version": "1.0.0",
+      "tags": ["gamedev"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "python-best-practices",
+      "source": "./skills/python-best-practices",
+      "description": "Modern Python 3.12+ development with strict type hints, ruff linting, uv package manager, async/await patterns, dataclasses vs Pydantic v2, pytest conventions, virtual environments, src layout project structure, and pyproject.toml configuration. Use when writing, reviewing, or scaffolding Python code.",
+      "version": "1.0.0",
+      "tags": ["python"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["testing-strategy"],
+      "conflicts": []
+    },
+    {
+      "name": "remotion-best-practices",
+      "source": "./skills/remotion-best-practices",
+      "description": "Video creation in React using Remotion. Covers animations, compositions, audio sync, text effects, 3D integration with Three.js, and rendering. Use when building dynamic video generators, editing timelines, or optimizing Remotion renders.",
+      "version": "1.0.1",
+      "tags": ["react", "typescript", "video", "remotion"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["typescript", "frontend-design"],
+      "conflicts": []
+    },
+    {
+      "name": "rust-best-practices",
+      "source": "./skills/rust-best-practices",
+      "description": "Idiomatic Rust development with ownership, borrowing, lifetimes, error handling (thiserror/anyhow), async Tokio patterns, traits, generics, Clippy linting, cargo workspaces, and production patterns for web services (axum/actix-web), CLI tools (clap), and systems programming. Use when writing, reviewing, or debugging Rust code.",
+      "version": "1.0.0",
+      "tags": ["rust"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["testing-strategy"],
+      "conflicts": []
+    },
+    {
+      "name": "security-review",
+      "source": "./skills/security-review",
+      "description": "Code security review covering OWASP Top 10, injection prevention (SQL, XSS, command injection), authentication and authorization patterns, secrets management, dependency vulnerability scanning, input validation, CORS, CSRF, rate limiting, and security headers. Language-agnostic with examples in JavaScript, Python, and Go. Use when reviewing code for security or hardening an application.",
+      "version": "1.0.0",
+      "tags": ["security", "web"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["dependency-audit", "container-security"],
+      "conflicts": []
+    },
+    {
+      "name": "shader-techniques",
+      "source": "./skills/shader-techniques",
+      "description": "Advanced shader programming, visual effects, custom materials, and rendering optimization for stunning game graphics.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "graphics"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "skill-creation-guide",
+      "source": "./skills/skill-creation-guide",
+      "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.",
+      "version": "1.0.1",
+      "tags": ["meta"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["skill-creator"],
+      "conflicts": []
+    },
+    {
+      "name": "skill-creator",
+      "source": "./skills/skill-creator",
+      "description": "Create or update Claude skills. Use for new skills, skill references, skill scripts, optimizing existing skills, extending Claude's capabilities.",
+      "version": "1.0.1",
+      "tags": ["meta"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["skill-creation-guide"],
+      "conflicts": []
+    },
+    {
+      "name": "synchronization-algorithms",
+      "source": "./skills/synchronization-algorithms",
+      "description": "Network synchronization, lag compensation, client prediction, and state consistency for responsive multiplayer games.",
+      "version": "1.0.0",
+      "tags": ["gamedev", "networking"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "testing-strategy",
+      "source": "./skills/testing-strategy",
+      "description": "Comprehensive testing expertise across unit, integration, and e2e tests. Covers pytest, Vitest, Jest, Go testing, Playwright, Cypress. Test pyramids, TDD workflow, mocking patterns, coverage targets, property-based testing, snapshot testing, parameterized tests, fixtures, CI integration. Use when writing tests, designing test architecture, improving coverage, or setting up testing infrastructure.",
+      "version": "1.0.0",
+      "tags": ["testing"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["code-reviewer"],
+      "conflicts": []
+    },
+    {
+      "name": "typescript",
+      "source": "./skills/typescript",
+      "description": "TypeScript code style and optimization guidelines. Use when writing TypeScript code (.ts, .tsx, .mts files), reviewing code quality, or implementing type-safe patterns. Triggers on TypeScript development, type safety questions, or code style discussions.",
+      "version": "1.0.1",
+      "tags": ["typescript"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["typescript-advanced", "testing-strategy"],
+      "conflicts": []
+    },
+    {
+      "name": "typescript-advanced",
+      "source": "./skills/typescript-advanced",
+      "description": "Advanced TypeScript patterns including branded/nominal types, discriminated unions with exhaustive matching, conditional types with infer, mapped types, template literal types, module augmentation, declaration merging, satisfies operator, const assertions, variance annotations, strict library authoring, and type-level programming. Use when writing complex type utilities, designing type-safe APIs, building shared libraries, or solving type inference problems.",
+      "version": "1.0.0",
+      "tags": ["typescript"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["typescript"],
+      "conflicts": []
+    },
+    {
+      "name": "update-docs",
+      "source": "./skills/update-docs",
+      "description": "This skill should be used when the user asks to \"update documentation for my changes\", \"check docs for this PR\", \"what docs need updating\", \"sync docs with code\", \"scaffold docs for this feature\", \"document this feature\", \"review docs completeness\", \"add docs for this change\", \"what documentation is affected\", \"docs impact\", or mentions \"docs/\", \"docs/01-app\", \"docs/02-pages\", \"MDX\", \"documentation update\", \"API reference\", \".mdx files\". Provides guided workflow for updating Next.js documentation based on code changes.",
+      "version": "1.0.0",
+      "tags": ["documentation", "next"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
+    },
+    {
+      "name": "xlsx",
+      "source": "./skills/xlsx",
+      "description": "\"Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .csv, or .tsv file (e.g., adding columns, computing formulas, formatting, charting, cleaning messy data); create a new spreadsheet from scratch or from other data sources; or convert between tabular file formats. Trigger especially when the user references a spreadsheet file by name or path \u2014 even casually (like \\\"the xlsx in my downloads\\\") \u2014 and wants something done to it or produced from it. Also trigger for cleaning or restructuring messy tabular data files (malformed rows, misplaced headers, junk data) into proper spreadsheets. The deliverable must be a spreadsheet file. Do NOT trigger when the primary deliverable is a Word document, HTML report, standalone Python script, database pipeline, or Google Sheets API integration, even if tabular data is involved.\"",
+      "version": "1.0.1",
+      "tags": ["office", "data"],
+      "verified": true,
+      "author": "arcana",
+      "companions": [],
+      "conflicts": []
     }
   ]
 }

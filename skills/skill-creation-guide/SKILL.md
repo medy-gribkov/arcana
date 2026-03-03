@@ -342,7 +342,41 @@ The packaging script will:
 
 2. **Package** the skill if validation passes, creating a .skill file named after the skill (e.g., `my-skill.skill`) that includes all files and maintains the proper directory structure for distribution. The .skill file is a zip file with a .skill extension.
 
-If validation fails, the script will report the errors and exit without creating a package. Fix any validation errors and run the packaging command again.
+**Edge case handling for malformed SKILL.md:**
+
+If validation fails with errors like:
+- Missing frontmatter delimiters (`---`)
+- Invalid YAML syntax in frontmatter
+- Missing required fields (`name`, `description`)
+- Empty body content
+- Invalid file encoding
+
+The script will report specific errors and line numbers. Common fixes:
+
+```yaml
+# BAD: Missing closing delimiter
+---
+name: my-skill
+description: A skill
+
+This is the body
+
+# GOOD: Proper frontmatter
+---
+name: my-skill
+description: A skill
+---
+
+This is the body
+
+# BAD: Invalid YAML (colon in unquoted string)
+description: Use when: doing X
+
+# GOOD: Quote strings with special characters
+description: "Use when: doing X"
+```
+
+Fix validation errors and run packaging again.
 
 ### Step 6: Iterate
 

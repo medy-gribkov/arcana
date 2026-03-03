@@ -7,6 +7,8 @@ import tempfile
 import zipfile
 from pathlib import Path
 
+from ..security_utils import safe_parse_xml
+
 
 class RedliningValidator:
 
@@ -29,9 +31,7 @@ class RedliningValidator:
             return False
 
         try:
-            import xml.etree.ElementTree as ET
-
-            tree = ET.parse(modified_file)
+            tree = safe_parse_xml(modified_file)
             root = tree.getroot()
 
             del_elements = root.findall(".//w:del", self.namespaces)
@@ -74,11 +74,9 @@ class RedliningValidator:
                 return False
 
             try:
-                import xml.etree.ElementTree as ET
-
-                modified_tree = ET.parse(modified_file)
+                modified_tree = safe_parse_xml(modified_file)
                 modified_root = modified_tree.getroot()
-                original_tree = ET.parse(original_file)
+                original_tree = safe_parse_xml(original_file)
                 original_root = original_tree.getroot()
             except ET.ParseError as e:
                 print(f"FAILED - Error parsing XML files: {e}")

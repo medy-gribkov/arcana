@@ -10,3 +10,17 @@ Brief description.
 - [ ] No hardcoded personal paths or configs
 - [ ] Scripts work cross-platform where applicable
 - [ ] Tested locally with at least one AI coding tool
+
+## Testing
+
+- [ ] Tested manually with the following tool(s):
+- [ ] CI passes locally (`npm run build`, `python test_*.py`)
+
+## Breaking Changes
+
+- [ ] No breaking changes
+- [ ] Yes (describe below):
+
+## Related Issues
+
+Closes #

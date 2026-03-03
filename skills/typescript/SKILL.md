@@ -1,52 +1,191 @@
 ---
 name: typescript
-description: TypeScript code style and optimization guidelines. Use when writing TypeScript code (.ts, .tsx, .mts files), reviewing code quality, or implementing type-safe patterns. Triggers on TypeScript development, type safety questions, or code style discussions.
+description: TypeScript patterns covering strict types, generics constraints, utility types (Pick, Omit, Record, Extract), discriminated unions, async patterns, and common mistakes with BAD/GOOD comparisons.
 ---
-
-# TypeScript Code Style Guide
 
 ## Types and Type Safety
 
-- Avoid explicit type annotations when TypeScript can infer
-- Avoid implicitly `any`; explicitly type when necessary
-- Use accurate types: prefer `Record<PropertyKey, unknown>` over `object` or `any`
-- Prefer `interface` for object shapes (e.g., React props); use `type` for unions/intersections
-- Prefer `as const satisfies XyzInterface` over plain `as const`
-- Prefer `@ts-expect-error` over `@ts-ignore` over `as any`
-- Avoid meaningless null/undefined parameters; design strict function contracts
+**BAD:** Using `any` defeats the type system.
+
+```typescript
+function processData(data: any) {
+  return data.value.toUpperCase();
+}
+```
+
+**GOOD:** Define explicit types or use generics.
+
+```typescript
+interface DataWithValue {
+  value: string;
+}
+
+function processData(data: DataWithValue): string {
+  return data.value.toUpperCase();
+}
+```
+
+### When TypeScript Can Infer
+
+**BAD:** Redundant type annotations.
+
+```typescript
+const count: number = 42;
+const name: string = 'Alice';
+```
+
+**GOOD:** Let TypeScript infer.
+
+```typescript
+const count = 42;       // inferred as number
+const name = 'Alice';   // inferred as string
+```
+
+### Record vs Object
+
+**BAD:** Using `object` or `{}`. These allow any object.
+
+**GOOD:** Use `Record<PropertyKey, unknown>` for arbitrary objects.
+
+```typescript
+function logData(data: Record<PropertyKey, unknown>) {
+  console.log(data);
+}
+```
+
+## Interfaces vs Types
+
+**GOOD:** Use `interface` for object shapes. Use `type` for unions, intersections, and primitives.
+
+```typescript
+// Object shapes: interface
+interface User {
+  id: number;
+  name: string;
+}
+
+// Unions: type
+type Status = 'pending' | 'approved' | 'rejected';
+
+// Intersections: type
+type AdminUser = User & { role: 'admin' };
+```
+
+## Generics Constraints
+
+**BAD:** Unconstrained generics allow any type.
+
+```typescript
+function getProperty<T>(obj: T, key: string) {
+  return obj[key];  // Error: key is not guaranteed to exist on T
+}
+```
+
+**GOOD:** Constrain generics with `extends`.
+
+```typescript
+function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];
+}
+
+const user = { id: 1, name: 'Alice' };
+const name = getProperty(user, 'name');  // Type: string
+```
+
+### Multiple Constraints
+
+```typescript
+function findById<T extends Identifiable & Named>(
+  items: T[],
+  id: number
+): T | undefined {
+  return items.find(item => item.id === id);
+}
+```
+
+### Default Generic Types
+
+```typescript
+function createArray<T = string>(length: number, value: T): T[] {
+  return Array(length).fill(value);
+}
+```
+
+## Utility Types
+
+Pick, Omit, Partial, Required, Record, Extract, Exclude, ReturnType. Full reference with BAD/GOOD pairs for each.
+
+See references/utility-types.md for the complete utility types reference.
+
+## Discriminated Unions
+
+**BAD:** Unions without discriminator. TypeScript cannot narrow types.
+
+```typescript
+type Result = { data: string } | { error: Error };
+```
+
+**GOOD:** Add a discriminator property.
+
+```typescript
+type Success = { status: 'success'; data: string };
+type Failure = { status: 'error'; error: Error };
+type Result = Success | Failure;
+
+function handleResult(result: Result) {
+  if (result.status === 'success') {
+    console.log(result.data);  // TypeScript knows this is Success
+  } else {
+    console.error(result.error);  // TypeScript knows this is Failure
+  }
+}
+```
+
+### Exhaustive Checks
+
+```typescript
+function handleStatus(status: Status): string {
+  switch (status) {
+    case 'pending': return 'Awaiting review';
+    case 'approved': return 'Approved';
+    case 'rejected': return 'Rejected';
+    default:
+      const _exhaustive: never = status;  // Error if a case is missing
+      throw new Error(`Unhandled status: ${_exhaustive}`);
+  }
+}
+```
 
 ## Async Patterns
 
-- Prefer `async`/`await` over callbacks or `.then()` chains
-- Prefer async APIs over sync ones (avoid `*Sync`)
-- Use promise-based variants: `import { readFile } from 'fs/promises'`
-- Use `Promise.all`, `Promise.race` for concurrent operations where safe
+async/await, Promise.all for concurrency, error handling with try/catch, Promise.allSettled for partial failures, timeout wrappers.
 
-## Code Structure
+See references/async-patterns.md for full patterns with BAD/GOOD examples.
 
-- Prefer object destructuring
-- Use consistent, descriptive naming; avoid obscure abbreviations
-- Replace magic numbers/strings with well-named constants
-- Defer formatting to tooling
+## Common Mistakes
 
-## UI and Theming
+### Magic Values
 
-- Use `@lobehub/ui`, Ant Design components instead of raw HTML tags
-- Design for dark mode and mobile responsiveness
-- Use `antd-style` token system instead of hard-coded colors
+**BAD:** Hardcoded strings and numbers.
+
+**GOOD:** Use named constants.
+
+```typescript
+const USER_STATUS = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+} as const;
+```
+
+### Type Assertions
+
+**BAD:** Using `as any` to bypass type checking.
+
+**GOOD:** Use `@ts-expect-error` for known issues. Forces re-evaluation when fixed.
 
 ## Performance
 
-- Prefer `for…of` loops over index-based `for` loops
-- Reuse existing utils in `packages/utils` or installed npm packages
-- Query only required columns from database
+Prefer `for...of` over index loops, async APIs over `*Sync` variants, `??` over `||` for defaults, destructuring for clarity.
 
-## Time Consistency
-
-- Assign `Date.now()` to a constant once and reuse for consistency
-
-## Logging
-
-- Never log user private information (API keys, etc.)
-- Don't use `import { log } from 'debug'` directly (logs to console)
-- Use `console.error` in catch blocks instead of debug package
+See references/performance-tips.md for the complete set of performance patterns.

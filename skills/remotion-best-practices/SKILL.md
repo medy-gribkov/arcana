@@ -5,44 +5,217 @@ metadata:
   tags: remotion, video, react, animation, composition
 ---
 
+You are a Remotion expert. All animations must be frame-driven via `useCurrentFrame()`. CSS transitions and Tailwind animation classes are FORBIDDEN in Remotion, they will not render correctly.
+
 ## When to use
 
-Use this skills whenever you are dealing with Remotion code to obtain the domain-specific knowledge.
+- Building programmatic videos with React
+- Creating animated intros, demos, promo videos
+- Generating data-driven video content
+- Working with captions, charts, or text animations
 
-## Captions
+## Core Pattern
 
-When dealing with captions or subtitles, load the [./rules/subtitles.md](./rules/subtitles.md) file for more information.
+Every Remotion component follows this structure:
 
-## How to use
+```tsx
+import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
 
-Read individual rule files for detailed explanations and code examples:
+export const MyScene: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps, width, height } = useVideoConfig();
 
-- [rules/3d.md](rules/3d.md) - 3D content in Remotion using Three.js and React Three Fiber
-- [rules/animations.md](rules/animations.md) - Fundamental animation skills for Remotion
-- [rules/assets.md](rules/assets.md) - Importing images, videos, audio, and fonts into Remotion
-- [rules/audio.md](rules/audio.md) - Using audio and sound in Remotion - importing, trimming, volume, speed, pitch
-- [rules/calculate-metadata.md](rules/calculate-metadata.md) - Dynamically set composition duration, dimensions, and props
-- [rules/can-decode.md](rules/can-decode.md) - Check if a video can be decoded by the browser using Mediabunny
-- [rules/charts.md](rules/charts.md) - Chart and data visualization patterns for Remotion (bar, pie, line, stock charts)
-- [rules/compositions.md](rules/compositions.md) - Defining compositions, stills, folders, default props and dynamic metadata
-- [rules/extract-frames.md](rules/extract-frames.md) - Extract frames from videos at specific timestamps using Mediabunny
-- [rules/fonts.md](rules/fonts.md) - Loading Google Fonts and local fonts in Remotion
-- [rules/get-audio-duration.md](rules/get-audio-duration.md) - Getting the duration of an audio file in seconds with Mediabunny
-- [rules/get-video-dimensions.md](rules/get-video-dimensions.md) - Getting the width and height of a video file with Mediabunny
-- [rules/get-video-duration.md](rules/get-video-duration.md) - Getting the duration of a video file in seconds with Mediabunny
-- [rules/gifs.md](rules/gifs.md) - Displaying GIFs synchronized with Remotion's timeline
-- [rules/images.md](rules/images.md) - Embedding images in Remotion using the Img component
-- [rules/light-leaks.md](rules/light-leaks.md) - Light leak overlay effects using @remotion/light-leaks
-- [rules/lottie.md](rules/lottie.md) - Embedding Lottie animations in Remotion
-- [rules/measuring-dom-nodes.md](rules/measuring-dom-nodes.md) - Measuring DOM element dimensions in Remotion
-- [rules/measuring-text.md](rules/measuring-text.md) - Measuring text dimensions, fitting text to containers, and checking overflow
-- [rules/sequencing.md](rules/sequencing.md) - Sequencing patterns for Remotion - delay, trim, limit duration of items
-- [rules/tailwind.md](rules/tailwind.md) - Using TailwindCSS in Remotion
-- [rules/text-animations.md](rules/text-animations.md) - Typography and text animation patterns for Remotion
-- [rules/timing.md](rules/timing.md) - Interpolation curves in Remotion - linear, easing, spring animations
-- [rules/transitions.md](rules/transitions.md) - Scene transition patterns for Remotion
-- [rules/transparent-videos.md](rules/transparent-videos.md) - Rendering out a video with transparency
-- [rules/trimming.md](rules/trimming.md) - Trimming patterns for Remotion - cut the beginning or end of animations
-- [rules/videos.md](rules/videos.md) - Embedding videos in Remotion - trimming, volume, speed, looping, pitch
-- [rules/parameters.md](rules/parameters.md) - Make a video parametrizable by adding a Zod schema
-- [rules/maps.md](rules/maps.md) - Add a map using Mapbox and animate it
+  const opacity = interpolate(frame, [0, 1.5 * fps], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+
+  const scale = spring({ frame, fps, config: { damping: 12 } });
+
+  return (
+    <div style={{ opacity, transform: `scale(${scale})` }}>
+      Content here
+    </div>
+  );
+};
+```
+
+**Always use seconds * fps**, never raw frame numbers:
+```tsx
+// BAD
+const opacity = interpolate(frame, [0, 45], [0, 1]);
+
+// GOOD
+const opacity = interpolate(frame, [0, 1.5 * fps], [0, 1]);
+```
+
+## Composition Setup
+
+```tsx
+// src/Root.tsx
+import { Composition } from "remotion";
+import { MyVideo, MyVideoProps } from "./MyVideo";
+
+export const RemotionRoot = () => (
+  <Composition
+    id="MyVideo"
+    component={MyVideo}
+    durationInFrames={30 * 30} // 30s at 30fps
+    fps={30}
+    width={1920}
+    height={1080}
+    defaultProps={{ title: "Demo" } satisfies MyVideoProps}
+  />
+);
+```
+
+Use `type` for props (not `interface`) to ensure `defaultProps` type safety.
+
+## Sequencing Scenes
+
+```tsx
+import { Sequence } from "remotion";
+
+export const MyVideo: React.FC = () => (
+  <>
+    <Sequence from={0} durationInFrames={150}>
+      <Intro />
+    </Sequence>
+    <Sequence from={150} durationInFrames={240}>
+      <MainContent />
+    </Sequence>
+    <Sequence from={390} durationInFrames={150}>
+      <Outro />
+    </Sequence>
+  </>
+);
+```
+
+Inside each `<Sequence>`, `useCurrentFrame()` resets to 0. Design components to start at frame 0.
+
+## Animation Patterns
+
+**Spring** (natural motion, 0 to 1):
+```tsx
+const scale = spring({ frame, fps, config: { mass: 1, damping: 10, stiffness: 100 } });
+```
+
+**Interpolate** (map frame range to value range):
+```tsx
+const translateY = interpolate(frame, [0, 2 * fps], [50, 0], {
+  extrapolateRight: "clamp",
+  easing: Easing.out(Easing.cubic),
+});
+```
+
+**Staggered items:**
+```tsx
+{items.map((item, i) => {
+  const delay = i * 5; // 5 frame stagger
+  const progress = spring({ frame: frame - delay, fps });
+  return (
+    <div key={i} style={{ opacity: progress, transform: `translateY(${(1 - progress) * 20}px)` }}>
+      {item}
+    </div>
+  );
+})}
+```
+
+## Audio
+
+```tsx
+import { Audio, interpolate } from "remotion";
+import { staticFile } from "remotion";
+
+<Audio
+  src={staticFile("music.mp3")}
+  startFrom={30}           // trim start (frames)
+  endAt={300}              // trim end (frames)
+  volume={(f) =>
+    interpolate(f, [0, 30], [0, 1], { extrapolateRight: "clamp" })
+  }
+/>
+```
+
+## Assets
+
+Always use `staticFile()` for local assets in `public/`:
+```tsx
+// BAD
+<Img src="/logo.png" />
+
+// GOOD
+import { staticFile } from "remotion";
+<Img src={staticFile("logo.png")} />
+```
+
+For Google Fonts:
+```tsx
+import { loadFont } from "@remotion/google-fonts/Inter";
+const { fontFamily } = loadFont();
+```
+
+## Anti-patterns
+
+BAD:
+```tsx
+// CSS transition (won't render in video)
+<div style={{ transition: "opacity 0.3s" }}>
+
+// Tailwind animate class (won't render)
+<div className="animate-bounce">
+
+// Raw frame numbers (unreadable)
+const x = interpolate(frame, [0, 90], [0, 100]);
+
+// useEffect for animation (breaks determinism)
+useEffect(() => { setOpacity(1); }, []);
+```
+
+GOOD:
+```tsx
+// Frame-driven opacity
+const opacity = interpolate(frame, [0, 3 * fps], [0, 1], {
+  extrapolateRight: "clamp",
+});
+
+// Spring for natural motion
+const scale = spring({ frame, fps });
+
+// All state derived from frame, never useState for animation
+```
+
+## Rendering
+
+```bash
+# Preview
+npx remotion preview
+
+# Render to MP4
+npx remotion render MyVideo out/video.mp4
+
+# Render specific frames
+npx remotion render MyVideo --frames=0-150 out/preview.mp4
+
+# Render as GIF
+npx remotion render MyVideo out/video.gif --image-format=png
+```
+
+## Deep Dive References
+
+For detailed patterns, load the relevant rule file:
+
+| Topic | File |
+|-------|------|
+| Compositions, stills, folders | [rules/compositions.md](rules/compositions.md) |
+| Interpolation and springs | [rules/timing.md](rules/timing.md) |
+| Scene transitions | [rules/transitions.md](rules/transitions.md) |
+| Text animations | [rules/text-animations.md](rules/text-animations.md) |
+| Captions and subtitles | [rules/subtitles.md](rules/subtitles.md) |
+| Charts and data viz | [rules/charts.md](rules/charts.md) |
+| 3D with Three.js | [rules/3d.md](rules/3d.md) |
+| Video embedding | [rules/videos.md](rules/videos.md) |
+| Audio and sound | [rules/audio.md](rules/audio.md) |
+| Parametrizable videos (Zod) | [rules/parameters.md](rules/parameters.md) |
+| TailwindCSS setup | [rules/tailwind.md](rules/tailwind.md) |
+| Maps (Mapbox) | [rules/maps.md](rules/maps.md) |
+| Transparent video export | [rules/transparent-videos.md](rules/transparent-videos.md) |

@@ -1,4 +1,43 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
+*.egg-info/
+.venv/
+.coverage
+htmlcov/
+
+# Node
+cli/node_modules/
+cli/dist/
+cli/coverage/
+*.tgz
+.npmrc
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Research / personal notes
+snyk_research.txt
+
+# Promo
+promo/package-lock.json
+
+# Claude
 .claude/

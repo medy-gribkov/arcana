@@ -1,10 +1,6 @@
 ---
 name: codebase-dissection
-version: "1.0.0"
-description: |
-  Systematic methodology for analyzing, understanding, and diagnosing problems in any codebase.
-  Covers architecture mapping, data flow analysis, dead code detection, concurrency auditing,
-  and actionable remediation planning.
+description: Systematic methodology for analyzing, understanding, and diagnosing problems in any codebase. Covers architecture mapping, data flow analysis, dead code detection, concurrency auditing, and actionable remediation planning.
 ---
 
 # Codebase Dissection Skill
@@ -28,7 +24,19 @@ A repeatable, systematic methodology for taking any codebase apart to understand
 6. **Generated code**: Identify what's auto-generated (sqlc, protobuf, templ, swagger) vs hand-written
 7. **Legacy remnants**: Find files from previous language/framework (Python in a Go project, etc.)
 
-**Output**: A component inventory with file counts, line counts, and purpose of each directory.
+**Output template:**
+```
+Project: [name] ([language])
+Entry points: [list main() functions, servers, CLI commands]
+Directory structure:
+  - cmd/ (3 files, ~500 LOC) - CLI entry points
+  - internal/ (45 files, ~3500 LOC) - Core business logic
+  - pkg/ (12 files, ~800 LOC) - Reusable libraries
+  - migrations/ (8 files) - Database schema history
+Generated code: sqlc (models/), protobuf (api/pb/)
+Config: .env (12 vars), docker-compose.yml, Dockerfile
+Tests: 23 files, ~1200 LOC (unit + integration)
+```
 
 **Parallel queries to run**:
 - `glob **/*.go` (or language equivalent) to count source files
@@ -55,7 +63,17 @@ A repeatable, systematic methodology for taking any codebase apart to understand
 - Missing fields in conversion functions
 - No audit trail for data changes
 
-**Output**: A data flow diagram showing: Source -> Representation A -> Storage -> Representation B -> External System
+**Output template:**
+```
+Data flow for [entity]:
+1. Source: HTTP POST /api/leads (CreateLeadRequest struct)
+2. Validation: Zod schema validation
+3. Transform: CreateLeadRequest -> LeadModel (loses fields: ip_address, user_agent)
+4. Storage: PostgreSQL leads table (authoritative schema)
+5. External sync: LeadModel -> NotionLead (adds notion_page_id)
+6. Issue: 3 representations of Lead entity (CreateLeadRequest, LeadModel, NotionLead)
+7. Issue: No conversion function from NotionLead back to LeadModel
+```
 
 ### Phase 3: Logic & Flow Analysis (Where Does It Break?)
 
@@ -95,7 +113,20 @@ A repeatable, systematic methodology for taking any codebase apart to understand
 3. Look for registered-but-nonfunctional features (UI exists, backend doesn't)
 4. Check for imports that are unused or functions defined but never called
 
-**Output**: A severity-ranked list of issues with file:line references.
+**Output template:**
+```
+Critical Issues (P0):
+1. Goroutine leak in scraper.go:145 - no context cancellation, blocks forever if HTTP hangs
+2. Swallowed error in sync.go:78 - Notion API failure silently skipped, data loss risk
+
+Reliability Issues (P2):
+1. No timeout on database query in leads.go:203 - can hang indefinitely
+2. Unbounded goroutine spawn in workers.go:56 - no semaphore, OOM risk under load
+
+Dead Code (P3):
+1. sendEmailNotification() in notifications.go:123 - defined but never called
+2. TODO comment in enrichment.go:67 - "implement company lookup" - stub returns error
+```
 
 ### Phase 4: Remediation Planning (What To Fix, In What Order)
 

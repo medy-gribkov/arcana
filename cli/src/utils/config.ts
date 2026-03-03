@@ -1,0 +1,93 @@
+import { existsSync, readFileSync, mkdirSync } from "node:fs";
+import { join, dirname, isAbsolute } from "node:path";
+import { homedir } from "node:os";
+import type { ArcanaConfig, ProviderConfig } from "../types.js";
+import { ui } from "./ui.js";
+import { atomicWriteSync } from "./atomic.js";
+
+const CONFIG_PATH = join(homedir(), ".arcana", "config.json");
+
+const DEFAULT_CONFIG: ArcanaConfig = {
+  defaultProvider: "arcana",
+  installDir: join(homedir(), ".agents", "skills"),
+  providers: [
+    {
+      name: "arcana",
+      type: "github",
+      url: "medy-gribkov/arcana",
+      enabled: true,
+    },
+  ],
+};
+
+function cloneConfig(config: ArcanaConfig): ArcanaConfig {
+  return { ...config, providers: config.providers.map((p) => ({ ...p })) };
+}
+
+export function loadConfig(): ArcanaConfig {
+  if (!existsSync(CONFIG_PATH)) {
+    return applyEnvOverrides(cloneConfig(DEFAULT_CONFIG));
+  }
+  try {
+    const raw = readFileSync(CONFIG_PATH, "utf-8");
+    const loaded = JSON.parse(raw) as Partial<ArcanaConfig>;
+    const config: ArcanaConfig = {
+      ...DEFAULT_CONFIG,
+      ...loaded,
+      providers: loaded.providers ?? DEFAULT_CONFIG.providers.map((p) => ({ ...p })),
+    };
+    return applyEnvOverrides(config);
+  } catch {
+    console.error(ui.warn("  Warning: Config file is corrupted, using defaults"));
+    return applyEnvOverrides(cloneConfig(DEFAULT_CONFIG));
+  }
+}
+
+function applyEnvOverrides(base: ArcanaConfig): ArcanaConfig {
+  const config = { ...base, providers: base.providers };
+  const envInstallDir = process.env.ARCANA_INSTALL_DIR;
+  if (envInstallDir) {
+    if (!isAbsolute(envInstallDir)) {
+      console.error(ui.warn("  Warning: ARCANA_INSTALL_DIR must be an absolute path. Ignoring."));
+    } else {
+      config.installDir = envInstallDir;
+    }
+  }
+  const envProvider = process.env.ARCANA_DEFAULT_PROVIDER;
+  if (envProvider) {
+    if (envProvider.trim().length === 0) {
+      console.error(ui.warn("  Warning: ARCANA_DEFAULT_PROVIDER is empty. Ignoring."));
+    } else {
+      config.defaultProvider = envProvider.trim();
+    }
+  }
+  return config;
+}
+
+export function saveConfig(config: ArcanaConfig): void {
+  const dir = dirname(CONFIG_PATH);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+  atomicWriteSync(CONFIG_PATH, JSON.stringify(config, null, 2) + "\n", 0o600);
+}
+
+export function addProvider(provider: ProviderConfig): void {
+  const config = loadConfig();
+  const existing = config.providers.findIndex((p) => p.name === provider.name);
+  if (existing >= 0) {
+    config.providers[existing] = provider;
+  } else {
+    config.providers.push(provider);
+  }
+  saveConfig(config);
+}
+
+export function removeProvider(name: string): boolean {
+  const config = loadConfig();
+  const idx = config.providers.findIndex((p) => p.name === name);
+  if (idx < 0) return false;
+  config.providers.splice(idx, 1);
+  saveConfig(config);
+  return true;
+}

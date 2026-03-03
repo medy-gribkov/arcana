@@ -1,13 +1,13 @@
 # Rule Catalog — Performance
 
-## Use library-provided hooks for state access
+## React Flow data usage
 
 IsUrgent: True
 Category: Performance
 
 ### Description
 
-When using state management libraries (Redux, Zustand, React Flow, etc.), prefer the library's built-in hooks for reading state in components. Use store APIs directly only inside callbacks that mutate state. Avoid manually pulling state outside of hooks.
+When rendering React Flow, prefer `useNodes`/`useEdges` for UI consumption and rely on `useStoreApi` inside callbacks that mutate or read node/edge state. Avoid manually pulling Flow data outside of these hooks.
 
 ## Complex prop memoization
 

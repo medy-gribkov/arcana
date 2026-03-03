@@ -11,7 +11,10 @@ from pathlib import Path
 
 def validate_skill(skill_path):
     """Basic validation of a skill"""
-    skill_path = Path(skill_path)
+    skill_path = Path(skill_path).resolve()
+    # Security: Ensure we aren't escaping the project root
+    if not skill_path.is_relative_to(Path.cwd().parent) and not skill_path.is_relative_to(Path.cwd()):
+         return False, f"Path traversal attempt detected: {skill_path}"
 
     # Check SKILL.md exists
     skill_md = skill_path / 'SKILL.md'

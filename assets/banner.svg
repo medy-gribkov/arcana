@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&amp;display=swap');
+      .bg { fill: #0c0b0e; }
+      .glyph { fill: #d4943a; }
+      .title { fill: #d4943a; font-family: 'JetBrains Mono', monospace; font-size: 64px; font-weight: 700; }
+      .subtitle { fill: #e8e4df; font-family: 'JetBrains Mono', monospace; font-size: 16px; }
+    </style>
+  </defs>
+  <rect class="bg" width="800" height="200" rx="12"/>
+  <!-- Logo glyph -->
+  <g transform="translate(80,30) scale(0.55)">
+    <polygon class="glyph" points="32,4 4,56 16,56 32,24 48,56 60,56"/>
+    <polygon class="glyph" points="20,44 44,44 38,56 26,56"/>
+    <rect class="glyph" x="28" y="14" width="8" height="8" rx="1" transform="rotate(45,32,18)"/>
+  </g>
+  <!-- Title -->
+  <text class="title" x="140" y="120">arcana</text>
+  <!-- Subtitle -->
+  <text class="subtitle" x="140" y="155">The AI development toolkit</text>
+</svg>

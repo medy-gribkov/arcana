@@ -7,13 +7,13 @@ All Claude Code session data lives under `~/.claude/`:
 ```
 ~/.claude/
 ├── projects/                    # Per-project session data
-│   ├── c--Users-User-Desktop-foo/
+│   ├── c--Users-Dev-Desktop-foo/
 │   │   ├── <session-id>.jsonl   # Conversation transcripts
 │   │   ├── memory/
 │   │   │   └── MEMORY.md        # Project-specific memory
 │   │   └── session-memory/
 │   │       └── summary.md       # Session summaries
-│   └── c--Users-User/           # Home directory sessions
+│   └── c--Users-Dev/           # Home directory sessions
 ├── history.jsonl                # Recent session history
 ├── settings.json                # Global settings
 ├── settings.local.json          # Machine-specific settings
@@ -40,10 +40,10 @@ Claude encodes the absolute project path into a directory name:
 
 | Original Path | Encoded Key |
 |--------------|-------------|
-| `C:\Users\User` | `c--Users-User` |
-| `C:\Users\User\Desktop\ai-model` | `c--Users-User-Desktop-ai-model` |
-| `C:\Users\User\Desktop\microGPT Brain` | `c--Users-User-Desktop-microGPT-Brain` |
-| `C:\Users\User\Coding\Personal\Gaming_test` | `c--Users-User-Coding-Personal-Gaming-test` |
+| `C:\Users\Dev` | `c--Users-Dev` |
+| `C:\Users\Dev\Desktop\ai-model` | `c--Users-Dev-Desktop-ai-model` |
+| `C:\Users\Dev\Desktop\microGPT Brain` | `c--Users-Dev-Desktop-microGPT-Brain` |
+| `C:\Users\Dev\Coding\Personal\Gaming_test` | `c--Users-Dev-Coding-Personal-Gaming-test` |
 
 ### Encoding is Lossy
 

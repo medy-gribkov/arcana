@@ -8,9 +8,9 @@ Windows environments produce three different path formats:
 
 | Context | Format | Example |
 |---------|--------|---------|
-| Windows native | Backslash | `C:\Users\User\Desktop` |
-| Git Bash | Unix-style | `/c/Users/User/Desktop` |
-| Forward slash | Mixed | `C:/Users/User/Desktop` |
+| Windows native | Backslash | `C:\Users\Dev\Desktop` |
+| Git Bash | Unix-style | `/c/Users/Dev/Desktop` |
+| Forward slash | Mixed | `C:/Users/Dev/Desktop` |
 
 All three must be handled. The `normalize_path()` function in `migrate.py` converts any format to the OS-native form.
 
@@ -50,12 +50,12 @@ sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 ## Case Sensitivity
 
 Windows NTFS is case-**insensitive** but case-**preserving**. When looking up Claude data directories:
-- `c--Users-User-Desktop-test` and `C--Users-User-Desktop-test` match the same directory
+- `c--Users-Dev-Desktop-test` and `C--Users-Dev-Desktop-test` match the same directory
 - Always compare with `.lower()` or use `Path.exists()` which handles case-insensitivity
 
 ## JSON Path Escaping
 
-In `history.jsonl`, Windows paths are stored with escaped backslashes: `C:\\Users\\User\\Desktop`. When doing find-and-replace:
+In `history.jsonl`, Windows paths are stored with escaped backslashes: `C:\\Users\\Dev\\Desktop`. When doing find-and-replace:
 - Escape both old and new paths for JSON: `path.replace("\\", "\\\\")`
 - Or use `json.dumps()` which handles escaping automatically
 

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# pre-commit hook - Run security scan before committing
+# Install: git config core.hooksPath scripts/hooks
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+echo "Running security scan..."
+if bash "$REPO_ROOT/scripts/security-scan.sh"; then
+  echo "Security scan passed."
+else
+  echo "Security scan FAILED. Fix issues before committing."
+  exit 1
+fi

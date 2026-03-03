@@ -21,6 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import defusedxml.minidom
+from office.security_utils import sanitize_path
 
 TEMPLATE_DIR = Path(__file__).parent / "templates"
 NS = {
@@ -223,7 +224,12 @@ def add_comment(
     initials: str = "C",
     parent_id: int | None = None,
 ) -> tuple[str, str]:
-    word = Path(unpacked_dir) / "word"
+    try:
+        unpacked_path = sanitize_path(unpacked_dir, must_exist=True)
+    except (ValueError, FileNotFoundError) as e:
+        return "", f"Error: {e}"
+        
+    word = unpacked_path / "word"
     if not word.exists():
         return "", f"Error: {word} not found"
 

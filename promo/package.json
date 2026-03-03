@@ -1,0 +1,20 @@
+{
+  "name": "arcana-promo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "preview": "remotion preview",
+    "render": "remotion render ArcanaPromo out/arcana-promo.mp4",
+    "render:gif": "remotion render ArcanaPromo out/arcana-promo.gif --image-format=png"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "typescript": "^5.7.0"
+  }
+}

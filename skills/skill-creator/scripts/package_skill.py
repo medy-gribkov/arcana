@@ -33,6 +33,11 @@ def package_skill(skill_path, output_dir=None):
         Path to the created zip file, or None if error
     """
     skill_path = Path(skill_path).resolve()
+    # Security: Ensure we aren't escaping the project root if desired, 
+    # but at minimum resolve and check existence.
+    if not skill_path.is_relative_to(Path.cwd().parent) and not skill_path.is_relative_to(Path.cwd()):
+         print(f"❌ Error: Path traversal attempt detected: {skill_path}")
+         return None
 
     # Validate skill folder exists
     if not skill_path.exists():

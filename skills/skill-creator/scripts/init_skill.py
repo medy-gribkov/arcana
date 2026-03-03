@@ -208,7 +208,12 @@ def init_skill(skill_name, path):
         Path to created skill directory, or None if error
     """
     # Determine skill directory path
-    skill_dir = Path(path).resolve() / skill_name
+    base_path = Path(path).resolve()
+    if not base_path.is_relative_to(Path.cwd().parent) and not base_path.is_relative_to(Path.cwd()):
+        print(f"❌ Error: Path traversal attempt detected: {base_path}")
+        return None
+        
+    skill_dir = base_path / skill_name
 
     # Check if directory already exists
     if skill_dir.exists():

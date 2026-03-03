@@ -10,6 +10,7 @@ import subprocess
 from pathlib import Path
 
 from office.soffice import get_soffice_env
+from office.security_utils import sanitize_path
 
 logger = logging.getLogger(__name__)
 
@@ -37,11 +38,11 @@ def accept_changes(
     input_file: str,
     output_file: str,
 ) -> tuple[None, str]:
-    input_path = Path(input_file)
-    output_path = Path(output_file)
-
-    if not input_path.exists():
-        return None, f"Error: Input file not found: {input_file}"
+    try:
+        input_path = sanitize_path(input_file, must_exist=True)
+        output_path = sanitize_path(output_file)
+    except (ValueError, FileNotFoundError) as e:
+        return None, f"Error: {e}"
 
     if not input_path.suffix.lower() == ".docx":
         return None, f"Error: Input file is not a DOCX file: {input_file}"
@@ -61,6 +62,7 @@ def accept_changes(
         f"-env:UserInstallation=file://{LIBREOFFICE_PROFILE}",
         "--norestore",
         "vnd.sun.star.script:Standard.Module1.AcceptAllTrackedChanges?language=Basic&location=application",
+        "--",
         str(output_path.absolute()),
     ]
 

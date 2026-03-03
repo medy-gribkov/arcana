@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <style>
+      .glyph { fill: #d4943a; }
+    </style>
+  </defs>
+  <!-- Geometric "A" with arcane diamond -->
+  <polygon class="glyph" points="32,4 4,56 16,56 32,24 48,56 60,56"/>
+  <polygon class="glyph" points="20,44 44,44 38,56 26,56"/>
+  <rect class="glyph" x="28" y="14" width="8" height="8" rx="1" transform="rotate(45,32,18)"/>
+</svg>

@@ -1,7 +1,7 @@
 ---
 name: xlsx
-description: "Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .csv, or .tsv file (e.g., adding columns, computing formulas, formatting, charting, cleaning messy data); create a new spreadsheet from scratch or from other data sources; or convert between tabular file formats. Trigger especially when the user references a spreadsheet file by name or path — even casually (like \"the xlsx in my downloads\") — and wants something done to it or produced from it. Also trigger for cleaning or restructuring messy tabular data files (malformed rows, misplaced headers, junk data) into proper spreadsheets. The deliverable must be a spreadsheet file. Do NOT trigger when the primary deliverable is a Word document, HTML report, standalone Python script, database pipeline, or Google Sheets API integration, even if tabular data is involved."
-license: MIT
+description: Excel file creation, editing, analysis with openpyxl and pandas. Use for .xlsx/.csv tasks including formulas, formatting, pivot tables, charts, data cleaning, and tabular file operations.
+license: Proprietary. LICENSE.txt has complete terms
 ---
 
 # Requirements for Outputs
@@ -279,6 +279,81 @@ The script returns JSON with error details:
 - Specify data types to avoid inference issues: `pd.read_excel('file.xlsx', dtype={'id': str})`
 - For large files, read specific columns: `pd.read_excel('file.xlsx', usecols=['A', 'C', 'E'])`
 - Handle dates properly: `pd.read_excel('file.xlsx', parse_dates=['date_column'])`
+
+## Pivot Tables and Charts
+
+### Creating Pivot Tables with openpyxl
+
+```python
+from openpyxl import load_workbook
+from openpyxl.pivot.table import PivotTable, TableStyleInfo
+from openpyxl.pivot.fields import RowField, ColField, DataField
+
+wb = load_workbook('data.xlsx')
+ws = wb.active
+
+# Define source data range
+data_range = 'A1:D100'
+
+# Create pivot table
+pivot = PivotTable()
+pivot.addRowField(RowField(sourceField=0))  # First column as rows
+pivot.addColField(ColField(sourceField=1))  # Second column as columns
+pivot.addDataField(DataField(sourceField=2, function='sum'))  # Sum of third column
+
+# Add to new sheet
+pivot_sheet = wb.create_sheet('Pivot')
+pivot_sheet.add_pivot_table(pivot, 'A1', data_range)
+
+wb.save('output.xlsx')
+```
+
+### Chart Formulas and Dynamic Ranges
+
+```python
+from openpyxl.chart import BarChart, Reference
+
+# Create chart with dynamic data range
+chart = BarChart()
+data = Reference(ws, min_col=2, min_row=1, max_col=3, max_row=ws.max_row)
+categories = Reference(ws, min_col=1, min_row=2, max_row=ws.max_row)
+
+chart.add_data(data, titles_from_data=True)
+chart.set_categories(categories)
+chart.title = "Sales by Region"
+chart.x_axis.title = "Region"
+chart.y_axis.title = "Revenue"
+
+ws.add_chart(chart, "E5")
+
+# Chart with formula-based data source
+ws['F1'] = '=SUM(B2:B10)'
+chart_data = Reference(ws, min_col=6, min_row=1, max_row=1)
+```
+
+### Advanced Formula Patterns
+
+```python
+# Array formulas (CSE formulas)
+ws['D2'] = '{=SUM(A2:A10*B2:B10)}'  # Curly braces indicate array formula
+
+# Named ranges for formulas
+from openpyxl.workbook.defined_name import DefinedName
+
+# Define named range
+sales_range = DefinedName('SalesData', attr_text='Sheet1!$B$2:$B$100')
+wb.defined_names.append(sales_range)
+
+# Use in formula
+ws['C1'] = '=SUM(SalesData)'
+
+# Dynamic named range (expands automatically)
+dynamic_range = DefinedName(
+    'DynamicSales',
+    attr_text='OFFSET(Sheet1!$B$2,0,0,COUNTA(Sheet1!$B:$B)-1,1)'
+)
+wb.defined_names.append(dynamic_range)
+```
 
 ## Code Style Guidelines
 **IMPORTANT**: When generating Python code for Excel operations:

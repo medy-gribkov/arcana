@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 # Add scripts dir to path for encoding_utils
 sys.path.insert(0, str(Path(__file__).parent))
@@ -86,7 +87,7 @@ def decode_claude_path(key: str) -> str:
     return p
 
 
-def find_claude_dir(key: str) -> Path | None:
+def find_claude_dir(key: str) -> Optional[Path]:
     """Find Claude project data dir, checking both c-- and C-- variants."""
     if not PROJECTS_DIR.exists():
         return None

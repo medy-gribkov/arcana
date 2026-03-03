@@ -20,6 +20,23 @@ license: MIT
 ---
 ```
 
+Here is a minimal complete example:
+
+```markdown
+---
+name: my-skill-name
+description: A clear description of what this skill does, when to use it, and what triggers it (80-1024 chars).
+---
+
+# my-skill-name
+
+Brief overview of the skill.
+
+## Instructions
+
+The actual instructions the AI agent will follow.
+```
+
 The description is the most important part. It controls when the skill gets loaded. Include:
 - WHAT the skill does
 - WHEN to use it (concrete scenarios)
