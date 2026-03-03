@@ -65,15 +65,67 @@ jobs:
             done
           done
 
+      - name: Check description quality
+        run: |
+          errors=0
+          for skill_dir in skills/*/; do
+            skill_name=$(basename "$skill_dir")
+            skill_md="$skill_dir/SKILL.md"
+
+            desc=$(sed -n '/^---$/,/^---$/p' "$skill_md" | grep '^description:' | sed 's/^description:\s*//')
+
+            if [ -z "$desc" ]; then
+              echo "ERROR: $skill_name has no description in frontmatter"
+              errors=1
+              continue
+            fi
+
+            len=${#desc}
+            if [ "$len" -lt 80 ]; then
+              echo "ERROR: $skill_name description too short ($len chars, need 80+)"
+              errors=1
+            fi
+
+            if [ "$len" -gt 1024 ]; then
+              echo "ERROR: $skill_name description too long ($len chars, max 1024)"
+              errors=1
+            fi
+
+            echo "OK: $skill_name ($len chars)"
+          done
+
+          if [ "$errors" -eq 1 ]; then
+            exit 1
+          fi
+
+      - name: Check for duplicate skill names
+        run: |
+          dupes=$(ls -1 skills/ | sort | uniq -d)
+          if [ -n "$dupes" ]; then
+            echo "ERROR: Duplicate skill names found:"
+            echo "$dupes"
+            exit 1
+          fi
+          echo "No duplicate skill names."
+
       - name: Validate marketplace.json
         run: |
           python -c "
-          import json, sys
+          import json, sys, os
           data = json.load(open('.claude-plugin/marketplace.json'))
           assert 'name' in data, 'Missing name'
           assert 'plugins' in data, 'Missing plugins'
+
+          names = set()
           for p in data['plugins']:
-              assert 'name' in p, f'Plugin missing name'
+              assert 'name' in p, 'Plugin missing name'
               assert 'source' in p, f'Plugin {p.get(\"name\", \"?\")} missing source'
-          print(f'Valid: {len(data[\"plugins\"])} plugins')
+              assert 'description' in p, f'Plugin {p[\"name\"]} missing description'
+              assert len(p['description']) >= 80, f'Plugin {p[\"name\"]} description too short ({len(p[\"description\"])} chars)'
+              assert p['name'] not in names, f'Duplicate plugin: {p[\"name\"]}'
+              names.add(p['name'])
+              skill_path = p['source'].lstrip('./')
+              assert os.path.isdir(skill_path), f'Plugin {p[\"name\"]} source dir missing: {p[\"source\"]}'
+
+          print(f'Valid: {len(data[\"plugins\"])} plugins, no duplicates')
           "

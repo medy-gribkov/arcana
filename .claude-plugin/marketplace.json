@@ -1,19 +1,91 @@
 {
-  "name": "mahdy-skills",
+  "name": "arcana",
   "owner": {
     "name": "Mahdy Gribkov",
     "github": "mahdy-gribkov"
   },
   "metadata": {
-    "description": "Cross-platform Claude Code skills",
-    "version": "1.0.0",
+    "description": "Agent skills that work across AI coding tools",
+    "version": "2.0.0",
     "homepage": "https://mahdygribkov.vercel.app"
   },
   "plugins": [
     {
+      "name": "codebase-dissection",
+      "source": "./skills/codebase-dissection",
+      "description": "Systematic codebase analysis: architecture mapping, data flow, dead code detection, concurrency auditing",
+      "version": "1.0.0"
+    },
+    {
+      "name": "code-reviewer",
+      "source": "./skills/code-reviewer",
+      "description": "Review local changes or remote PRs for correctness, maintainability, and security",
+      "version": "1.0.0"
+    },
+    {
+      "name": "frontend-code-review",
+      "source": "./skills/frontend-code-review",
+      "description": "Review frontend files (TSX, TS, JS) with code quality, performance, and business logic checklists",
+      "version": "1.0.0"
+    },
+    {
+      "name": "frontend-design",
+      "source": "./skills/frontend-design",
+      "description": "Create distinctive frontend interfaces with high design quality, no generic AI aesthetics",
+      "version": "1.0.0"
+    },
+    {
+      "name": "golang-pro",
+      "source": "./skills/golang-pro",
+      "description": "Modern Go 1.21+ patterns, advanced concurrency, performance optimization, microservices",
+      "version": "1.0.0"
+    },
+    {
+      "name": "typescript",
+      "source": "./skills/typescript",
+      "description": "TypeScript strict style, type safety patterns, code structure guidelines",
+      "version": "1.0.0"
+    },
+    {
+      "name": "docx",
+      "source": "./skills/docx",
+      "description": "Create, read, edit Word documents programmatically with formatting, tables, images",
+      "version": "1.0.0"
+    },
+    {
+      "name": "xlsx",
+      "source": "./skills/xlsx",
+      "description": "Create, read, edit spreadsheets (xlsx, csv, tsv) with formulas, formatting, charts",
+      "version": "1.0.0"
+    },
+    {
+      "name": "remotion-best-practices",
+      "source": "./skills/remotion-best-practices",
+      "description": "Remotion video creation in React: animations, compositions, audio sync, 3D, rendering",
+      "version": "1.0.0"
+    },
+    {
+      "name": "skill-creator",
+      "source": "./skills/skill-creator",
+      "description": "Create or update agent skills with proper structure, frontmatter, scripts, and references",
+      "version": "1.0.0"
+    },
+    {
+      "name": "skill-creation-guide",
+      "source": "./skills/skill-creation-guide",
+      "description": "How to build effective skills from scratch: principles, anatomy, quality standards",
+      "version": "1.0.0"
+    },
+    {
+      "name": "find-skills",
+      "source": "./skills/find-skills",
+      "description": "Discover and install agent skills from the ecosystem when you need new capabilities",
+      "version": "1.0.0"
+    },
+    {
       "name": "project-migration",
       "source": "./skills/project-migration",
-      "description": "Migrate projects while preserving Claude Code session data",
+      "description": "Migrate project folders while preserving Claude Code session data, path encoding, history",
       "version": "1.0.0"
     }
   ]
