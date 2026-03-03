@@ -234,7 +234,7 @@ If these skills save you time, consider supporting the project.
 
 - [GitHub Sponsors](https://github.com/sponsors/medy-gribkov)
 - [Buy Me a Coffee](https://buymeacoffee.com/medygribkov)
-- [Ko-fi](https://ko-fi.com/mahdygribkov)
+- [Ko-fi](https://ko-fi.com/medygribkov)
 
 ## Contributing
 
