@@ -4,13 +4,15 @@
 
 <p align="center">
   <strong>The AI development toolkit.</strong><br/>
-  73 production-ready skills for every coding agent.
+  74 production-ready skills for every coding agent. By <a href="https://sporesec.com">SporeSec</a>.
 </p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@sporesec/arcana"><img src="https://img.shields.io/npm/v/@sporesec/arcana?style=for-the-badge&color=d4943a" alt="npm"/></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-d4943a?style=for-the-badge" alt="MIT"/></a>
-  <a href="#skills"><img src="https://img.shields.io/badge/Skills-73-d4943a?style=for-the-badge" alt="Skills"/></a>
+  <a href="https://www.npmjs.com/package/@sporesec/arcana"><img src="https://img.shields.io/npm/dw/@sporesec/arcana?style=for-the-badge&color=d4943a" alt="downloads"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-d4943a?style=for-the-badge" alt="Apache 2.0"/></a>
+  <a href="https://github.com/medy-gribkov/arcana/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/medy-gribkov/arcana/ci.yml?style=for-the-badge&color=d4943a" alt="CI"/></a>
+  <a href="#skills"><img src="https://img.shields.io/badge/Skills-74-d4943a?style=for-the-badge" alt="Skills"/></a>
   <a href="#compatibility"><img src="https://img.shields.io/badge/Platforms-7-d4943a?style=for-the-badge" alt="Platforms"/></a>
 </p>
 
@@ -24,15 +26,13 @@
 
 <sub>Built with arcana's own <code>remotion-best-practices</code> skill.</sub>
 
-## Why Arcana
+## What It Does
 
-Every skill includes code examples, BAD/GOOD pairs, and step-by-step workflows. No capability lists. No vague instructions. Patterns you can copy directly.
+Arcana ships structured skill packages, not loose prompts. Each skill contains production code examples, BAD/GOOD comparison pairs, step-by-step procedural workflows, and on-demand reference documents that load only when needed. 74 skills across 15 categories: languages, frameworks, DevOps, security, game development, databases, testing, and more.
 
-Validation scripts run as zero-cost automation. Security review checks auth code. Database design lints migrations. TypeScript scans for `any` usage. Executed at build time, never loaded as context.
+Skills include bundled scripts that run as zero-cost automation. Security review scans auth code. Database design lints migrations. TypeScript catches `any` usage. Scraping automation launches Playwright with stealth config. NotebookLM research drives Google's tool through CDP. These scripts execute at build time or on demand, never loaded as idle context.
 
-`doctor` diagnoses issues. `clean` removes stale data. `stats` shows session analytics. `init` scaffolds config for 7 platforms. `validate` catches broken skills before they waste tokens.
-
-Skills are markdown files. Any LLM can read them. Claude Code loads them natively. Other platforms get config scaffolding via `arcana init`.
+The CLI gives you 29 commands beyond install/uninstall. `doctor` diagnoses environment issues. `benchmark` measures token cost per skill. `scan` detects prompt injection and credential theft. `verify` checks SHA-256 integrity of installed skills. `lock` generates reproducible lockfiles for CI. `recommend` suggests skills based on your project's stack. `profile` manages named skill sets for different workflows. `team` shares configurations across developers.
 
 ## Quick Start
 
@@ -57,36 +57,70 @@ Skills install to `~/.agents/skills/`.
 
 ## CLI Commands
 
-### Skills
-
-| Command | Description |
-|---------|-------------|
-| `arcana install <skill>` | Install a skill |
-| `arcana install --all` | Install all skills |
-| `arcana uninstall <skill>` | Remove a skill |
-| `arcana update --all` | Update all installed skills |
-| `arcana list` | List available skills |
-| `arcana search <query>` | Search across providers |
-| `arcana info <skill>` | Show skill details |
-| `arcana create <name>` | Create a new skill |
-| `arcana validate --all --fix` | Validate and fix all skills |
-
-### Environment
+### Getting Started
 
 | Command | Description |
 |---------|-------------|
 | `arcana init` | Scaffold config for Claude Code, Cursor, Codex, Gemini, Windsurf, Antigravity, Aider |
 | `arcana doctor` | Diagnose environment issues |
-| `arcana clean --dry-run` | Preview cleanup of stale data |
-| `arcana stats` | Session analytics and token usage |
+
+### Skills
+
+| Command | Description |
+|---------|-------------|
+| `arcana install <skill>` | Install one or more skills |
+| `arcana install --all` | Install all 74 skills |
+| `arcana uninstall <skill>` | Remove one or more skills |
+| `arcana update --all` | Update all installed skills |
+| `arcana list` | List available skills |
+| `arcana search <query>` | Search across providers |
+| `arcana info <skill>` | Show skill details and metadata |
+| `arcana recommend` | Get smart skill recommendations for current project |
+
+### Development
+
+| Command | Description |
+|---------|-------------|
+| `arcana create <name>` | Create a new skill from template |
+| `arcana validate --all --fix` | Validate and auto-fix all skills |
+| `arcana audit` | Audit skill quality (code examples, BAD/GOOD pairs, structure) |
+
+### Security
+
+| Command | Description |
+|---------|-------------|
+| `arcana scan --all` | Scan for prompt injection, malware, credential theft, path leaks |
+| `arcana verify --all` | Verify SHA-256 integrity of installed skills against lockfile |
+| `arcana lock --ci` | Generate or validate reproducible lockfile for CI pipelines |
+
+### Inspection
+
+| Command | Description |
+|---------|-------------|
+| `arcana benchmark` | Measure token cost of installed skills |
+| `arcana diff <skill>` | Show changes between installed and remote version |
+| `arcana outdated` | List skills with newer versions available |
+
+### Configuration
+
+| Command | Description |
+|---------|-------------|
 | `arcana config list` | View configuration |
+| `arcana providers --add <repo>` | Manage skill providers |
+| `arcana clean --dry-run` | Preview cleanup of stale data and temp files |
+| `arcana compact` | Remove agent logs while preserving session history |
+| `arcana stats` | Session analytics and token usage |
+| `arcana optimize` | Analyze setup and suggest token/performance improvements |
 
-### Providers
+### Workflow
 
-```bash
-arcana providers --add someone/their-skills
-arcana list --provider someone/their-skills
-```
+| Command | Description |
+|---------|-------------|
+| `arcana profile <name>` | Manage named skill sets for different workflows |
+| `arcana team` | Manage shared team skill configuration |
+| `arcana export` | Export installed skills as a portable manifest |
+| `arcana import <file>` | Import and install skills from a manifest |
+| `arcana completions` | Generate shell completion scripts (bash, zsh, fish) |
 
 All commands support `--json` for machine-readable output and respect `NO_COLOR`.
 
@@ -136,6 +170,7 @@ All commands support `--json` for machine-readable output and respect `NO_COLOR`
 | monitoring-observability | Monitoring | JSON logging, Prometheus, OpenTelemetry, Grafana dashboard JSON, SLO alerts |
 | multiplayer-netcode | Game Dev | Client prediction, server reconciliation, rollback netcode, lag compensation |
 | nextjs-16 | Framework | Turbopack, Cache Components, proxy.ts, Server Actions, React 19.2, App Router |
+| notebooklm-research | Research | Google NotebookLM automation via Playwright CDP. Sources, queries, artifacts |
 | npm-package | Packages | tsup bundling, ESM/CJS exports, semver, changesets, monorepo setup |
 | oauth-auth | Security | OAuth2 PKCE, OIDC, JWT validation, session management, refresh token rotation |
 | particle-systems | Game Dev | VFX, physics simulation, LOD strategy, post-processing |
@@ -182,13 +217,23 @@ Skills are plain markdown with YAML frontmatter. Claude Code loads them natively
 | Antigravity | `AGENT.md` | Config scaffold via `arcana init` |
 | Aider | `.aider.conf.yml` | Config scaffold via `arcana init` |
 
+## Acknowledgments
+
+Arcana was built on the shoulders of these projects:
+
+| Project | Inspiration |
+|---------|------------|
+| [skills.sh](https://skills.sh) | Marketplace UX patterns and community-driven skill discovery |
+| [token-optimizer](https://github.com/alexgreensh/token-optimizer) | Backup-first safety, token budget estimation, progressive disclosure |
+| [notebooklm-skill](https://github.com/PleasePrompto/notebooklm-skill) | NotebookLM browser automation via CDP |
+| [notebooklm-py](https://github.com/teng-lin/notebooklm-py) | NotebookLM Python SDK patterns |
+
 ## Support
 
 If these skills save you time, consider supporting the project.
 
 - [GitHub Sponsors](https://github.com/sponsors/medy-gribkov)
-- [Buy Me a Coffee](https://buymeacoffee.com/mahdygribkov)
-- [Ko-fi](https://ko-fi.com/mahdygribkov)
+- [Buy Me a Coffee](https://buymeacoffee.com/medygribkov)
 
 ## Contributing
 
@@ -200,8 +245,8 @@ Report vulnerabilities via [SECURITY.md](SECURITY.md).
 
 ## Contact
 
-Mahdy Gribkov - [medygribkov@gmail.com](mailto:medygribkov@gmail.com) - [mahdygribkov.vercel.app](https://mahdygribkov.vercel.app)
+Medy Gribkov - [medy@sporesec.com](mailto:medy@sporesec.com) - [SporeSec](https://sporesec.com) - [GitHub](https://github.com/medy-gribkov)
 
 ## License
 
-[MIT](LICENSE)
+[Apache 2.0](LICENSE) - See [NOTICE](NOTICE) for attribution requirements.

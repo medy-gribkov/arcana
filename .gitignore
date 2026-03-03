@@ -41,5 +41,26 @@ promo/node_modules/
 promo/out/
 promo/package-lock.json
 
+# Secrets (defense in depth)
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+
+# Build artifacts
+*.tsbuildinfo
+
+# Test
+.nyc_output/
+
+# Backup
+*.bak
+*.orig
+
+# NotebookLM Chrome profile (sensitive)
+.notebooklm-chrome/
+
 # Claude
 .claude/

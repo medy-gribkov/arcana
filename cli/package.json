@@ -1,6 +1,6 @@
 {
   "name": "@sporesec/arcana",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "description": "Universal AI development CLI. Skills, scaffolding, diagnostics, and analytics for every agent.",
   "bin": {
     "arcana": "dist/index.js"
@@ -21,17 +21,44 @@
   "keywords": [
     "agent-skills",
     "claude",
+    "claude-code",
     "cursor",
     "codex",
+    "gemini",
+    "windsurf",
+    "aider",
     "ai",
     "skills",
     "cli",
-    "diagnostics",
-    "scaffolding",
-    "analytics"
+    "developer-tools",
+    "automation",
+    "typescript",
+    "golang",
+    "python",
+    "react",
+    "nextjs",
+    "devops",
+    "security",
+    "testing",
+    "playwright",
+    "notebooklm"
   ],
-  "license": "MIT",
-  "author": "Mahdy Gribkov",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Medy Gribkov",
+    "email": "medy@sporesec.com",
+    "url": "https://sporesec.com"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/medy-gribkov"
+    },
+    {
+      "type": "individual",
+      "url": "https://buymeacoffee.com/medygribkov"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/medy-gribkov/arcana.git",

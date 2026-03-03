@@ -1,0 +1,25 @@
+Arcana - Universal AI Skill Platform
+Copyright 2026 Medy Gribkov / SporeSec
+
+This product includes software developed by SporeSec (https://sporesec.com).
+
+Author:     Medy Gribkov (https://github.com/medy-gribkov)
+Company:    SporeSec (https://sporesec.com)
+Repository: https://github.com/medy-gribkov/arcana
+Package:    https://www.npmjs.com/package/@sporesec/arcana
+
+---
+
+This project was inspired by and credits the following open source projects:
+
+- skills.sh (https://skills.sh)
+  Marketplace UX patterns and community-driven skill discovery.
+
+- token-optimizer by alexgreensh (https://github.com/alexgreensh/token-optimizer)
+  Backup-first safety patterns, token budget estimation, progressive disclosure.
+
+- notebooklm-skill by PleasePrompto (https://github.com/PleasePrompto/notebooklm-skill)
+  NotebookLM browser automation via Chrome DevTools Protocol.
+
+- notebooklm-py by teng-lin (https://github.com/teng-lin/notebooklm-py)
+  NotebookLM Python SDK patterns and artifact generation workflows.

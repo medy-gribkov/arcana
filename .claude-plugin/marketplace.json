@@ -1,13 +1,13 @@
 {
   "name": "arcana",
   "owner": {
-    "name": "Mahdy Gribkov",
+    "name": "Medy Gribkov",
     "github": "medy-gribkov"
   },
   "metadata": {
     "description": "Agent skills that work across AI coding tools",
     "version": "3.0.0",
-    "homepage": "https://mahdygribkov.vercel.app"
+    "homepage": "https://medygribkov.vercel.app"
   },
   "plugins": [
     {
