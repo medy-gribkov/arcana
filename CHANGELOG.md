@@ -1,5 +1,106 @@
 # Changelog
 
+## 3.1.0 (2026-03-03)
+
+Official package hardening: license, security, attribution, discoverability, and release infrastructure.
+
+### License
+- **Apache 2.0**: Switched from MIT for stronger attribution protection
+- **NOTICE file**: Required by Apache 2.0, credits SporeSec and inspiration projects
+- **Trademark clause**: Protects the "Arcana" name under Section 6
+
+### Attribution
+- **CITATION.cff**: "Cite this repository" link on GitHub sidebar
+- **Acknowledgments**: Credits skills.sh, token-optimizer, notebooklm-skill, notebooklm-py
+- **NOTICE file**: Lists all inspiration projects (redistributors must include)
+
+### npm Package
+- **Keywords**: Expanded from 10 to 23 (all platforms, languages, categories)
+- **Funding field**: "Fund this package" appears on npmjs.com
+- **Author object**: Includes SporeSec URL and email
+- **Provenance**: All future publishes via GitHub Actions (SLSA attestation)
+
+### GitHub Configuration
+- **release.yml**: Auto-generated release notes with categorized changelog
+- **labels.yml**: Standard labels (breaking-change, new-skill, feature, bug, security)
+- **RELEASING.md**: Version bump protocol, pre-release checklist, post-release steps
+
+### Security
+- **SECURITY.md**: Added supported versions table, SporeSec contact, built-in security reference
+- **.gitignore**: Added secrets patterns (*.pem, *.key, credentials.json), build artifacts
+
+### Documentation
+- **README.md**: Full rewrite with expanded CLI commands, acknowledgments, branding
+- **banner.svg**: Updated skill count from 58 to 74
+- **CHANGELOG.md**: Added missing entries for v3.0.0 through v3.0.3
+
+---
+
+## 3.0.3 (2026-03-03)
+
+NotebookLM research skill, 74 total skills.
+
+### New Skill
+- **notebooklm-research**: Playwright automation client for Google NotebookLM via CDP
+  - Bundled scripts: `notebooklm_client.py` (6 subcommands), `setup_chrome.py`
+  - Commands: `status`, `list`, `create`, `add-source`, `query`, `generate`
+  - Sources: URLs, PDFs, YouTube, raw text
+  - Artifacts: slides, infographics, quizzes, flashcards, reports, data tables, mind maps, video
+  - Anti-detection: human-like typing (25-75ms/char), real Chrome via CDP
+
+---
+
+## 3.0.2 (2026-03-02)
+
+UX overhaul: backup safety, health loop, token budget, breadcrumbs.
+
+### Safety
+- **Backup before uninstall**: Skills backed up to `~/.arcana/backups/{name}_{timestamp}/`
+- **Dry-run preview**: Shows directory path, file count, and size before uninstall confirm
+- New utility: `backup.ts` with `backupSkill()` and `pruneOldBackups()`
+
+### Interactive UX
+- **Health check loop**: Stays on health screen after fixes, re-runs checks automatically
+- **Token budget dashboard**: Visual progress bar showing context window usage
+- **Breadcrumb navigation**: Browse > Category, Your skills > Category, Search > Results
+- **Better menu labels**: "Your skills", "Browse marketplace", "Health check", "Token budget"
+- **Skill detail**: Token estimate (~X.XK tokens), grouped sections with visual hierarchy
+
+### Testing
+- **524 tests** across 53 files (was 500)
+
+---
+
+## 3.0.1 (2026-03-01)
+
+Validation overhaul, cross-validation, quality gate.
+
+### Validation
+- **Cross-validation** (`--cross`): Orphan detection, description drift, companion validation
+- **Quality gate** (`--min-score N`): Blocks skills below audit threshold
+- **CI integration**: `validate --all --cross --min-score 40` in ci.yml
+
+### Bug Fixes
+- Fixed ESLint `no-useless-assignment` in quality.ts
+- Removed 3 `curl | sh` patterns in go-linter-configuration skill
+
+---
+
+## 3.0.0 (2026-03-01)
+
+Breaking release: tech stack refresh, 73 skills, renamed nextjs skill.
+
+### Breaking Changes
+- **nextjs-15 renamed to nextjs-16**: Reflects Next.js 16 with Turbopack and Cache Components
+- **Tech versions updated**: Node 24, Go 1.26, Python 3.14, TypeScript 6, React 19.2, Next.js 16
+
+### Skills
+- **73 verified skills** across web, backend, DevOps, security, testing, office, game dev
+- All skills refreshed for March 2026 ecosystem versions
+- **31 total commands**
+
+---
+
 ## 2.5.0 (2026-02-28)
 
 Context-aware intelligence: project detection, smart recommendations, conflict checking, trust signals.
