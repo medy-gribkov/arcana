@@ -15,7 +15,7 @@ If you find a security issue in Arcana, please report it responsibly.
 **Do not open a public issue.** Instead:
 
 1. Use [GitHub Security Advisories](https://github.com/medy-gribkov/arcana/security/advisories/new) to report privately.
-2. Or email: mahdy@sporesec.com
+2. Or email: medy@sporesec.com
 
 Include:
 - Which skill or CLI component is affected

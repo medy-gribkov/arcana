@@ -45,8 +45,8 @@
   ],
   "license": "Apache-2.0",
   "author": {
-    "name": "Mahdy Gribkov",
-    "email": "mahdy@sporesec.com",
+    "name": "Medy Gribkov",
+    "email": "medy@sporesec.com",
     "url": "https://sporesec.com"
   },
   "funding": [
@@ -56,7 +56,7 @@
     },
     {
       "type": "individual",
-      "url": "https://buymeacoffee.com/mahdygribkov"
+      "url": "https://buymeacoffee.com/medygribkov"
     }
   ],
   "repository": {

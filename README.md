@@ -233,8 +233,8 @@ Arcana was built on the shoulders of these projects:
 If these skills save you time, consider supporting the project.
 
 - [GitHub Sponsors](https://github.com/sponsors/medy-gribkov)
-- [Buy Me a Coffee](https://buymeacoffee.com/mahdygribkov)
-- [Ko-fi](https://ko-fi.com/mahdygribkov)
+- [Buy Me a Coffee](https://buymeacoffee.com/medygribkov)
+- [Ko-fi](https://ko-fi.com/medygribkov)
 
 ## Contributing
 
@@ -246,7 +246,7 @@ Report vulnerabilities via [SECURITY.md](SECURITY.md).
 
 ## Contact
 
-Mahdy Gribkov - [mahdy@sporesec.com](mailto:mahdy@sporesec.com) - [SporeSec](https://sporesec.com) - [GitHub](https://github.com/medy-gribkov)
+Medy Gribkov - [medy@sporesec.com](mailto:medy@sporesec.com) - [SporeSec](https://sporesec.com) - [GitHub](https://github.com/medy-gribkov)
 
 ## License
 
