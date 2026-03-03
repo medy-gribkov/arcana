@@ -1,6 +1,6 @@
 {
   "name": "@sporesec/arcana",
-  "version": "3.0.1",
+  "version": "3.0.3",
   "description": "Universal AI development CLI. Skills, scaffolding, diagnostics, and analytics for every agent.",
   "bin": {
     "arcana": "dist/index.js"

@@ -484,6 +484,17 @@
       "conflicts": []
     },
     {
+      "name": "notebooklm-research",
+      "source": "./skills/notebooklm-research",
+      "description": "Automate Google NotebookLM via Playwright: create notebooks, add sources, query with citations, generate slides, infographics, quizzes, flashcards, reports, data tables, and mind maps.",
+      "version": "1.0.0",
+      "tags": ["research", "automation", "playwright", "google", "rag"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["scraping-automation", "playwright-testing"],
+      "conflicts": []
+    },
+    {
       "name": "oauth-auth",
       "source": "./skills/oauth-auth",
       "description": "OAuth2 with PKCE, OIDC, JWT validation, session management, refresh token rotation, and Auth.js patterns.",
