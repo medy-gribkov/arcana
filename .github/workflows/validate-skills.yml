@@ -1,0 +1,79 @@
+name: Validate Skills
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Validate SKILL.md files
+        run: |
+          for skill_dir in skills/*/; do
+            skill_name=$(basename "$skill_dir")
+            echo "=== Validating $skill_name ==="
+
+            # Check SKILL.md exists
+            if [ ! -f "$skill_dir/SKILL.md" ]; then
+              echo "ERROR: $skill_name missing SKILL.md"
+              exit 1
+            fi
+
+            # Check frontmatter
+            if ! head -1 "$skill_dir/SKILL.md" | grep -q "^---"; then
+              echo "ERROR: $skill_name SKILL.md missing frontmatter"
+              exit 1
+            fi
+
+            # Check line count
+            lines=$(wc -l < "$skill_dir/SKILL.md")
+            if [ "$lines" -gt 150 ]; then
+              echo "WARNING: $skill_name SKILL.md has $lines lines (>150)"
+            fi
+
+            echo "PASSED: $skill_name"
+          done
+
+      - name: Run tests
+        run: |
+          for skill_dir in skills/*/; do
+            skill_name=$(basename "$skill_dir")
+            scripts_dir="$skill_dir/scripts"
+
+            if [ ! -d "$scripts_dir" ]; then
+              continue
+            fi
+
+            for test_file in "$scripts_dir"/test_*.py; do
+              [ -f "$test_file" ] || continue
+              echo "=== Running $(basename $test_file) for $skill_name ==="
+              python "$test_file" -v
+            done
+          done
+
+      - name: Validate marketplace.json
+        run: |
+          python -c "
+          import json, sys
+          data = json.load(open('.claude-plugin/marketplace.json'))
+          assert 'name' in data, 'Missing name'
+          assert 'plugins' in data, 'Missing plugins'
+          for p in data['plugins']:
+              assert 'name' in p, f'Plugin missing name'
+              assert 'source' in p, f'Plugin {p.get(\"name\", \"?\")} missing source'
+          print(f'Valid: {len(data[\"plugins\"])} plugins')
+          "

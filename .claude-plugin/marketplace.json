@@ -1,0 +1,20 @@
+{
+  "name": "mahdy-skills",
+  "owner": {
+    "name": "Mahdy Gribkov",
+    "github": "mahdy-gribkov"
+  },
+  "metadata": {
+    "description": "Cross-platform Claude Code skills",
+    "version": "1.0.0",
+    "homepage": "https://mahdygribkov.vercel.app"
+  },
+  "plugins": [
+    {
+      "name": "project-migration",
+      "source": "./skills/project-migration",
+      "description": "Migrate projects while preserving Claude Code session data",
+      "version": "1.0.0"
+    }
+  ]
+}
