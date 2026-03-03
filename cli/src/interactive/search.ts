@@ -58,7 +58,7 @@ async function searchResultsPicker(
     }));
 
     const picked = await p.select({
-      message: "Pick a skill for details",
+      message: `Search > Results`,
       options: [...options, { value: "__search", label: "Search again" }, { value: "__back", label: "Back" }],
     });
     handleCancel(picked);

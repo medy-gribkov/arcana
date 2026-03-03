@@ -93,7 +93,10 @@ reportMissingTypeStubs = false
 
 ```bash
 # Install uv (replaces pip, pip-tools, virtualenv, pipx)
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# Install via package manager (recommended)
+# macOS: brew install uv
+# Windows: winget install astral-sh.uv
+# Linux: snap install astral-uv --classic
 
 # Create project with virtual environment
 uv init myproject && cd myproject

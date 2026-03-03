@@ -1,13 +1,14 @@
 import { existsSync, rmSync } from "node:fs";
 import * as p from "@clack/prompts";
 import chalk from "chalk";
-import { isSkillInstalled, readSkillMeta, getSkillDir } from "../utils/fs.js";
-import { getProvider } from "../registry.js";
+import { isSkillInstalled, readSkillMeta, getSkillDir, getDirSize } from "../utils/fs.js";
 import { appendHistory } from "../utils/history.js";
 import { installOneCore } from "../utils/install-core.js";
+import { backupSkill } from "../utils/backup.js";
 import type { SkillInfo } from "../types.js";
 import { removeSymlinksFor } from "../commands/uninstall.js";
 import { ui } from "../utils/ui.js";
+import { getProvider } from "../registry.js";
 import { handleCancel } from "./helpers.js";
 import { getCategoryFor, getRelatedSkills } from "./categories.js";
 
@@ -32,17 +33,25 @@ async function doInstall(skillName: string, providerName: string): Promise<boole
   }
 }
 
-function doUninstall(skillName: string): boolean {
+function doUninstall(skillName: string): { success: boolean; backupPath?: string } {
   const skillDir = getSkillDir(skillName);
-  if (!existsSync(skillDir)) return false;
+  if (!existsSync(skillDir)) return { success: false };
   try {
+    const backupPath = backupSkill(skillName);
     rmSync(skillDir, { recursive: true, force: true });
     removeSymlinksFor(skillName);
     appendHistory("uninstall", skillName);
-    return true;
+    return { success: true, backupPath: backupPath ?? undefined };
   } catch {
-    return false;
+    return { success: false };
   }
+}
+
+function getTokenEstimate(skillName: string): { tokens: number; kb: number } {
+  const dir = getSkillDir(skillName);
+  if (!existsSync(dir)) return { tokens: 0, kb: 0 };
+  const bytes = getDirSize(dir);
+  return { tokens: Math.round(bytes / 4), kb: Math.round(bytes / 1024) };
 }
 
 export async function skillDetailFlow(
@@ -54,38 +63,57 @@ export async function skillDetailFlow(
   const installed = isSkillInstalled(skillName);
   const meta = installed ? readSkillMeta(skillName) : null;
 
-  // Build info block
+  // Build info block with visual hierarchy
   const lines: string[] = [];
-  lines.push(`${chalk.bold(skillName)} ${info ? `v${info.version}` : ""}`);
-  if (info?.description) lines.push(info.description);
+
+  // Header
+  lines.push(`${chalk.bold(skillName)} ${info ? chalk.dim(`v${info.version}`) : ""}`);
+  if (info?.description) lines.push(chalk.dim(info.description));
   lines.push("");
 
-  if (info?.verified) lines.push(`Trust: ${chalk.green("Verified")} (official)`);
-  else lines.push(`Trust: Community`);
-  if (info?.author) lines.push(`Author: ${info.author}`);
-  if (info?.tags && info.tags.length > 0) lines.push(`Tags: ${info.tags.join(", ")}`);
-
-  const category = getCategoryFor(skillName);
-  if (category) lines.push(`Category: ${category}`);
-  if (info?.source) lines.push(`Source: ${info.source}`);
-
-  if (info?.companions && info.companions.length > 0) {
-    lines.push(`Companions: ${info.companions.join(", ")}`);
-  }
-  if (info?.conflicts && info.conflicts.length > 0) {
-    lines.push(`${chalk.red("Conflicts:")} ${info.conflicts.join(", ")}`);
-  }
-
+  // Status (most important, shown first)
   if (installed && meta) {
     const date = meta.installedAt ? new Date(meta.installedAt).toLocaleDateString() : "";
-    lines.push(`Status: ${chalk.green("installed")} (v${meta.version}${date ? `, ${date}` : ""})`);
+    const est = getTokenEstimate(skillName);
+    const tokenStr = est.tokens > 0 ? `  ~${(est.tokens / 1000).toFixed(1)}K tokens` : "";
+    lines.push(`${chalk.green("Installed")}  v${meta.version}${date ? `  ${date}` : ""}${tokenStr}`);
   } else {
-    lines.push(`Status: ${chalk.dim("not installed")}`);
+    lines.push(chalk.dim("Not installed"));
+  }
+  lines.push("");
+
+  // Aligned metadata
+  const metadata: [string, string][] = [];
+  if (info?.verified) metadata.push(["Trust", chalk.green("Verified (official)")]);
+  else metadata.push(["Trust", "Community"]);
+  if (info?.author) metadata.push(["Author", info.author]);
+  if (info?.tags && info.tags.length > 0) metadata.push(["Tags", info.tags.join(", ")]);
+  const category = getCategoryFor(skillName);
+  if (category) metadata.push(["Category", category]);
+
+  const maxLabel = Math.max(...metadata.map(([k]) => k.length));
+  for (const [key, val] of metadata) {
+    lines.push(`${chalk.dim(key.padEnd(maxLabel + 1))} ${val}`);
   }
 
+  // Relations
   const related = getRelatedSkills(skillName);
-  if (related.length > 0) {
-    lines.push(`Related: ${related.join(", ")}`);
+  const hasRelations =
+    (info?.companions && info.companions.length > 0) ||
+    (info?.conflicts && info.conflicts.length > 0) ||
+    related.length > 0;
+
+  if (hasRelations) {
+    lines.push("");
+    if (info?.companions && info.companions.length > 0) {
+      lines.push(`${chalk.dim("Works with:")} ${info.companions.join(", ")}`);
+    }
+    if (info?.conflicts && info.conflicts.length > 0) {
+      lines.push(`${chalk.red("Conflicts:")}  ${info.conflicts.join(", ")}`);
+    }
+    if (related.length > 0) {
+      lines.push(`${chalk.dim("Related:")}    ${related.join(", ")}`);
+    }
   }
 
   p.note(lines.join("\n"), skillName);
@@ -93,14 +121,14 @@ export async function skillDetailFlow(
   // Action menu
   const actions: { value: string; label: string }[] = [];
   if (installed) {
-    actions.push({ value: "reinstall", label: "Reinstall (overwrite)" });
-    actions.push({ value: "uninstall", label: "Uninstall (remove files)" });
+    actions.push({ value: "reinstall", label: "Update to latest" });
+    actions.push({ value: "uninstall", label: "Uninstall" });
   } else {
     actions.push({ value: "install", label: "Install this skill" });
   }
-  actions.push({ value: "back", label: "Back" });
+  actions.push({ value: "__back", label: "Back" });
 
-  const action = await p.select({ message: "Action", options: actions });
+  const action = await p.select({ message: `${skillName} > Action`, options: actions });
   handleCancel(action);
 
   switch (action) {
@@ -110,12 +138,22 @@ export async function skillDetailFlow(
       return "back";
     }
     case "uninstall": {
+      // Dry-run preview
+      const skillDir = getSkillDir(skillName);
+      const size = getDirSize(skillDir);
+      p.log.info(chalk.dim(`  Will remove: ${skillDir}`));
+      p.log.info(chalk.dim(`  Size: ${(size / 1024).toFixed(0)} KB (${meta?.fileCount ?? "?"} files)`));
+      p.log.info(chalk.dim(`  A backup will be created before removal.`));
+
       const ok = await p.confirm({ message: `Uninstall ${chalk.bold(skillName)}?` });
       handleCancel(ok);
       if (ok) {
-        const success = doUninstall(skillName);
-        if (success) {
+        const result = doUninstall(skillName);
+        if (result.success) {
           p.log.success(`Removed ${chalk.bold(skillName)}`);
+          if (result.backupPath) {
+            p.log.info(chalk.dim(`  Backup: ${result.backupPath}`));
+          }
         } else {
           p.log.error(`Failed to remove ${skillName}`);
         }

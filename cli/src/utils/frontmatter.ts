@@ -147,11 +147,14 @@ export function validateSkillDir(skillDir: string, skillName: string): Validatio
   }
 
   if (!parsed.description) {
-    result.warnings.push("Missing description in frontmatter");
+    result.valid = false;
+    result.errors.push("Missing description in frontmatter");
   } else if (parsed.description.length < MIN_DESC_LENGTH) {
-    result.warnings.push(`Description too short (${parsed.description.length} chars, recommend ${MIN_DESC_LENGTH}+)`);
+    result.valid = false;
+    result.errors.push(`Description too short (${parsed.description.length} chars, minimum ${MIN_DESC_LENGTH})`);
   } else if (parsed.description.length > MAX_DESC_LENGTH) {
-    result.warnings.push(`Description too long (${parsed.description.length} chars, max ${MAX_DESC_LENGTH})`);
+    result.valid = false;
+    result.errors.push(`Description too long (${parsed.description.length} chars, max ${MAX_DESC_LENGTH})`);
   }
 
   // Check for non-standard fields (metadata is invalid per spec)
@@ -191,12 +194,12 @@ export function validateSkillDir(skillDir: string, skillName: string): Validatio
   }
 
   if (extracted.body.trim().length >= 50 && !extracted.body.includes("##")) {
-    result.infos.push("Body has no ## headings (recommended for structure)");
+    result.warnings.push("Body has no ## headings (required for structure)");
   }
 
   // Check for code blocks (quality signal)
   if (extracted.body.trim().length >= 50 && !extracted.body.includes("```")) {
-    result.infos.push("No code blocks found (procedural skills should include code examples)");
+    result.warnings.push("No code blocks found (skills must include code examples)");
   }
 
   // Check for BAD/GOOD pattern examples

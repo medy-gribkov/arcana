@@ -12,6 +12,7 @@ import { searchFlow } from "./search.js";
 import { quickSetup } from "./setup.js";
 import { manageInstalled } from "./manage.js";
 import { checkHealth } from "./health.js";
+import { optimizeInteractive } from "./optimize-flow.js";
 
 export async function showInteractiveMenu(version: string): Promise<void> {
   const config = loadConfig();
@@ -103,6 +104,9 @@ export async function showInteractiveMenu(version: string): Promise<void> {
           break;
         case "health":
           await checkHealth();
+          break;
+        case "optimize":
+          await optimizeInteractive();
           break;
         case "ref":
           p.note(getCliReference(), "CLI Reference");

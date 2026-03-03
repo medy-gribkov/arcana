@@ -288,7 +288,7 @@
     {
       "name": "game-servers",
       "source": "./skills/game-servers",
-      "description": "Game server architecture, matchmaking, and backend systems for online games.",
+      "description": "Game server architecture, matchmaking, WebSocket reconnection, and scalable backend systems for online games.",
       "version": "1.0.0",
       "tags": ["gamedev", "networking"],
       "verified": true,
@@ -481,6 +481,17 @@
       "verified": true,
       "author": "arcana",
       "companions": ["typescript", "ci-cd-pipelines"],
+      "conflicts": []
+    },
+    {
+      "name": "notebooklm-research",
+      "source": "./skills/notebooklm-research",
+      "description": "Automate Google NotebookLM via Playwright: create notebooks, add sources, query with citations, generate slides, infographics, quizzes, flashcards, reports, data tables, and mind maps.",
+      "version": "1.0.0",
+      "tags": ["research", "automation", "playwright", "google", "rag"],
+      "verified": true,
+      "author": "arcana",
+      "companions": ["scraping-automation", "playwright-testing"],
       "conflicts": []
     },
     {

@@ -5,6 +5,7 @@ import chalk from "chalk";
 import { getSkillDir, listSymlinks, readSkillMeta } from "../utils/fs.js";
 import { renderBanner } from "../utils/help.js";
 import { validateSlug } from "../utils/validate.js";
+import { backupSkill } from "../utils/backup.js";
 
 export async function uninstallCommand(
   skillNames: string[],
@@ -61,8 +62,9 @@ async function uninstallOneInteractive(skillName: string, skipConfirm?: boolean)
   }
 
   const spin = p.spinner();
-  spin.start(`Removing ${skillName}...`);
+  spin.start(`Backing up and removing ${skillName}...`);
 
+  backupSkill(skillName);
   rmSync(skillDir, { recursive: true, force: true });
 
   const symlinksRemoved = removeSymlinksFor(skillName);
@@ -113,6 +115,7 @@ async function uninstallMultipleInteractive(skillNames: string[], skipConfirm?: 
   for (let i = 0; i < toRemove.length; i++) {
     const skillName = toRemove[i]!;
     spin.start(`Removing ${chalk.bold(skillName)} (${i + 1}/${toRemove.length})...`);
+    backupSkill(skillName);
     rmSync(getSkillDir(skillName), { recursive: true, force: true });
     totalSymlinks += removeSymlinksFor(skillName);
   }

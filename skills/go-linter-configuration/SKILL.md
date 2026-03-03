@@ -12,9 +12,10 @@ go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 # GOOD: install latest with go install
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
-# Or use installation script for specific version
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-  | sh -s -- -b $(go env GOPATH)/bin v1.61.0
+# Or install via package manager
+# macOS: brew install golangci-lint
+# Windows: choco install golangci-lint
+# Linux: snap install golangci-lint --classic
 ```
 
 Verify installation:
@@ -302,19 +303,18 @@ issues:
 golangci-lint --version  # Local: v1.59.1
 # CI: v1.61.0 (different rules)
 
-# Solution: Pin version in CI
+# Solution: Pin version in CI using the official GitHub Action
 # .github/workflows/lint.yml
 - name: Install golangci-lint
-  run: |
-    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-      | sh -s -- -b $(go env GOPATH)/bin v1.61.0
+  uses: golangci/golangci-lint-action@v6
+  with:
+    version: v1.61.0
 
-# Also pin in Makefile
+# Also pin in Makefile using go install
 .PHONY: lint
 lint:
 	@which golangci-lint > /dev/null || \
-		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-		| sh -s -- -b $(go env GOPATH)/bin v1.61.0
+		go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.61.0
 	golangci-lint run ./...
 ```
 

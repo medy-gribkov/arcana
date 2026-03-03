@@ -147,6 +147,9 @@ export function createCli(): Command {
     .option("-a, --all", "Validate all installed skills")
     .option("-f, --fix", "Auto-fix common issues")
     .option("-j, --json", "Output as JSON")
+    .option("--source <dir>", "Validate from source directory instead of install dir")
+    .option("--cross", "Run cross-validation (marketplace sync, companions, orphans)")
+    .option("--min-score <n>", "Minimum quality score (0-100), fail if any skill scores below", parseInt)
     .action(async (skill, opts) => {
       const { validateCommand } = await import("./commands/validate.js");
       return validateCommand(skill, opts);
@@ -248,6 +251,7 @@ export function createCli(): Command {
     .description("Audit skill quality (code examples, BAD/GOOD pairs, structure)")
     .option("-a, --all", "Audit all installed skills")
     .option("-j, --json", "Output as JSON")
+    .option("--source <dir>", "Audit from source directory instead of install dir")
     .action(async (skill, opts) => {
       const { auditCommand } = await import("./commands/audit.js");
       return auditCommand(skill, opts);

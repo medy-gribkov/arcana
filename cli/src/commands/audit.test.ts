@@ -169,7 +169,7 @@ describe("auditSkill", () => {
   it("returns PERFECT for well-structured skill with all checks passing", () => {
     const perfectSkill = `---
 name: perfect-skill
-description: ${" ".repeat(0)}This is a well-structured skill description that meets all the length requirements and provides clear information about what the skill does. It's detailed enough to be useful but not so long that it becomes unwieldy.
+description: This is a well-structured skill description that meets all the length requirements and provides clear information about what the skill does. It's detailed enough to be useful but not so long that it becomes unwieldy.
 ---
 
 ## Overview
@@ -195,6 +195,12 @@ GOOD example:
 const meaningfulName = 1;
 \`\`\`
 
+## Workflow
+
+1. First step in the process
+2. Second step validates input
+3. Third step produces output
+
 ## Additional Details
 
 More content here to ensure we have enough lines.
@@ -205,11 +211,49 @@ ${Array(30).fill("Content line for length.\n").join("")}
     const result = auditSkill(skillDir, "perfect-skill");
 
     expect(result.rating).toBe("PERFECT");
-    expect(result.score).toBeGreaterThanOrEqual(85);
+    expect(result.score).toBeGreaterThanOrEqual(90);
 
     for (const check of result.checks) {
       expect(check.passed).toBe(true);
     }
+  });
+
+  it("checks section diversity (3+ unique headings)", () => {
+    const twoHeadings = `---\nname: test\ndescription: ${"A".repeat(100)}\n---\n## First\nContent\n## Second\nContent\n${"Body\n".repeat(50)}`;
+    const fourHeadings = `---\nname: test\ndescription: ${"A".repeat(100)}\n---\n## First\n## Second\n## Third\n## Fourth\n${"Body\n".repeat(50)}`;
+
+    const twoDir = makeTempSkill("two", twoHeadings);
+    const fourDir = makeTempSkill("four", fourHeadings);
+
+    const twoResult = auditSkill(twoDir, "two");
+    const fourResult = auditSkill(fourDir, "four");
+
+    const twoCheck = twoResult.checks.find((c) => c.name.includes("Section diversity"));
+    const fourCheck = fourResult.checks.find((c) => c.name.includes("Section diversity"));
+
+    expect(twoCheck?.passed).toBe(false);
+    expect(twoCheck?.detail).toBe("2 unique sections");
+    expect(fourCheck?.passed).toBe(true);
+    expect(fourCheck?.detail).toBe("4 unique sections");
+  });
+
+  it("checks numbered steps (3+)", () => {
+    const noSteps = `---\nname: test\ndescription: ${"A".repeat(100)}\n---\n## Heading\n${"Body\n".repeat(60)}`;
+    const withSteps = `---\nname: test\ndescription: ${"A".repeat(100)}\n---\n## Heading\n1. First step\n2. Second step\n3. Third step\n${"Body\n".repeat(50)}`;
+
+    const noDir = makeTempSkill("no", noSteps);
+    const stepsDir = makeTempSkill("steps", withSteps);
+
+    const noResult = auditSkill(noDir, "no");
+    const stepsResult = auditSkill(stepsDir, "steps");
+
+    const noCheck = noResult.checks.find((c) => c.name.includes("numbered steps"));
+    const stepsCheck = stepsResult.checks.find((c) => c.name.includes("numbered steps"));
+
+    expect(noCheck?.passed).toBe(false);
+    expect(noCheck?.detail).toBe("0 steps");
+    expect(stepsCheck?.passed).toBe(true);
+    expect(stepsCheck?.detail).toBe("3 steps");
   });
 
   it("checks reasonable length (50-500 lines)", () => {
