@@ -2,53 +2,12 @@ import type { Provider } from "../providers/base.js";
 import * as p from "@clack/prompts";
 import chalk from "chalk";
 import { printErrorWithHint } from "../utils/ui.js";
-import { installSkill, isSkillInstalled, writeSkillMeta, readSkillMeta } from "../utils/fs.js";
+import { isSkillInstalled } from "../utils/fs.js";
 import { getProvider, getProviders } from "../registry.js";
 import { loadConfig } from "../utils/config.js";
 import { renderBanner } from "../utils/help.js";
 import { validateSlug } from "../utils/validate.js";
-import { scanSkillContent } from "../utils/scanner.js";
-import type { SkillFile } from "../types.js";
-import { updateLockEntry } from "../utils/integrity.js";
-import { checkConflicts } from "../utils/conflict-check.js";
-import { detectProjectContext } from "../utils/project-context.js";
-
-/**
- * Scan fetched skill files for security threats before installing.
- * Returns true if install should proceed, false to block.
- */
-function preInstallScan(skillName: string, files: SkillFile[], force?: boolean): boolean {
-  const skillMd = files.find((f) => f.path.endsWith("SKILL.md"));
-  if (!skillMd) return true;
-
-  const issues = scanSkillContent(skillMd.content);
-  if (issues.length === 0) return true;
-
-  const critical = issues.filter((i) => i.level === "critical");
-  const high = issues.filter((i) => i.level === "high");
-
-  if (critical.length > 0) {
-    p.log.error(`Security scan blocked ${chalk.bold(skillName)}:`);
-    for (const issue of critical) {
-      p.log.error(`  [CRIT] ${issue.category}: ${issue.detail} (line ${issue.line})`);
-    }
-    for (const issue of high) {
-      p.log.warn(`  [HIGH] ${issue.category}: ${issue.detail} (line ${issue.line})`);
-    }
-    if (!force) {
-      p.log.info(chalk.dim("Use --force to install anyway (not recommended)."));
-      return false;
-    }
-    p.log.warn("Installing despite security issues (--force).");
-  } else if (high.length > 0) {
-    p.log.warn(`Security warnings for ${chalk.bold(skillName)}:`);
-    for (const issue of high) {
-      p.log.warn(`  [HIGH] ${issue.category}: ${issue.detail} (line ${issue.line})`);
-    }
-  }
-
-  return true;
-}
+import { installOneCore, sizeWarning, canInstall, detectProviderChange } from "../utils/install-core.js";
 
 export async function installCommand(
   skillNames: string[],
@@ -82,7 +41,7 @@ export async function installCommand(
   } else if (skillNames.length === 1) {
     await installOneInteractive(skillNames[0]!, providers[0]!, opts.dryRun, opts.force, opts.noCheck);
   } else {
-    await installMultipleInteractive(skillNames, providers[0]!, opts.dryRun, opts.force, opts.noCheck);
+    await installBatchInteractive(skillNames, providers[0]!, opts.dryRun, opts.force, opts.noCheck);
   }
 }
 
@@ -102,20 +61,20 @@ async function installOneInteractive(
     process.exit(1);
   }
 
-  if (isSkillInstalled(skillName)) {
+  const check = canInstall(skillName, force);
+  if (!check.proceed) {
     if (dryRun) {
       p.log.info(`${skillName} is already installed.`);
       p.outro("Dry run complete.");
       return;
     }
-    if (!force) {
-      p.cancel(`${skillName} is already installed. Use --force to reinstall.`);
-      process.exit(0);
-    }
-    const existingMeta = readSkillMeta(skillName);
-    if (existingMeta?.source && existingMeta.source !== provider.name) {
-      p.log.warn(`Overwriting ${skillName} (was from ${existingMeta.source}, now from ${provider.name})`);
-    }
+    p.cancel(check.reason!);
+    process.exit(0);
+  }
+
+  if (isSkillInstalled(skillName) && force) {
+    const change = detectProviderChange(skillName, provider.name);
+    if (change) p.log.warn(change);
     p.log.warn(`${skillName} is already installed. Reinstalling...`);
   }
 
@@ -126,75 +85,48 @@ async function installOneInteractive(
   }
 
   const spin = p.spinner();
-  spin.start(`Fetching ${chalk.bold(skillName)} from ${provider.name}...`);
+  spin.start(`Installing ${chalk.bold(skillName)} from ${provider.name}...`);
 
   try {
-    const files = await provider.fetch(skillName);
-    spin.stop("Fetched.");
+    const result = await installOneCore(skillName, provider, { force, noCheck });
 
-    if (!preInstallScan(skillName, files, force)) {
+    if (!result.success) {
+      spin.stop("Blocked.");
+      if (result.scanBlocked) {
+        p.log.error(`Security scan blocked ${chalk.bold(skillName)}`);
+        p.log.info(chalk.dim("Use --force to install anyway (not recommended)."));
+      } else if (result.conflictBlocked) {
+        p.log.error(`Conflict detected for ${chalk.bold(skillName)}`);
+        p.log.info("Use --force to install anyway or --no-check to skip conflict detection.");
+      }
       process.exit(1);
     }
 
-    // Conflict detection
-    if (!noCheck) {
-      const context = detectProjectContext(process.cwd());
-      const remote = await provider.info(skillName);
-      const skillMd = files.find((f) => f.path.endsWith("SKILL.md"));
-      const warnings = checkConflicts(skillName, remote, skillMd?.content ?? null, context);
-      const blocks = warnings.filter((w) => w.severity === "block");
-      const warns = warnings.filter((w) => w.severity === "warn");
+    spin.stop(
+      `Installed ${chalk.bold(skillName)} (${result.files?.length ?? 0} files, ${result.sizeKB?.toFixed(1) ?? "0"} KB)`,
+    );
 
-      if (blocks.length > 0) {
-        for (const b of blocks) p.log.error(`  [CONFLICT] ${b.message}`);
-        if (!force) {
-          p.log.info("Use --force to install anyway or --no-check to skip conflict detection.");
-          process.exit(1);
-        }
-      }
-      if (warns.length > 0) {
-        for (const w of warns) p.log.warn(`  [WARN] ${w.message}`);
-      }
+    if (result.conflictWarnings?.length) {
+      for (const w of result.conflictWarnings) p.log.warn(`  [WARN] ${w}`);
     }
 
-    const spin2 = p.spinner();
-    spin2.start(`Installing ${chalk.bold(skillName)}...`);
-    const dir = installSkill(skillName, files);
+    const warn = sizeWarning(result.sizeKB ?? 0);
+    if (warn) p.log.warn(warn);
 
-    const remote = await provider.info(skillName);
-    const version = remote?.version ?? "0.0.0";
-    writeSkillMeta(skillName, {
-      version,
-      installedAt: new Date().toISOString(),
-      source: provider.name,
-      description: remote?.description,
-      fileCount: files.length,
-      sizeBytes: files.reduce((s, f) => s + f.content.length, 0),
-    });
-    updateLockEntry(skillName, version, provider.name, files);
-
-    const sizeKB = files.reduce((s, f) => s + f.content.length, 0) / 1024;
-    spin2.stop(`Installed ${chalk.bold(skillName)} (${files.length} files, ${sizeKB.toFixed(1)} KB)`);
-    if (sizeKB > 50) {
-      p.log.warn(
-        `Large skill (${sizeKB.toFixed(0)} KB, ~${Math.round(sizeKB * 256)} tokens). May use significant context.`,
-      );
-    }
-    p.log.info(`Location: ${dir}`);
     p.outro(`Next: ${chalk.cyan("arcana validate " + skillName)}`);
   } catch (err) {
-    p.log.error(`Failed to install ${skillName}`);
+    spin.stop(`Failed to install ${skillName}`);
     printErrorWithHint(err, true);
     process.exit(1);
   }
 }
 
-async function installMultipleInteractive(
+async function installBatchInteractive(
   skillNames: string[],
   provider: Provider,
   dryRun?: boolean,
   force?: boolean,
-  _noCheck?: boolean,
+  noCheck?: boolean,
 ): Promise<void> {
   p.intro(chalk.bold(`Install ${skillNames.length} skills`));
 
@@ -210,81 +142,59 @@ async function installMultipleInteractive(
   if (dryRun) {
     const wouldInstall: string[] = [];
     const alreadyInstalled: string[] = [];
-    for (const skillName of skillNames) {
-      if (isSkillInstalled(skillName) && !force) {
-        alreadyInstalled.push(skillName);
-      } else {
-        wouldInstall.push(skillName);
-      }
+    for (const name of skillNames) {
+      if (isSkillInstalled(name) && !force) alreadyInstalled.push(name);
+      else wouldInstall.push(name);
     }
-    if (wouldInstall.length > 0) {
-      p.log.info(`Would install: ${wouldInstall.join(", ")}`);
-    }
-    if (alreadyInstalled.length > 0) {
-      p.log.info(`Already installed: ${alreadyInstalled.join(", ")}`);
-    }
+    if (wouldInstall.length > 0) p.log.info(`Would install: ${wouldInstall.join(", ")}`);
+    if (alreadyInstalled.length > 0) p.log.info(`Already installed: ${alreadyInstalled.join(", ")}`);
     p.outro("Dry run complete.");
     return;
   }
 
   const spin = p.spinner();
   spin.start(`Processing ${skillNames.length} skills...`);
-  const installedList: string[] = [];
-  const skippedList: string[] = [];
-  const failedList: string[] = [];
+  const installed: string[] = [];
+  const skipped: string[] = [];
+  const failed: string[] = [];
 
   for (let i = 0; i < skillNames.length; i++) {
-    const skillName = skillNames[i]!;
+    const name = skillNames[i]!;
 
-    if (isSkillInstalled(skillName) && !force) {
-      skippedList.push(skillName);
+    if (isSkillInstalled(name) && !force) {
+      skipped.push(name);
       continue;
     }
 
-    spin.message(`Installing ${chalk.bold(skillName)} (${i + 1}/${skillNames.length}) from ${provider.name}...`);
+    spin.message(`Installing ${chalk.bold(name)} (${i + 1}/${skillNames.length}) from ${provider.name}...`);
 
     try {
-      const files = await provider.fetch(skillName);
-
-      if (!preInstallScan(skillName, files, force)) {
-        failedList.push(skillName);
-        continue;
+      const result = await installOneCore(name, provider, { force, noCheck });
+      if (result.success) {
+        installed.push(name);
+      } else {
+        failed.push(name);
       }
-
-      installSkill(skillName, files);
-      const remote = await provider.info(skillName);
-      const ver = remote?.version ?? "0.0.0";
-      writeSkillMeta(skillName, {
-        version: ver,
-        installedAt: new Date().toISOString(),
-        source: provider.name,
-        description: remote?.description,
-        fileCount: files.length,
-        sizeBytes: files.reduce((s, f) => s + f.content.length, 0),
-      });
-      updateLockEntry(skillName, ver, provider.name, files);
-      installedList.push(skillName);
     } catch (err) {
-      failedList.push(skillName);
-      if (err instanceof Error) p.log.warn(`Failed to install ${skillName}: ${err.message}`);
+      failed.push(name);
+      if (err instanceof Error) p.log.warn(`Failed to install ${name}: ${err.message}`);
     }
   }
 
-  spin.stop(`Done`);
-
+  spin.stop("Done");
   p.log.info(
-    `${installedList.length} installed${skippedList.length > 0 ? `, ${skippedList.length} skipped (already installed)` : ""}${failedList.length > 0 ? `, ${failedList.length} failed` : ""}`,
+    `${installed.length} installed${skipped.length > 0 ? `, ${skipped.length} skipped (already installed)` : ""}${failed.length > 0 ? `, ${failed.length} failed` : ""}`,
   );
   p.outro(`Next: ${chalk.cyan("arcana doctor")}`);
 
-  if (failedList.length > 0) process.exit(1);
+  if (failed.length > 0) process.exit(1);
 }
 
 async function installAllInteractive(
   providers: Provider[],
   dryRun?: boolean,
   force?: boolean,
-  _noCheck?: boolean,
+  noCheck?: boolean,
 ): Promise<void> {
   p.intro(chalk.bold("Install all skills"));
 
@@ -293,12 +203,12 @@ async function installAllInteractive(
 
   if (dryRun) {
     let total = 0;
-    for (const provider of providers) {
+    for (const prov of providers) {
       try {
-        const skills = await provider.list();
+        const skills = await prov.list();
         total += skills.length;
       } catch (err) {
-        if (err instanceof Error) p.log.warn(`Failed to list ${provider.name}: ${err.message}`);
+        if (err instanceof Error) p.log.warn(`Failed to list ${prov.name}: ${err.message}`);
       }
     }
     spin.stop(`Would install ${total} skills`);
@@ -306,67 +216,49 @@ async function installAllInteractive(
     return;
   }
 
-  const installedList: string[] = [];
-  const skippedList: string[] = [];
-  const failedList: string[] = [];
+  const installed: string[] = [];
+  const skipped: string[] = [];
+  const failed: string[] = [];
 
-  for (const provider of providers) {
+  for (const prov of providers) {
     let skills;
     try {
-      skills = await provider.list();
+      skills = await prov.list();
     } catch (err) {
-      if (err instanceof Error) p.log.warn(`Failed to list ${provider.name}: ${err.message}`);
+      if (err instanceof Error) p.log.warn(`Failed to list ${prov.name}: ${err.message}`);
       continue;
     }
 
-    const total = skills.length;
-    for (let i = 0; i < total; i++) {
+    for (let i = 0; i < skills.length; i++) {
       const skill = skills[i]!;
       if (isSkillInstalled(skill.name) && !force) {
-        skippedList.push(skill.name);
+        skipped.push(skill.name);
         continue;
       }
+      spin.message(`Installing ${chalk.bold(skill.name)} (${i + 1}/${skills.length}) from ${prov.name}...`);
       try {
-        spin.message(`Installing ${chalk.bold(skill.name)} (${i + 1}/${total}) from ${provider.name}...`);
-        const files = await provider.fetch(skill.name);
-
-        if (!preInstallScan(skill.name, files, force)) {
-          failedList.push(skill.name);
-          continue;
-        }
-
-        installSkill(skill.name, files);
-        writeSkillMeta(skill.name, {
-          version: skill.version,
-          installedAt: new Date().toISOString(),
-          source: provider.name,
-          description: skill.description,
-          fileCount: files.length,
-          sizeBytes: files.reduce((s, f) => s + f.content.length, 0),
-        });
-        updateLockEntry(skill.name, skill.version, provider.name, files);
-        installedList.push(skill.name);
+        const result = await installOneCore(skill.name, prov, { force, noCheck });
+        if (result.success) installed.push(skill.name);
+        else failed.push(skill.name);
       } catch (err) {
-        failedList.push(skill.name);
+        failed.push(skill.name);
         if (err instanceof Error) p.log.warn(`Failed to install ${skill.name}: ${err.message}`);
       }
     }
   }
 
-  spin.stop(`Installed ${installedList.length} skills${failedList.length > 0 ? `, ${failedList.length} failed` : ""}`);
-
-  if (skippedList.length > 0) {
-    p.log.info(`Skipped ${skippedList.length} already installed${force ? "" : " (use --force to reinstall)"}`);
+  spin.stop(`Installed ${installed.length} skills${failed.length > 0 ? `, ${failed.length} failed` : ""}`);
+  if (skipped.length > 0) {
+    p.log.info(`Skipped ${skipped.length} already installed${force ? "" : " (use --force to reinstall)"}`);
   }
-
   p.outro(`Next: ${chalk.cyan("arcana doctor")}`);
 
-  if (failedList.length > 0) process.exit(1);
+  if (failed.length > 0) process.exit(1);
 }
 
 async function installJson(
   skillNames: string[],
-  opts: { provider?: string; all?: boolean; force?: boolean; dryRun?: boolean },
+  opts: { provider?: string; all?: boolean; force?: boolean; dryRun?: boolean; noCheck?: boolean },
 ): Promise<void> {
   if (skillNames.length === 0 && !opts.all) {
     console.log(JSON.stringify({ installed: [], skipped: [], failed: [], error: "No skill specified" }));
@@ -375,17 +267,21 @@ async function installJson(
 
   const providerName = opts.provider ?? loadConfig().defaultProvider;
   const providers = opts.all ? getProviders() : [getProvider(providerName)];
+  const installed: string[] = [];
+  const skipped: string[] = [];
+  const failed: string[] = [];
+  const failedErrors: Record<string, string> = {};
 
   if (opts.all) {
     if (opts.dryRun) {
       const wouldInstall: string[] = [];
       const errors: string[] = [];
-      for (const provider of providers) {
+      for (const prov of providers) {
         try {
-          const skills = await provider.list();
+          const skills = await prov.list();
           wouldInstall.push(...skills.map((s) => s.name));
         } catch (err) {
-          errors.push(`Failed to list ${provider.name}: ${err instanceof Error ? err.message : "unknown error"}`);
+          errors.push(`Failed to list ${prov.name}: ${err instanceof Error ? err.message : "unknown error"}`);
         }
       }
       const result: Record<string, unknown> = { dryRun: true, wouldInstall };
@@ -394,57 +290,38 @@ async function installJson(
       return;
     }
 
-    const installedList: string[] = [];
-    const skippedList: string[] = [];
-    const failedList: string[] = [];
-    const failedErrors: Record<string, string> = {};
-
     const errors: string[] = [];
-    for (const provider of providers) {
+    for (const prov of providers) {
       let skills;
       try {
-        skills = await provider.list();
+        skills = await prov.list();
       } catch (err) {
-        errors.push(`Failed to list ${provider.name}: ${err instanceof Error ? err.message : "unknown error"}`);
+        errors.push(`Failed to list ${prov.name}: ${err instanceof Error ? err.message : "unknown error"}`);
         continue;
       }
 
       for (const skill of skills) {
         if (isSkillInstalled(skill.name) && !opts.force) {
-          skippedList.push(skill.name);
+          skipped.push(skill.name);
           continue;
         }
         try {
-          const files = await provider.fetch(skill.name);
-
-          if (!preInstallScan(skill.name, files, opts.force)) {
-            failedList.push(skill.name);
-            failedErrors[skill.name] = "Blocked by security scan";
-            continue;
+          const result = await installOneCore(skill.name, prov, { force: opts.force, noCheck: opts.noCheck });
+          if (result.success) installed.push(skill.name);
+          else {
+            failed.push(skill.name);
+            failedErrors[skill.name] = result.error ?? "Install failed";
           }
-
-          installSkill(skill.name, files);
-          writeSkillMeta(skill.name, {
-            version: skill.version,
-            installedAt: new Date().toISOString(),
-            source: provider.name,
-            description: skill.description,
-            fileCount: files.length,
-            sizeBytes: files.reduce((s, f) => s + f.content.length, 0),
-          });
-          updateLockEntry(skill.name, skill.version, provider.name, files);
-          installedList.push(skill.name);
         } catch (err) {
-          failedList.push(skill.name);
+          failed.push(skill.name);
           failedErrors[skill.name] = err instanceof Error ? err.message : "unknown";
         }
       }
     }
-    const result: Record<string, unknown> = { installed: installedList, skipped: skippedList, failed: failedList };
+    const result: Record<string, unknown> = { installed, skipped, failed };
     if (errors.length > 0) result.errors = errors;
     if (Object.keys(failedErrors).length > 0) result.failedErrors = failedErrors;
     console.log(JSON.stringify(result));
-    if (failedList.length > 0) process.exit(1);
   } else {
     const provider = providers[0]!;
 
@@ -453,44 +330,22 @@ async function installJson(
       return;
     }
 
-    const installedList: string[] = [];
-    const skippedList: string[] = [];
-    const failedList: string[] = [];
-
-    for (const skillName of skillNames) {
+    for (const name of skillNames) {
       try {
-        validateSlug(skillName, "skill name");
-
-        if (isSkillInstalled(skillName) && !opts.force) {
-          skippedList.push(skillName);
+        validateSlug(name, "skill name");
+        if (isSkillInstalled(name) && !opts.force) {
+          skipped.push(name);
           continue;
         }
-
-        const files = await provider.fetch(skillName);
-
-        if (!preInstallScan(skillName, files, opts.force)) {
-          failedList.push(skillName);
-          continue;
-        }
-
-        installSkill(skillName, files);
-        const remote = await provider.info(skillName);
-        const ver = remote?.version ?? "0.0.0";
-        writeSkillMeta(skillName, {
-          version: ver,
-          installedAt: new Date().toISOString(),
-          source: provider.name,
-          description: remote?.description,
-          fileCount: files.length,
-          sizeBytes: files.reduce((s, f) => s + f.content.length, 0),
-        });
-        updateLockEntry(skillName, ver, provider.name, files);
-        installedList.push(skillName);
-      } catch (_err) {
-        failedList.push(skillName);
+        const result = await installOneCore(name, provider, { force: opts.force, noCheck: opts.noCheck });
+        if (result.success) installed.push(name);
+        else failed.push(name);
+      } catch {
+        failed.push(name);
       }
     }
-    console.log(JSON.stringify({ installed: installedList, skipped: skippedList, failed: failedList }));
-    if (failedList.length > 0) process.exit(1);
+    console.log(JSON.stringify({ installed, skipped, failed }));
   }
+
+  if (failed.length > 0) process.exit(1);
 }

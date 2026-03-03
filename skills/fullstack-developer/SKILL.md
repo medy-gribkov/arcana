@@ -5,129 +5,236 @@ description: Modern web development expertise covering React, Node.js, databases
 
 # Full-Stack Developer
 
-You are an expert full-stack web developer specializing in modern JavaScript/TypeScript stacks with React, Node.js, and databases.
+Act as a senior full-stack engineer. Write type-safe, production-ready code with proper error handling, validation, and separation of concerns.
 
-## When to Apply
+## API Design Workflow
 
-Use this skill when:
-- Building complete web applications
-- Developing REST or GraphQL APIs
-- Creating React/Next.js frontends
-- Setting up databases and data models
-- Implementing authentication and authorization
-- Deploying and scaling web applications
-- Integrating third-party services
+Follow these steps when building any API endpoint.
 
-## Technology Stack
+1. Define the route, HTTP method, and response shape first
+2. Create a Zod schema for request validation
+3. Implement the handler with typed request/response
+4. Add error handling that returns consistent JSON
+5. Write the corresponding client-side fetch hook
 
-### Frontend
-- **React** - Modern component patterns, hooks, context
-- **Next.js** - SSR, SSG, API routes, App Router
-- **TypeScript** - Type-safe frontend code
-- **Styling** - Tailwind CSS, CSS Modules, styled-components
-- **State Management** - React Query, Zustand, Context API
-
-### Backend
-- **Node.js** - Express, Fastify, or Next.js API routes
-- **TypeScript** - Type-safe backend code
-- **Authentication** - JWT, OAuth, session management
-- **Validation** - Zod, Yup for schema validation
-- **API Design** - RESTful principles, GraphQL
-
-### Database
-- **PostgreSQL** - Relational data, complex queries
-- **MongoDB** - Document storage, flexible schemas
-- **Prisma** - Type-safe ORM
-- **Redis** - Caching, sessions
-
-### DevOps
-- **Vercel / Netlify** - Deployment for Next.js/React
-- **Docker** - Containerization
-- **GitHub Actions** - CI/CD pipelines
-
-## Architecture Patterns
-
-### Frontend Architecture
-```
-src/
-├── app/              # Next.js app router pages
-├── components/       # Reusable UI components
-│   ├── ui/          # Base components (Button, Input)
-│   └── features/    # Feature-specific components
-├── lib/             # Utilities and configurations
-├── hooks/           # Custom React hooks
-├── types/           # TypeScript types
-└── styles/          # Global styles
-```
-
-### Backend Architecture
-```
-src/
-├── routes/          # API route handlers
-├── controllers/     # Business logic
-├── models/          # Database models
-├── middleware/      # Express middleware
-├── services/        # External services
-├── utils/           # Helper functions
-└── config/          # Configuration files
-```
-
-## Best Practices
-
-### Frontend
-1. **Component Design** - Keep components small, use composition over prop drilling, implement proper TypeScript types, handle loading and error states.
-2. **Performance** - Code splitting with dynamic imports, lazy load images and heavy components, optimize bundle size, use React.memo for expensive renders.
-3. **State Management** - Server state with React Query, client state with Context or Zustand, form state with react-hook-form, avoid prop drilling.
-
-### Backend
-1. **API Design** - RESTful naming conventions, proper HTTP status codes, consistent error responses, API versioning.
-
-2. **Error Handling Pattern**
+### BAD: Unvalidated, untyped handler
 
 ```typescript
-class AppError extends Error {
-  constructor(
-    public statusCode: number,
-    public message: string,
-    public code?: string
-  ) {
-    super(message);
-  }
-}
+// No validation, raw any types, inconsistent errors
+app.post("/api/posts", async (req, res) => {
+  const post = await db.post.create({ data: req.body });
+  res.json(post);
+});
+```
 
-function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
-  if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
-      error: err.message,
-      code: err.code,
+### GOOD: Validated, typed, consistent errors
+
+```typescript
+import { z } from "zod";
+
+const CreatePostSchema = z.object({
+  title: z.string().min(1).max(200),
+  content: z.string().min(1),
+  published: z.boolean().default(false),
+});
+
+type CreatePostInput = z.infer<typeof CreatePostSchema>;
+
+app.post("/api/posts", async (req: Request, res: Response) => {
+  const result = CreatePostSchema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(422).json({
+      error: "Validation failed",
+      details: result.error.flatten().fieldErrors,
     });
   }
-  console.error('Unexpected error:', err);
-  return res.status(500).json({ error: 'Internal server error' });
+
+  const post = await prisma.post.create({ data: result.data });
+  return res.status(201).json({ data: post });
+});
+```
+
+### Error Response Shape
+
+Every error response must follow this structure:
+
+```typescript
+interface ApiError {
+  error: string;
+  code?: string;
+  details?: Record<string, string[]>;
 }
 ```
 
-**Status codes:**
-- `200` Success with body, `201` Created, `204` No body (DELETE)
-- `400` Bad request, `401` Unauthorized, `403` Forbidden
-- `404` Not found, `409` Conflict, `422` Unprocessable, `429` Too many requests
-- `500` Internal server error
+Map status codes consistently:
+- `201` after successful creation
+- `204` after successful deletion (no body)
+- `400` malformed request, `422` valid JSON but failed validation
+- `401` missing auth, `403` insufficient permissions
+- `409` conflict (duplicate unique field)
+- `429` rate limited
 
-3. **Authentication Flow (JWT)** - Access tokens (15 min), refresh tokens (7 days), middleware protection. See references/auth-patterns.md for complete implementation.
+## React Component Patterns
 
-4. **Security** - Validate all inputs, sanitize user data, use parameterized queries, implement rate limiting, HTTPS only in production.
+Follow these steps when building any component.
 
-5. **Database** - Index frequently queried fields, avoid N+1 queries, use transactions for related operations, connection pooling.
+1. Define the props interface with explicit types
+2. Handle all states: loading, error, empty, success
+3. Extract data fetching into custom hooks
+4. Keep components under 80 lines. Split if larger
+5. Co-locate types, hooks, and tests with the component
 
-## Code Examples
+### BAD: Monolithic component with inline fetching
 
-Next.js API routes with Zod validation, React components with React Query, Prisma blog post CRUD. See references/nextjs-examples.md for complete code.
+```typescript
+function UserProfile({ id }: { id: string }) {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-## Output Format
+  useEffect(() => {
+    fetch(`/api/users/${id}`)
+      .then((r) => r.json())
+      .then((d) => { setUser(d); setLoading(false); });
+  }, [id]);
 
-When building features, provide:
-1. **File structure** - Show where code should go
-2. **Complete code** - Fully functional, typed code
-3. **Dependencies** - Required npm packages
-4. **Environment variables** - If needed
-5. **Setup instructions** - How to run/deploy
+  if (loading) return <div>Loading...</div>;
+  return <div>{user.name}</div>;
+}
+```
+
+### GOOD: Separated hook, typed props, all states handled
+
+```typescript
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+function useUser(id: string) {
+  return useQuery<User>({
+    queryKey: ["user", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/users/${id}`);
+      if (!res.ok) throw new Error(`Failed to fetch user: ${res.status}`);
+      const json = await res.json();
+      return json.data;
+    },
+  });
+}
+
+interface UserProfileProps {
+  id: string;
+  onEdit?: (user: User) => void;
+}
+
+function UserProfile({ id, onEdit }: UserProfileProps) {
+  const { data: user, isLoading, error } = useUser(id);
+
+  if (isLoading) return <UserProfileSkeleton />;
+  if (error) return <ErrorBanner message={error.message} />;
+  if (!user) return <EmptyState label="User not found" />;
+
+  return (
+    <div>
+      <h2>{user.name}</h2>
+      <p>{user.email}</p>
+      {onEdit && <button onClick={() => onEdit(user)}>Edit</button>}
+    </div>
+  );
+}
+```
+
+## Database Query Patterns
+
+Follow these steps when writing any database operation.
+
+1. Use an ORM (Prisma) with generated types. Never write raw SQL unless optimizing
+2. Select only the fields you need
+3. Wrap related writes in a transaction
+4. Add indexes on fields used in WHERE, ORDER BY, or JOIN clauses
+5. Prevent N+1 queries with `include` or explicit joins
+
+### BAD: N+1 query, no field selection, no transaction
+
+```typescript
+// Fetches all fields, then fires N extra queries
+const posts = await prisma.post.findMany();
+for (const post of posts) {
+  const author = await prisma.user.findUnique({
+    where: { id: post.authorId },
+  });
+  post.author = author;
+}
+
+// Two related writes with no transaction
+await prisma.order.create({ data: orderData });
+await prisma.inventory.update({
+  where: { productId },
+  data: { stock: { decrement: 1 } },
+});
+```
+
+### GOOD: Single query with include, selective fields, transaction
+
+```typescript
+// One query, only needed fields, author included
+const posts = await prisma.post.findMany({
+  select: {
+    id: true,
+    title: true,
+    createdAt: true,
+    author: { select: { id: true, name: true } },
+  },
+  orderBy: { createdAt: "desc" },
+  take: 20,
+});
+
+// Atomic transaction for related writes
+await prisma.$transaction([
+  prisma.order.create({ data: orderData }),
+  prisma.inventory.update({
+    where: { productId },
+    data: { stock: { decrement: 1 } },
+  }),
+]);
+```
+
+## Project Scaffold Procedure
+
+When starting a new full-stack project, follow this order.
+
+1. Initialize with `create-next-app --typescript --tailwind --app`
+2. Install core deps: `prisma`, `zod`, `@tanstack/react-query`
+3. Set up Prisma schema and run `prisma generate`
+4. Create the shared types file at `src/types/index.ts`
+5. Build API routes with validation before any frontend work
+6. Build page components that consume the API via React Query hooks
+7. Add error boundaries at the layout level
+
+## Security Checklist
+
+Run through these checks before any deployment.
+
+1. Validate all inputs with Zod on the server. Never trust the client
+2. Use parameterized queries (Prisma handles this). Never interpolate user input into SQL
+3. Set HTTP-only, secure, SameSite cookies for auth tokens
+4. Add rate limiting to auth endpoints (5 attempts per minute)
+5. Sanitize HTML output to prevent XSS. Use `DOMPurify` if rendering user content
+6. Return generic errors to clients. Log detailed errors server-side only
+
+## File Structure Convention
+
+```
+src/
+  app/                # Next.js App Router pages and layouts
+    api/              # API route handlers
+  components/
+    ui/               # Reusable primitives (Button, Input, Modal)
+    features/         # Domain components (PostCard, UserAvatar)
+  hooks/              # Custom React hooks (useUser, usePosts)
+  lib/                # Utilities, Prisma client, API helpers
+  types/              # Shared TypeScript interfaces
+```
+
+Place each feature's hook, component, and types together. Do not scatter related code across distant directories.

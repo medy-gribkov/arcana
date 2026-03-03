@@ -3,41 +3,114 @@ name: doc-generation
 description: Generate OpenAPI specs, GraphQL docs, architecture diagrams (Mermaid/C4), README scaffolding, and automate changelogs from code and commit history.
 ---
 
-# Documentation Generation
+Act as a documentation engineer. Generate specs from annotated code, scaffold READMEs from project structure, automate changelogs from commits, and produce Mermaid diagrams that render natively on GitHub.
 
-## OpenAPI Documentation
+## OpenAPI Spec Generation
 
-Generate API specs from annotated code, validate with Spectral, and render interactive docs. Supports TypeScript (tsoa), Go (swaggo), and Python (FastAPI).
+Follow this workflow for every API documentation task.
 
-See references/openapi-generation.md for full code examples, linting configs, and BAD/GOOD patterns.
+1. Identify the framework (tsoa, swaggo, FastAPI, NestJS)
+2. Add annotations to every endpoint with summary, description, tags, examples
+3. Generate the spec file
+4. Lint with Spectral
+5. Verify all endpoints have descriptions and response examples
 
-## GraphQL Documentation
-
-Extract schemas via introspection, generate TypeScript types with graphql-codegen, and build static docs with SpectaQL.
-
-See references/graphql-docs.md for codegen configs, type generation examples, and SpectaQL setup.
-
-## Mermaid Architecture Diagrams
-
-Sequence diagrams, flowcharts, and ER diagrams in Markdown. Renders natively on GitHub/GitLab.
-
-See references/mermaid-c4-diagrams.md for diagram templates, C4 model definitions, and Structurizr DSL examples.
-
-## C4 Model Diagrams
-
-Define system context and container views using Structurizr DSL. Export to PlantUML or render with Structurizr Lite.
-
-See references/mermaid-c4-diagrams.md for the full workspace.dsl example and rendering commands.
-
-## README Generation
-
-### Scaffold with Template
-
-```bash
-npx readme-md-generator
+**BAD, missing descriptions and examples:**
+```yaml
+paths:
+  /users/{id}:
+    get:
+      summary: Get user
 ```
 
-**Manual template:**
+**GOOD, complete documentation:**
+```yaml
+paths:
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      description: |
+        Retrieves detailed user information including profile data,
+        preferences, and account status.
+      tags: [users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 42
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              example:
+                id: 42
+                name: "John Doe"
+                email: "john@example.com"
+```
+
+### TypeScript (tsoa)
+
+```typescript
+@Route('users')
+export class UserController extends Controller {
+  /**
+   * Retrieves a user by ID
+   * @param userId The user's unique identifier
+   */
+  @Get('{userId}')
+  public async getUser(@Path() userId: number): Promise<User> {
+    return { id: userId, name: 'John', email: 'john@example.com' };
+  }
+}
+```
+
+```bash
+npx tsoa spec        # outputs swagger.json
+```
+
+### Go (swaggo)
+
+```go
+// @Summary Get user by ID
+// @Description Retrieves user information
+// @Tags users
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} User
+// @Router /users/{id} [get]
+func getUser(c *gin.Context) {}
+```
+
+```bash
+swag init             # outputs docs/swagger.json
+```
+
+### Lint Every Spec
+
+```bash
+spectral lint openapi.yaml
+```
+
+Create `.spectral.yaml` at project root:
+```yaml
+extends: ["spectral:oas"]
+rules:
+  operation-description: error
+  operation-tags: error
+```
+
+## README Scaffolding
+
+Follow these steps when generating a README for any project.
+
+1. Read `package.json`, `go.mod`, or `pyproject.toml` to extract name, version, description
+2. Scan for CI config (`.github/workflows/`) to generate badge URLs
+3. Scan for a LICENSE file to determine license type
+4. Check for Docker/compose files to include container instructions
+5. Output the README using this structure:
 
 ```markdown
 # Project Name
@@ -45,74 +118,183 @@ npx readme-md-generator
 [![CI](https://github.com/user/repo/actions/workflows/ci.yml/badge.svg)](https://github.com/user/repo/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> One-sentence description of what this project does.
+> One-sentence description extracted from package manifest.
 
 ## Quick Start
 
 \```bash
 git clone https://github.com/user/repo.git
 cd repo
-npm install
-npm start
+npm install && npm start
 \```
 
 ## Configuration
 
-Required environment variables:
-- `DATABASE_URL` - PostgreSQL connection string
-- `JWT_SECRET` - Secret for signing tokens
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `JWT_SECRET` | Yes | Secret for signing tokens |
 
 ## Architecture
 
-See [architecture diagram](docs/architecture.svg) for system overview.
+\```mermaid
+flowchart TD
+    A[Client] --> B[API Gateway]
+    B --> C[Service]
+    C --> D[(Database)]
+\```
 
 ## License
 
-MIT - see [LICENSE](LICENSE)
+MIT
 ```
 
-### Auto-Generate Command Reference
+**BAD, no badges, no env table, no architecture:**
+```markdown
+# My App
+Install it and run it.
+```
 
-```bash
-mycli --help > docs/commands.md
+**GOOD, scannable, complete, machine-parseable env config:**
+```markdown
+# My App
+[![CI](badge-url)](actions-url)
+> Description from package.json
+
+## Quick Start
+...install steps...
+
+## Configuration
+| Variable | Required | Description |
+...table rows...
 ```
 
 ## Changelog Automation
 
-Automate changelogs using Conventional Commits, standard-version, and Release Please.
+Follow this workflow when setting up automated changelogs.
 
-See references/changelog-automation.md for commit format, generation commands, and GitHub Actions workflow.
+1. Enforce Conventional Commits format in the project
+2. Choose a generator: `standard-version` (manual) or Release Please (CI)
+3. Configure and run first release
+4. Add CI workflow for automated releases
 
-## Quick Reference
+### Conventional Commits Format
 
-**OpenAPI Generation:**
 ```
-TypeScript: tsoa, @nestjs/swagger
-Go:         swaggo/swag
-Python:     FastAPI (automatic)
-```
+type(scope): subject
 
-**GraphQL Tools:**
-```
-Schema extraction: get-graphql-schema
-Type generation:   @graphql-codegen/cli
-Documentation:     SpectaQL, graphql-markdown
+feat(auth): add JWT refresh token support
+fix(api): prevent race condition in user creation
+docs: update API authentication guide
 ```
 
-**Diagram Tools:**
-```
-Mermaid:  GitHub/GitLab native, mermaid-cli for export
-C4:       Structurizr DSL + structurizr/cli
-PlantUML: plantuml/plantuml Docker image
+### Generate with standard-version
+
+```bash
+npm install -D standard-version
+npx standard-version --first-release   # first time
+npx standard-version                   # subsequent
 ```
 
-**Changelog Tools:**
-```
-standard-version:  Node-based, manual trigger
-release-please:    GitHub Action, automated
-conventional-changelog: Low-level library
+### Automate with Release Please
+
+```yaml
+# .github/workflows/release.yml
+name: Release
+on:
+  push:
+    branches: [main]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: google-github-actions/release-please-action@v3
+        with:
+          release-type: node
+          package-name: my-package
 ```
 
----
+**BAD, manual changelog with inconsistent format:**
+```markdown
+## Changes
+- added login
+- fixed stuff
+- updated deps
+```
 
-**Use this skill**: When API docs drift from code, diagrams are out of date, or you need to automate release notes.
+**GOOD, generated from conventional commits:**
+```markdown
+## [1.2.0](compare-url) (2024-02-14)
+
+### Features
+* **auth:** add JWT refresh token support ([abc123](commit-url))
+
+### Bug Fixes
+* **api:** prevent race condition in user creation ([def456](commit-url))
+```
+
+## Mermaid Diagrams
+
+Use Mermaid for all inline documentation diagrams. It renders natively on GitHub and GitLab.
+
+### Sequence Diagram (API flows)
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant API
+    participant Auth
+    participant DB
+
+    User->>API: POST /login
+    API->>Auth: Validate credentials
+    Auth->>DB: Query user
+    DB-->>Auth: User data
+    Auth-->>API: JWT token
+    API-->>User: 200 + Set-Cookie
+```
+
+### ER Diagram (data models)
+
+```mermaid
+erDiagram
+    USER ||--o{ ORDER : places
+    USER {
+        int id PK
+        string email UK
+        string name
+    }
+    ORDER ||--|{ ORDER_ITEM : contains
+    ORDER {
+        int id PK
+        int user_id FK
+        datetime created_at
+    }
+```
+
+### Export to Static Images
+
+```bash
+npm install -g @mermaid-js/mermaid-cli
+mmdc -i diagram.mmd -o diagram.svg
+mmdc -i diagram.mmd -o diagram.png -b transparent
+```
+
+**BAD, ASCII art or external image with no source:**
+```markdown
+## Architecture
+![diagram](https://some-external-url.com/old-diagram.png)
+```
+
+**GOOD, Mermaid source inline, renders on GitHub, versionable:**
+````markdown
+## Architecture
+```mermaid
+flowchart TD
+    A[Client] --> B[API]
+    B --> C[(DB)]
+```
+````

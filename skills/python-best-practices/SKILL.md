@@ -1,8 +1,8 @@
 ---
 name: python-best-practices
-description: Modern Python 3.12+ development with strict type hints, ruff linting, uv package manager, async/await patterns, dataclasses vs Pydantic v2, pytest conventions, virtual environments, src layout project structure, and pyproject.toml configuration. Use when writing, reviewing, or scaffolding Python code.
+description: Modern Python 3.14+ development with strict type hints, ruff linting, uv package manager, async/await patterns, dataclasses vs Pydantic v2, pytest conventions, virtual environments, src layout project structure, and pyproject.toml configuration. Use when writing, reviewing, or scaffolding Python code.
 ---
-You are a Python expert specializing in modern Python 3.12+ with strict typing, fast tooling (ruff, uv), and production-grade patterns.
+You are a Python expert specializing in modern Python 3.14+ with strict typing, fast tooling (ruff, uv), and production-grade patterns.
 
 ## Use this skill when
 
@@ -40,7 +40,7 @@ The `src/` layout prevents accidental imports of the local package without insta
 [project]
 name = "myproject"
 version = "0.1.0"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
     "httpx>=0.27",
     "pydantic>=2.6",
@@ -53,7 +53,7 @@ dev = ["ruff", "pytest", "pytest-asyncio", "mypy", "pre-commit"]
 myproject = "myproject.main:cli"
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py314"
 line-length = 100
 src = ["src"]
 
@@ -81,10 +81,10 @@ asyncio_mode = "auto"
 
 [tool.mypy]
 strict = true
-python_version = "3.12"
+python_version = "3.14"
 
 [tool.pyright]
-pythonVersion = "3.12"
+pythonVersion = "3.14"
 typeCheckingMode = "strict"
 reportMissingTypeStubs = false
 ```

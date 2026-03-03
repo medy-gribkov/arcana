@@ -1,6 +1,7 @@
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { getInstallDir, readSkillMeta, getDirSize } from "../utils/fs.js";
+import { CONTEXT_WINDOW_TOKENS } from "../constants.js";
 
 interface FileEntry {
   path: string;
@@ -15,8 +16,6 @@ interface SkillBenchmark {
   contextPercent: number;
   files: FileEntry[];
 }
-
-const CONTEXT_WINDOW = 200_000;
 
 function collectFiles(dir: string, prefix: string): FileEntry[] {
   const entries: FileEntry[] = [];
@@ -45,7 +44,7 @@ function benchmarkSkill(skillName: string): SkillBenchmark | null {
   const files = collectFiles(skillDir, "");
   const totalBytes = getDirSize(skillDir);
   const estimatedTokens = Math.round(totalBytes / 4);
-  const contextPercent = (estimatedTokens / CONTEXT_WINDOW) * 100;
+  const contextPercent = (estimatedTokens / CONTEXT_WINDOW_TOKENS) * 100;
 
   return {
     name: skillName,
@@ -127,7 +126,7 @@ function benchmarkSingle(skillName: string, json?: boolean): void {
   console.log(`  Total size:       ${formatKB(result.totalBytes)}`);
   console.log(`  Est. tokens:      ${formatTokens(result.estimatedTokens)}`);
   console.log(
-    `  Context usage:    ${result.contextPercent.toFixed(2)}% of ${(CONTEXT_WINDOW / 1000).toFixed(0)}k window`,
+    `  Context usage:    ${result.contextPercent.toFixed(2)}% of ${(CONTEXT_WINDOW_TOKENS / 1000).toFixed(0)}k window`,
   );
   console.log();
   console.log("  File breakdown:");
@@ -180,7 +179,7 @@ function benchmarkAll(installDir: string, json?: boolean): void {
 
   const totalBytes = results.reduce((sum, r) => sum + r.totalBytes, 0);
   const totalTokens = results.reduce((sum, r) => sum + r.estimatedTokens, 0);
-  const totalContextPercent = (totalTokens / CONTEXT_WINDOW) * 100;
+  const totalContextPercent = (totalTokens / CONTEXT_WINDOW_TOKENS) * 100;
 
   if (json) {
     console.log(

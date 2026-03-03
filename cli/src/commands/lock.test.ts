@@ -1,18 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 describe("lockCommand", () => {
-  let lockCommand: any;
-  let consoleLogSpy: any;
-  let processExitSpy: any;
-  let mockWriteLockfile: any;
-  let mockReadLockfile: any;
-  let mockComputeHash: any;
-  let mockGetInstallDir: any;
-  let mockReadSkillMeta: any;
-  let mockExistsSync: any;
-  let mockReaddirSync: any;
-  let mockReadFileSync: any;
-  let mockLstatSync: any;
+  let lockCommand: (opts: Record<string, unknown>) => Promise<void>;
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+  let processExitSpy: ReturnType<typeof vi.spyOn>;
+  let mockWriteLockfile: ReturnType<typeof vi.fn>;
+  let mockReadLockfile: ReturnType<typeof vi.fn>;
+  let mockComputeHash: ReturnType<typeof vi.fn>;
+  let mockGetInstallDir: ReturnType<typeof vi.fn>;
+  let mockReadSkillMeta: ReturnType<typeof vi.fn>;
+  let mockExistsSync: ReturnType<typeof vi.fn>;
+  let mockReaddirSync: ReturnType<typeof vi.fn>;
+  let mockReadFileSync: ReturnType<typeof vi.fn>;
+  let mockLstatSync: ReturnType<typeof vi.fn>;
 
   const makeDirStat = () => ({ isDirectory: () => true, isFile: () => false });
   const makeFileStat = () => ({ isDirectory: () => false, isFile: () => true });
@@ -21,7 +21,7 @@ describe("lockCommand", () => {
     vi.resetModules();
 
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    processExitSpy = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    processExitSpy = vi.spyOn(process, "exit").mockImplementation((() => {}) as never);
 
     mockWriteLockfile = vi.fn();
     mockReadLockfile = vi.fn(() => []);
@@ -137,7 +137,7 @@ describe("lockCommand", () => {
     await lockCommand({ json: true });
 
     expect(mockWriteLockfile).toHaveBeenCalledTimes(1);
-    const output = consoleLogSpy.mock.calls.find((c: any[]) => {
+    const output = consoleLogSpy.mock.calls.find((c: unknown[]) => {
       try {
         JSON.parse(c[0]);
         return true;

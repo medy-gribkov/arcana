@@ -52,9 +52,9 @@ vi.mock("./providers/base.js", () => {
 });
 
 describe("registry", () => {
-  let mockConfig: any;
-  let mockUi: any;
-  let mockGitHub: any;
+  let mockConfig: typeof import("./utils/config.js");
+  let mockUi: typeof import("./utils/ui.js");
+  let mockGitHub: typeof import("./providers/github.js");
 
   beforeEach(async () => {
     vi.resetModules();
@@ -150,8 +150,9 @@ describe("registry", () => {
       const provider = getProvider("test-provider");
 
       expect(provider).toBeInstanceOf(GitHubProvider);
-      expect((provider as any).owner).toBe("testowner");
-      expect((provider as any).repo).toBe("testrepo");
+      const ghProvider = provider as unknown as { owner: string; repo: string };
+      expect(ghProvider.owner).toBe("testowner");
+      expect(ghProvider.repo).toBe("testrepo");
     });
 
     it("should treat owner/repo as ad-hoc github provider", async () => {
@@ -161,9 +162,10 @@ describe("registry", () => {
       const provider = getProvider("adhoc-owner/adhoc-repo");
 
       expect(provider).toBeInstanceOf(GitHubProvider);
-      expect((provider as any).owner).toBe("adhoc-owner");
-      expect((provider as any).repo).toBe("adhoc-repo");
-      expect((provider as any).options?.name).toBe("adhoc-owner/adhoc-repo");
+      const ghProvider = provider as unknown as { owner: string; repo: string; options?: { name?: string } };
+      expect(ghProvider.owner).toBe("adhoc-owner");
+      expect(ghProvider.repo).toBe("adhoc-repo");
+      expect(ghProvider.options?.name).toBe("adhoc-owner/adhoc-repo");
     });
 
     it("should use default provider when no name provided", async () => {
@@ -239,7 +241,10 @@ describe("registry", () => {
       const { getProviders } = await import("./registry.js");
 
       const providers = getProviders();
-      const names = providers.map((p) => (p as any).options?.name || (p as any).name || "arcana");
+      const names = providers.map((p) => {
+        const gp = p as unknown as { options?: { name?: string }; name?: string };
+        return gp.options?.name || gp.name || "arcana";
+      });
 
       expect(names).not.toContain("disabled-provider");
     });

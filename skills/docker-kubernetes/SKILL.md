@@ -17,7 +17,7 @@ You are a DevOps engineer specializing in production-grade Docker containers and
 ### Go Service
 ```dockerfile
 # Stage 1: Build
-FROM golang:1.23-alpine AS builder
+FROM golang:1.26-alpine AS builder
 RUN apk add --no-cache git ca-certificates
 WORKDIR /src
 COPY go.mod go.sum ./
@@ -36,14 +36,14 @@ ENTRYPOINT ["/app"]
 
 ### Node.js Service
 ```dockerfile
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
 COPY . .
 RUN npm run build && npm prune --production
 
-FROM node:20-alpine
+FROM node:24-alpine
 RUN addgroup -g 1001 app && adduser -u 1001 -G app -s /bin/sh -D app
 WORKDIR /app
 COPY --from=builder --chown=app:app /app/dist ./dist
@@ -56,14 +56,14 @@ CMD ["node", "dist/index.js"]
 
 ### Python Service (Multi-stage with uv)
 ```dockerfile
-FROM python:3.12-slim AS builder
+FROM python:3.14-slim AS builder
 RUN pip install --no-cache-dir uv
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-editable
 COPY src/ ./src/
 
-FROM python:3.12-slim
+FROM python:3.14-slim
 RUN groupadd -r app && useradd -r -g app -s /sbin/nologin app
 WORKDIR /app
 COPY --from=builder /app /app
@@ -74,12 +74,12 @@ CMD ["/app/.venv/bin/python", "-m", "uvicorn", "myapp.main:app", "--host", "0.0.
 
 ### Python Service (Traditional pip)
 ```dockerfile
-FROM python:3.12-slim AS builder
+FROM python:3.14-slim AS builder
 WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-FROM python:3.12-slim
+FROM python:3.14-slim
 RUN groupadd -r app && useradd -r -g app -s /sbin/nologin app
 WORKDIR /app
 COPY --from=builder /root/.local /root/.local
@@ -92,12 +92,43 @@ CMD ["python", "-m", "uvicorn", "myapp.main:app", "--host", "0.0.0.0", "--port",
 
 ## Dockerfile Best Practices
 
-1. **Base images:** Use `alpine` or `slim` variants. Use `scratch` or `distroless` for Go/Rust. Never use `latest` tag. Current stable versions: `node:20-alpine`, `python:3.12-slim`, `golang:1.23-alpine`.
+**BAD** - Fat image, root user, no caching:
+```dockerfile
+FROM node:24
+WORKDIR /app
+COPY . .
+RUN npm install
+EXPOSE 3000
+CMD ["node", "index.js"]
+# Result: 1.2GB image, runs as root, rebuilds all deps on every code change
+```
+
+**GOOD** - Multi-stage, non-root, cached layers:
+```dockerfile
+FROM node:24-alpine AS builder
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
+COPY . .
+RUN npm run build && npm prune --production
+
+FROM node:24-alpine
+RUN addgroup -g 1001 app && adduser -u 1001 -G app -s /bin/sh -D app
+WORKDIR /app
+COPY --from=builder --chown=app:app /app/dist ./dist
+COPY --from=builder --chown=app:app /app/node_modules ./node_modules
+USER app
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+# Result: 180MB image, non-root, deps cached separately from source
+```
+
+1. **Base images:** Use `alpine` or `slim` variants. Use `scratch` or `distroless` for Go/Rust. Never use `latest` tag. Current stable versions: `node:24-alpine`, `python:3.14-slim`, `golang:1.26-alpine`.
 2. **Non-root user:** Always run as non-root. Create a dedicated user. `USER 65534` (nobody) for scratch images.
 3. **Layer caching:** Copy dependency files first (`go.mod`, `package.json`), install deps, THEN copy source. This caches the dependency layer.
 4. **No secrets in images:** Never `COPY .env` or `ARG PASSWORD`. Use runtime environment variables or mounted secrets.
 5. **`.dockerignore`:** Always include one. At minimum: `.git`, `node_modules`, `__pycache__`, `.env`, `*.md`, `tests/`.
-6. **Pin versions:** `FROM node:20.5-alpine` not `FROM node:alpine`. Pin in CI, allow minor updates in dev.
+6. **Pin versions:** `FROM node:24-alpine` not `FROM node:alpine`. Pin in CI, allow minor updates in dev.
 7. **Single process per container:** Don't run supervisor/systemd. One process, one container.
 8. **Health checks in Dockerfile:**
 ```dockerfile

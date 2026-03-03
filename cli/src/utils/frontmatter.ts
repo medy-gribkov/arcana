@@ -154,12 +154,27 @@ export function validateSkillDir(skillDir: string, skillName: string): Validatio
     result.warnings.push(`Description too long (${parsed.description.length} chars, max ${MAX_DESC_LENGTH})`);
   }
 
-  // Check for non-standard fields
+  // Check for non-standard fields (metadata is invalid per spec)
   const standardFields = ["name", "description"];
+  const VALID_FIELDS = [
+    "name",
+    "description",
+    "argument-hint",
+    "compatibility",
+    "disable-model-invocation",
+    "license",
+    "user-invokable",
+  ];
   for (const line of extracted.raw.split("\n")) {
     const keyMatch = line.match(/^(\w[\w-]*):/);
     if (keyMatch?.[1] && !standardFields.includes(keyMatch[1])) {
-      result.infos.push(`Non-standard field: ${keyMatch[1]}`);
+      if (keyMatch[1] === "metadata") {
+        result.warnings.push("Invalid field: metadata (not allowed in frontmatter)");
+      } else if (!VALID_FIELDS.includes(keyMatch[1])) {
+        result.infos.push(`Non-standard field: ${keyMatch[1]}`);
+      } else {
+        result.infos.push(`Optional field: ${keyMatch[1]}`);
+      }
     }
   }
 
@@ -177,6 +192,19 @@ export function validateSkillDir(skillDir: string, skillName: string): Validatio
 
   if (extracted.body.trim().length >= 50 && !extracted.body.includes("##")) {
     result.infos.push("Body has no ## headings (recommended for structure)");
+  }
+
+  // Check for code blocks (quality signal)
+  if (extracted.body.trim().length >= 50 && !extracted.body.includes("```")) {
+    result.infos.push("No code blocks found (procedural skills should include code examples)");
+  }
+
+  // Check for BAD/GOOD pattern examples
+  const hasPattern =
+    /(?:BAD|GOOD|WRONG|RIGHT|AVOID|PREFER|DO NOT|INSTEAD)/i.test(extracted.body) ||
+    /<!--\s*(?:bad|good)\s*-->/i.test(extracted.body);
+  if (extracted.body.trim().length >= 100 && !hasPattern) {
+    result.infos.push("No BAD/GOOD contrast patterns found (recommended for teaching)");
   }
 
   if (result.errors.length > 0) result.valid = false;

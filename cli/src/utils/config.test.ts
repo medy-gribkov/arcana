@@ -44,3 +44,65 @@ describe("config module", () => {
     expect(isAbsolute).toBe(true);
   });
 });
+
+describe("validateConfig", () => {
+  it("returns no warnings for valid default config", async () => {
+    const { loadConfig, validateConfig } = await import("./config.js");
+    const config = loadConfig();
+    const warnings = validateConfig(config);
+    expect(warnings).toEqual([]);
+  });
+
+  it("warns on invalid provider URL", async () => {
+    const { validateConfig } = await import("./config.js");
+    const warnings = validateConfig({
+      defaultProvider: "bad",
+      installDir: "/tmp/test-home/.agents/skills",
+      providers: [{ name: "bad", type: "github", url: "not-a-slug", enabled: true }],
+    });
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("invalid URL");
+  });
+
+  it("warns on relative installDir", async () => {
+    const { validateConfig } = await import("./config.js");
+    const warnings = validateConfig({
+      defaultProvider: "arcana",
+      installDir: "relative/path",
+      providers: [{ name: "arcana", type: "github", url: "owner/repo", enabled: true }],
+    });
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("not an absolute path");
+  });
+
+  it("warns on defaultProvider that is not a configured provider or valid slug", async () => {
+    const { validateConfig } = await import("./config.js");
+    const warnings = validateConfig({
+      defaultProvider: ";;;DROP TABLE",
+      installDir: "/tmp/test-home/.agents/skills",
+      providers: [{ name: "arcana", type: "github", url: "owner/repo", enabled: true }],
+    });
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("defaultProvider");
+  });
+
+  it("accepts defaultProvider that matches a configured provider name", async () => {
+    const { validateConfig } = await import("./config.js");
+    const warnings = validateConfig({
+      defaultProvider: "arcana",
+      installDir: "/tmp/test-home/.agents/skills",
+      providers: [{ name: "arcana", type: "github", url: "owner/repo", enabled: true }],
+    });
+    expect(warnings).toEqual([]);
+  });
+
+  it("accepts defaultProvider that is a valid slug", async () => {
+    const { validateConfig } = await import("./config.js");
+    const warnings = validateConfig({
+      defaultProvider: "some-user/some-repo",
+      installDir: "/tmp/test-home/.agents/skills",
+      providers: [],
+    });
+    expect(warnings).toEqual([]);
+  });
+});

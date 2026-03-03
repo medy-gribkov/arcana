@@ -1,22 +1,73 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
   <defs>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&amp;display=swap');
-      .bg { fill: #0c0b0e; }
-      .glyph { fill: #d4943a; }
-      .title { fill: #d4943a; font-family: 'JetBrains Mono', monospace; font-size: 64px; font-weight: 700; }
-      .subtitle { fill: #e8e4df; font-family: 'JetBrains Mono', monospace; font-size: 16px; }
-    </style>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c0b0e"/>
+      <stop offset="50%" stop-color="#12111a"/>
+      <stop offset="100%" stop-color="#0c0b0e"/>
+    </linearGradient>
+    <linearGradient id="amber-glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8a84c"/>
+      <stop offset="100%" stop-color="#b87a28"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="soft-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(212,148,58,0.04)" stroke-width="0.5"/>
+    </pattern>
   </defs>
-  <rect class="bg" width="800" height="200" rx="12"/>
+
+  <!-- Background -->
+  <rect width="1200" height="300" fill="url(#bg)" rx="16"/>
+  <rect width="1200" height="300" fill="url(#grid)" rx="16"/>
+
+  <!-- Decorative lines -->
+  <line x1="0" y1="1" x2="1200" y2="1" stroke="#d4943a" stroke-width="2" opacity="0.6"/>
+  <line x1="0" y1="299" x2="1200" y2="299" stroke="#d4943a" stroke-width="2" opacity="0.6"/>
+
+  <!-- Accent dots -->
+  <circle cx="60" cy="150" r="1.5" fill="#d4943a" opacity="0.3"/>
+  <circle cx="80" cy="130" r="1" fill="#d4943a" opacity="0.2"/>
+  <circle cx="70" cy="170" r="1" fill="#d4943a" opacity="0.2"/>
+  <circle cx="1120" cy="140" r="1.5" fill="#d4943a" opacity="0.3"/>
+  <circle cx="1140" cy="160" r="1" fill="#d4943a" opacity="0.2"/>
+  <circle cx="1130" cy="120" r="1" fill="#d4943a" opacity="0.2"/>
+
   <!-- Logo glyph -->
-  <g transform="translate(80,30) scale(0.55)">
-    <polygon class="glyph" points="32,4 4,56 16,56 32,24 48,56 60,56"/>
-    <polygon class="glyph" points="20,44 44,44 38,56 26,56"/>
-    <rect class="glyph" x="28" y="14" width="8" height="8" rx="1" transform="rotate(45,32,18)"/>
+  <g transform="translate(280, 60) scale(1.8)" filter="url(#glow)">
+    <polygon fill="url(#amber-glow)" points="32,4 4,56 16,56 32,24 48,56 60,56"/>
+    <polygon fill="url(#amber-glow)" points="20,44 44,44 38,56 26,56"/>
+    <rect fill="url(#amber-glow)" x="28" y="14" width="8" height="8" rx="1" transform="rotate(45,32,18)"/>
   </g>
+
   <!-- Title -->
-  <text class="title" x="140" y="120">arcana</text>
+  <text x="420" y="170" fill="url(#amber-glow)" font-family="'JetBrains Mono','Fira Code','Cascadia Code',monospace" font-size="88" font-weight="700" letter-spacing="4" filter="url(#soft-glow)">arcana</text>
+
   <!-- Subtitle -->
-  <text class="subtitle" x="140" y="155">The AI development toolkit</text>
+  <text x="424" y="215" fill="#e8e4df" font-family="'Inter','Segoe UI',system-ui,sans-serif" font-size="22" letter-spacing="3" opacity="0.8">The AI development toolkit</text>
+
+  <!-- Skill count badge -->
+  <g transform="translate(424, 235)">
+    <rect width="100" height="26" rx="4" fill="rgba(212,148,58,0.12)" stroke="#d4943a" stroke-width="0.5" opacity="0.8"/>
+    <text x="50" y="18" fill="#d4943a" font-family="'JetBrains Mono','Fira Code',monospace" font-size="13" font-weight="600" text-anchor="middle">58 skills</text>
+  </g>
+  <g transform="translate(536, 235)">
+    <rect width="120" height="26" rx="4" fill="rgba(212,148,58,0.12)" stroke="#d4943a" stroke-width="0.5" opacity="0.8"/>
+    <text x="60" y="18" fill="#d4943a" font-family="'JetBrains Mono','Fira Code',monospace" font-size="13" font-weight="600" text-anchor="middle">7 platforms</text>
+  </g>
+  <g transform="translate(668, 235)">
+    <rect width="68" height="26" rx="4" fill="rgba(212,148,58,0.12)" stroke="#d4943a" stroke-width="0.5" opacity="0.8"/>
+    <text x="34" y="18" fill="#d4943a" font-family="'JetBrains Mono','Fira Code',monospace" font-size="13" font-weight="600" text-anchor="middle">MIT</text>
+  </g>
 </svg>

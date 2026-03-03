@@ -96,7 +96,7 @@ describe("scanCommand", () => {
     const scanner = await import("../utils/scanner.js");
     vi.mocked(scanner.scanSkillContent).mockReturnValue([
       { level: "critical", category: "Injection", detail: "Command injection", line: 5 },
-    ] as any);
+    ] as never);
 
     const { scanCommand } = await import("./scan.js");
     await expect(scanCommand("bad-skill", { json: true })).rejects.toThrow("process.exit");

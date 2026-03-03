@@ -205,7 +205,55 @@ TEACHING THROUGH DESIGN:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 🔧 Troubleshooting
+## BAD/GOOD Level Design Patterns
+
+**BAD** - Invisible wall blocking exploration:
+```gdscript
+# Player hits invisible collider, no feedback
+func _physics_process(delta):
+    if position.x > boundary_x:
+        position.x = boundary_x  # Silent clamp
+```
+
+**GOOD** - Natural boundary with visual/narrative justification:
+```gdscript
+# Collapsed bridge blocks path, shows reason visually
+@onready var rubble_particles: GPUParticles3D = $RubbleParticles
+@onready var dialogue: DialogueManager = $DialogueManager
+
+func _on_boundary_entered(body: Node3D) -> void:
+    if body.is_in_group("player"):
+        rubble_particles.emitting = true
+        dialogue.show("The bridge collapsed. I need to find another way around.")
+```
+
+**BAD** - All enemies placed randomly:
+```csharp
+// Scatter enemies with no design intent
+for (int i = 0; i < 20; i++)
+    Instantiate(enemy, Random.insideUnitSphere * 50, Quaternion.identity);
+```
+
+**GOOD** - Enemy placement teaches mechanics:
+```csharp
+// Place encounters that escalate: solo → pair → group
+void PlaceEncounters()
+{
+    // Room 1: Single weak enemy (teaches combat basics)
+    SpawnEnemy(EnemyType.Grunt, room1Center);
+
+    // Room 2: Two enemies (teaches crowd control)
+    SpawnEnemy(EnemyType.Grunt, room2Left);
+    SpawnEnemy(EnemyType.Grunt, room2Right);
+
+    // Room 3: Mixed types (tests mastery)
+    SpawnEnemy(EnemyType.Grunt, room3Front);
+    SpawnEnemy(EnemyType.Ranged, room3Back); // Forces movement
+    SpawnEnemy(EnemyType.Shield, room3Center); // Forces new tactic
+}
+```
+
+## Troubleshooting
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

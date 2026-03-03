@@ -18,13 +18,48 @@ Handle production incidents with speed, clarity, and accountability. This skill 
 
 ## On-Call Runbooks
 
-- Write runbooks for every known failure mode. A runbook answers: what broke, how to confirm, and how to fix.
-- Structure each runbook: symptom description, diagnostic commands, fix steps, escalation contacts.
-- Store runbooks where on-call engineers can find them in 30 seconds. Link directly from monitoring alerts.
-- Include rollback commands as copy-paste snippets. Stressed engineers should not have to think about syntax.
-- Review runbooks quarterly. Delete outdated ones, update commands, add new failure modes.
-- Test runbooks during game day exercises. A runbook that has never been followed is unverified documentation.
-- Include "what NOT to do" sections for failure modes where common instincts make things worse.
+**BAD** - Vague runbook:
+```markdown
+## Database Issues
+If the database is slow, check the connections and maybe restart it.
+Contact the DBA if it doesn't work.
+```
+
+**GOOD** - Actionable runbook with copy-paste commands:
+```markdown
+## Runbook: Database Connection Pool Exhausted
+
+### Symptoms
+- API returns 503 errors
+- Grafana alert: `db_active_connections > 95% of pool_size`
+- Logs: "connection pool exhausted, 0 idle connections"
+
+### Diagnose (< 1 minute)
+    kubectl exec -it deploy/api -- curl localhost:8080/debug/db
+    # Shows: active=100, idle=0, max=100, waiting=47
+
+    psql -h $DB_HOST -c "SELECT count(*) FROM pg_stat_activity WHERE state='active';"
+
+### Fix (choose one)
+1. **Kill idle transactions** (safest):
+       psql -h $DB_HOST -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state='idle in transaction' AND query_start < now() - interval '5 min';"
+
+2. **Increase pool size** (temporary):
+       kubectl set env deploy/api DB_POOL_SIZE=200
+       kubectl rollout restart deploy/api
+
+3. **Rollback last deploy** (if caused by new code):
+       kubectl rollout undo deploy/api
+
+### Do NOT
+- Do NOT restart the database. Active transactions will be lost.
+- Do NOT increase pool size above 200 without DBA approval.
+
+### Escalation
+- Slack: #team-platform | PagerDuty: Platform On-Call
+```
+
+Write runbooks for every known failure mode. Structure: symptom, diagnostic commands, fix steps, escalation contacts. Store where on-call engineers find them in 30 seconds. Link directly from monitoring alerts. Review quarterly.
 
 ## Incident Command Structure
 
@@ -66,13 +101,48 @@ Handle production incidents with speed, clarity, and accountability. This skill 
 
 ## Blameless Postmortems
 
-- Conduct a postmortem for every SEV-1 and SEV-2 incident. Optional for SEV-3.
-- Hold the postmortem within 48 hours while details are fresh.
-- Structure: timeline of events, root cause analysis, contributing factors, action items with owners and due dates.
-- Focus on system failures, not human errors. Ask "why did the system allow this?" not "who did this?"
-- Publish postmortems internally. Transparency builds trust and distributes learning.
-- Track action item completion. A postmortem without follow-through is theater.
-- Review past postmortems quarterly. Identify recurring themes and systemic issues.
+**BAD** - Blame-focused postmortem:
+```markdown
+Root Cause: John deployed broken code on Friday at 5pm without testing.
+Action Items: John needs to be more careful.
+```
+
+**GOOD** - Systems-focused postmortem:
+```markdown
+## Postmortem: API Outage 2025-03-15
+
+### Timeline (UTC)
+- 16:42 - Deploy v2.3.1 to production (automated via merge to main)
+- 16:44 - Error rate spikes from 0.1% to 34%
+- 16:47 - PagerDuty alert fires, on-call acknowledges
+- 16:52 - IC declared, #inc-2025-03-15-api-errors created
+- 16:58 - Root cause identified: missing DB migration
+- 17:01 - Rollback initiated (kubectl rollout undo)
+- 17:03 - Error rate returns to 0.1%, all-clear declared
+
+### Impact
+- Duration: 21 minutes
+- Users affected: ~12,000 (API returned 500 on /orders endpoint)
+- Revenue impact: ~$3,200 in failed checkouts
+
+### Root Cause
+Deploy v2.3.1 added a query on `orders.status_v2` column. The migration
+to add this column was not included in the deploy pipeline.
+
+### Contributing Factors
+- CI pipeline does not run pending migrations before integration tests
+- No pre-deploy check that verifies schema compatibility
+- Deploy happened automatically on merge, no manual gate
+
+### Action Items
+| Action | Owner | Due |
+|--------|-------|-----|
+| Add migration check to CI pipeline | @platform | 2025-03-22 |
+| Add schema compatibility pre-deploy hook | @platform | 2025-03-29 |
+| Document migration-first deploy process | @docs | 2025-03-22 |
+```
+
+Conduct postmortems for every SEV-1 and SEV-2 within 48 hours. Focus on system failures, not human errors. Ask "why did the system allow this?" Track action item completion. Review quarterly for recurring themes.
 
 ## SLO Breach Handling
 

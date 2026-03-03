@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 describe("installCommand JSON mode", () => {
-  let installCommand: any;
-  let consoleLogSpy: any;
-  let processExitSpy: any;
+  let installCommand: (skills: string[], opts: Record<string, unknown>) => Promise<void>;
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+  let processExitSpy: ReturnType<typeof vi.spyOn>;
 
   const mockProvider = {
     name: "test-provider",
@@ -16,7 +16,7 @@ describe("installCommand JSON mode", () => {
     vi.resetModules();
 
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    processExitSpy = vi.spyOn(process, "exit").mockImplementation((() => {}) as any);
+    processExitSpy = vi.spyOn(process, "exit").mockImplementation((() => {}) as never);
 
     vi.doMock("chalk", () => ({
       default: Object.assign((s: string) => s, {
@@ -64,6 +64,18 @@ describe("installCommand JSON mode", () => {
 
     vi.doMock("../utils/scanner.js", () => ({
       scanSkillContent: vi.fn(() => []),
+    }));
+
+    vi.doMock("../utils/integrity.js", () => ({
+      updateLockEntry: vi.fn(),
+    }));
+
+    vi.doMock("../utils/conflict-check.js", () => ({
+      checkConflicts: vi.fn(() => []),
+    }));
+
+    vi.doMock("../utils/project-context.js", () => ({
+      detectProjectContext: vi.fn(() => ({ type: "unknown", lang: "general", frameworks: [], hasTests: false })),
     }));
 
     const module = await import("./install.js");
@@ -151,6 +163,18 @@ describe("installCommand JSON mode", () => {
       scanSkillContent: vi.fn(() => []),
     }));
 
+    vi.doMock("../utils/integrity.js", () => ({
+      updateLockEntry: vi.fn(),
+    }));
+
+    vi.doMock("../utils/conflict-check.js", () => ({
+      checkConflicts: vi.fn(() => []),
+    }));
+
+    vi.doMock("../utils/project-context.js", () => ({
+      detectProjectContext: vi.fn(() => ({ type: "unknown", lang: "general", frameworks: [], hasTests: false })),
+    }));
+
     const module = await import("./install.js");
     const cmd = module.installCommand;
 
@@ -219,6 +243,18 @@ describe("installCommand JSON mode", () => {
       scanSkillContent: vi.fn(() => [
         { level: "critical", category: "command-injection", detail: "Found dangerous pattern", line: 42 },
       ]),
+    }));
+
+    vi.doMock("../utils/integrity.js", () => ({
+      updateLockEntry: vi.fn(),
+    }));
+
+    vi.doMock("../utils/conflict-check.js", () => ({
+      checkConflicts: vi.fn(() => []),
+    }));
+
+    vi.doMock("../utils/project-context.js", () => ({
+      detectProjectContext: vi.fn(() => ({ type: "unknown", lang: "general", frameworks: [], hasTests: false })),
     }));
 
     const module = await import("./install.js");

@@ -37,6 +37,8 @@ Thumbs.db
 snyk_research.txt
 
 # Promo
+promo/node_modules/
+promo/out/
 promo/package-lock.json
 
 # Claude

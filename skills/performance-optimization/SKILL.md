@@ -344,3 +344,57 @@ app.post("/signup", async (req, res) => {
 ```
 
 Use BullMQ (Node.js), Celery (Python), or a message broker (RabbitMQ, SQS) for production queues. Always make queue consumers idempotent — jobs may be retried.
+
+## Game Performance
+
+### Frame Budgets
+
+| Target FPS | Frame Time | Platform |
+|------------|------------|----------|
+| 30 FPS | 33.3 ms | Console (heavy games) |
+| 60 FPS | 16.6 ms | PC, Console, Mobile |
+| 90 FPS | 11.1 ms | VR (minimum) |
+| 120 FPS | 8.3 ms | Competitive games |
+| 144+ FPS | 6.9 ms | High-end PC |
+
+At 60 FPS (16.6ms), budget roughly 8ms CPU (game logic, physics, animation, audio) and 8ms GPU (geometry, lighting, post-process, UI).
+
+### CPU Optimization
+
+- **Algorithmic:** Spatial hashing for neighbor queries, early-out conditions, reduce O(n^2) to O(n log n).
+- **Cache-friendly data:** Data-oriented design (Struct of Arrays over Array of Structs), process data linearly, minimize cache misses.
+- **Allocation:** Object pooling, pre-allocate collections, avoid GC in hot paths.
+- **Threading:** Offload to job systems, async loading, parallel processing.
+
+### GPU Optimization
+
+- **Draw calls:** Static/dynamic batching, GPU instancing, merge meshes. Target <2000 on PC, <200 on mobile.
+- **Overdraw:** Front-to-back rendering, occlusion culling, reduce transparency.
+- **Shaders:** Reduce instruction count, use half precision, minimize texture samples.
+- **Geometry:** LOD systems, mesh simplification, frustum culling.
+
+### Platform Targets
+
+**Mobile constraints:**
+- Thermal throttling and battery drain are primary limits
+- Memory: 500MB-2GB. Draw calls: 100-200. Triangles: 100K-500K/frame. Texture memory: 200-500MB.
+- Target 30-60 FPS stable.
+
+**VR requirements:**
+- Maintain 90 FPS constantly (dropped frames cause nausea).
+- Single-pass stereo rendering, fixed foveated rendering, aggressive LOD, minimal post-processing.
+
+### Frame Rate Troubleshooting
+
+1. **Frame drops:** Profile CPU vs GPU bound. Check for GC spikes. Move logic to FixedUpdate or coroutines. Add object pooling and LOD.
+2. **Long loads:** Async loading with progress bar. Stream assets in background. Compress aggressively. Pre-warm caches.
+3. **Inconsistent pacing:** Enable VSync. Use fixed timestep for physics. Spread heavy work across frames.
+
+### Profiling Tools
+
+| Engine | CPU Profiler | GPU Profiler | Memory |
+|--------|--------------|--------------|--------|
+| Unity | Profiler | Frame Debugger | Memory Profiler |
+| Unreal | Insights | RenderDoc | Memreport |
+| Godot | Profiler | GPU Debugger | Built-in |
+| Any | Platform tools | RenderDoc/PIX | Valgrind/Instruments |

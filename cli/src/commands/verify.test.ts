@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 describe("verifyCommand", () => {
-  let consoleLogSpy: any;
-  let processExitSpy: any;
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+  let processExitSpy: ReturnType<typeof vi.spyOn>;
 
   function setupMocks(
     overrides: {
@@ -66,7 +66,7 @@ describe("verifyCommand", () => {
     consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     processExitSpy = vi.spyOn(process, "exit").mockImplementation((() => {
       throw new Error("process.exit");
-    }) as any);
+    }) as never);
   });
 
   afterEach(() => {
@@ -185,7 +185,7 @@ describe("verifyCommand", () => {
 
     await expect(verifyCommand([], { all: true, json: true })).rejects.toThrow("process.exit");
 
-    const jsonCall = consoleLogSpy.mock.calls.find((call: any[]) => {
+    const jsonCall = consoleLogSpy.mock.calls.find((call: unknown[]) => {
       try {
         JSON.parse(call[0]);
         return true;
