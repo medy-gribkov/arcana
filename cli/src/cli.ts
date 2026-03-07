@@ -469,6 +469,7 @@ export function createCli(): Command {
   program
     .command("compress [command...]")
     .description("Run a command with output compression (saves tokens)")
+    .allowUnknownOption(true)
     .option("--stdin", "Read from stdin instead of running a command")
     .option("-t, --tool <name>", "Tool type hint for compression rules (git, npm, tsc, vitest)")
     .option("-j, --json", "Output stats as JSON")
