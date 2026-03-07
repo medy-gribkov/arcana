@@ -227,9 +227,7 @@ describe("cleanCommand", () => {
 
     const output = spy.mock.calls[0]![0] as string;
     const parsed = JSON.parse(output);
-    const sessionDirs = parsed.removedSessionLogs.filter(
-      (l: { reason: string }) => l.reason === "session dir",
-    );
+    const sessionDirs = parsed.removedSessionLogs.filter((l: { reason: string }) => l.reason === "session dir");
     expect(sessionDirs.length).toBe(1);
     expect(sessionDirs[0].file).toBe("abc-123-session/");
     expect(existsSync(subDir)).toBe(false);
@@ -253,9 +251,7 @@ describe("cleanCommand", () => {
 
     const output = spy.mock.calls[0]![0] as string;
     const parsed = JSON.parse(output);
-    const sessionDirs = parsed.removedSessionLogs.filter(
-      (l: { reason: string }) => l.reason === "session dir",
-    );
+    const sessionDirs = parsed.removedSessionLogs.filter((l: { reason: string }) => l.reason === "session dir");
     expect(sessionDirs.length).toBe(0);
 
     spy.mockRestore();
@@ -278,9 +274,7 @@ describe("cleanCommand", () => {
 
     const output = spy.mock.calls[0]![0] as string;
     const parsed = JSON.parse(output);
-    const sessionDirs = parsed.removedSessionLogs.filter(
-      (l: { reason: string }) => l.reason === "session dir",
-    );
+    const sessionDirs = parsed.removedSessionLogs.filter((l: { reason: string }) => l.reason === "session dir");
     expect(sessionDirs.length).toBe(0);
     // Memory dir should still exist
     expect(existsSync(memDir)).toBe(true);
@@ -318,9 +312,7 @@ describe("cleanCommand", () => {
     const output = spy.mock.calls[0]![0] as string;
     const parsed = JSON.parse(output);
     // Both logs should be processed (the continue only skips the rest of the current iteration)
-    const agentLogs = parsed.removedSessionLogs.filter(
-      (l: { reason: string }) => l.reason === "agent log",
-    );
+    const agentLogs = parsed.removedSessionLogs.filter((l: { reason: string }) => l.reason === "agent log");
     expect(agentLogs.length).toBe(2);
 
     spy.mockRestore();

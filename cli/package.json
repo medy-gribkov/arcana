@@ -6,7 +6,7 @@
     "arcana": "dist/index.js"
   },
   "scripts": {
-    "build": "node esbuild.config.mjs",
+    "build": "tsc",
     "build:types": "tsc --emitDeclarationOnly",
     "build:check": "tsc --noEmit",
     "dev": "tsc --watch",

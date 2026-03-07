@@ -1,6 +1,9 @@
 import { compress, compressionStats, recordCompression } from "../compress/index.js";
 
-export async function compressCommand(command: string[], opts: { stdin?: boolean; tool?: string; json?: boolean }): Promise<void> {
+export async function compressCommand(
+  command: string[],
+  opts: { stdin?: boolean; tool?: string; json?: boolean },
+): Promise<void> {
   let input: string;
   if (opts.stdin) {
     const chunks: Buffer[] = [];
@@ -15,8 +18,7 @@ export async function compressCommand(command: string[], opts: { stdin?: boolean
         maxBuffer: 10 * 1024 * 1024,
       });
     } catch (err) {
-      input =
-        (err as { stdout?: string; stderr?: string }).stdout ?? "" + ((err as { stderr?: string }).stderr ?? "");
+      input = (err as { stdout?: string; stderr?: string }).stdout ?? "" + ((err as { stderr?: string }).stderr ?? "");
     }
   } else {
     console.error("Usage: arcana compress <command> or echo ... | arcana compress --stdin --tool git");

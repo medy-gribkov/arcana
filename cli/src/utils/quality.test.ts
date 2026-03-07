@@ -227,7 +227,10 @@ describe("crossValidate", () => {
     const marketplacePath = join(base, "marketplace.json");
     writeFileSync(
       marketplacePath,
-      JSON.stringify({ name: "test", plugins: [{ name: "skill-a", source: "./skills/skill-a", description: "A test skill", version: "1.0.0" }] }),
+      JSON.stringify({
+        name: "test",
+        plugins: [{ name: "skill-a", source: "./skills/skill-a", description: "A test skill", version: "1.0.0" }],
+      }),
       "utf-8",
     );
 

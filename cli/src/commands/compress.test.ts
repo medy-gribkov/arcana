@@ -46,9 +46,7 @@ describe("compressCommand", () => {
     const { compressCommand } = await import("./compress.js");
     await compressCommand([], {});
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Usage:"),
-    );
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Usage:"));
     expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 

@@ -1,18 +1,32 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-.venv/
-.coverage
-htmlcov/
+# Dependencies
+node_modules/
 
-# Node
-cli/node_modules/
+# Build output
 cli/dist/
+*.tsbuildinfo
+
+# Coverage & test artifacts
 cli/coverage/
+.nyc_output/
+
+# Packages
 *.tgz
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
 .npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+
+# OS
+.DS_Store
+Thumbs.db
 
 # IDE
 .vscode/
@@ -21,46 +35,33 @@ cli/coverage/
 *.swo
 *~
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Environment
-.env
-.env.local
-.env.*.local
-
 # Logs
 *.log
-
-# Research / personal notes
-snyk_research.txt
-
-# Promo
-promo/node_modules/
-promo/out/
-promo/package-lock.json
-
-# Secrets (defense in depth)
-*.pem
-*.key
-*.p12
-*.pfx
-credentials.json
-service-account*.json
-
-# Build artifacts
-*.tsbuildinfo
-
-# Test
-.nyc_output/
 
 # Backup
 *.bak
 *.orig
 
-# NotebookLM Chrome profile (sensitive)
+# Research / analysis (temporary)
+deep-analysis-*/
+snyk_research.txt
+
+# Promo build output
+promo/node_modules/
+promo/out/
+promo/package-lock.json
+
+# Python (scripts)
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+.coverage
+htmlcov/
+
+# NotebookLM Chrome profile
 .notebooklm-chrome/
 
-# Claude
+# Claude Code
 .claude/

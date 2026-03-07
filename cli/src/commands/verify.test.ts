@@ -275,7 +275,9 @@ describe("verifyCommand", () => {
     }));
 
     vi.doMock("node:fs", () => ({
-      readdirSync: vi.fn(() => { throw new Error("ENOENT"); }),
+      readdirSync: vi.fn(() => {
+        throw new Error("ENOENT");
+      }),
       statSync: vi.fn(() => ({ isDirectory: () => true })),
     }));
 

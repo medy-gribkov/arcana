@@ -246,9 +246,7 @@ describe("validateCommand", () => {
     vi.mocked(scanner.scanSkillContent).mockReturnValue([]);
 
     vi.doMock("../utils/quality.js", () => ({
-      crossValidate: vi.fn(() => [
-        { skill: "x", level: "error", category: "orphan", detail: "Missing" },
-      ]),
+      crossValidate: vi.fn(() => [{ skill: "x", level: "error", category: "orphan", detail: "Missing" }]),
     }));
 
     const { validateCommand } = await import("./validate.js");

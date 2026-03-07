@@ -204,8 +204,22 @@ describe("updateCommand", () => {
     vi.doMock("../utils/ui.js", () => ({
       ui: { bold: (s: string) => s, dim: (s: string) => s, error: (s: string) => s, success: (s: string) => s },
       banner: vi.fn(),
-      spinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
-      noopSpinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
+      spinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
+      noopSpinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
     }));
     vi.doMock("../utils/fs.js", () => ({
       getInstallDir: vi.fn(() => "/fake/skills"),
@@ -244,8 +258,22 @@ describe("updateCommand", () => {
     vi.doMock("../utils/ui.js", () => ({
       ui: { bold: (s: string) => s, dim: (s: string) => s, error: (s: string) => s, success: (s: string) => s },
       banner: vi.fn(),
-      spinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
-      noopSpinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
+      spinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
+      noopSpinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
     }));
     vi.doMock("../utils/fs.js", () => ({
       getInstallDir: vi.fn(() => "/fake/skills"),
@@ -264,7 +292,9 @@ describe("updateCommand", () => {
     }));
     vi.doMock("../utils/config.js", () => ({ loadConfig: vi.fn(() => ({ defaultProvider: "test-provider" })) }));
     vi.doMock("../utils/validate.js", () => ({
-      validateSlug: vi.fn(() => { throw new Error("Invalid: contains uppercase"); }),
+      validateSlug: vi.fn(() => {
+        throw new Error("Invalid: contains uppercase");
+      }),
     }));
     vi.doMock("../utils/integrity.js", () => ({ updateLockEntry: vi.fn() }));
 
@@ -284,8 +314,22 @@ describe("updateCommand", () => {
     vi.doMock("../utils/ui.js", () => ({
       ui: { bold: (s: string) => s, dim: (s: string) => s, error: (s: string) => s, success: (s: string) => s },
       banner: vi.fn(),
-      spinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
-      noopSpinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
+      spinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
+      noopSpinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
     }));
     vi.doMock("../utils/fs.js", () => ({
       getInstallDir: vi.fn(() => "/fake/skills"),
@@ -335,8 +379,22 @@ describe("updateCommand", () => {
     vi.doMock("../utils/ui.js", () => ({
       ui: { bold: (s: string) => s, dim: (s: string) => s, error: (s: string) => s, success: (s: string) => s },
       banner: vi.fn(),
-      spinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
-      noopSpinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
+      spinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
+      noopSpinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
     }));
     vi.doMock("../utils/fs.js", () => ({
       getInstallDir: vi.fn(() => "/fake/skills"),
@@ -389,8 +447,22 @@ describe("updateCommand", () => {
     vi.doMock("../utils/ui.js", () => ({
       ui: { bold: (s: string) => s, dim: (s: string) => s, error: (s: string) => s, success: (s: string) => s },
       banner: vi.fn(),
-      spinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
-      noopSpinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
+      spinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
+      noopSpinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
     }));
     vi.doMock("../utils/fs.js", () => ({
       getInstallDir: vi.fn(() => "/fake/skills"),
@@ -430,17 +502,29 @@ describe("updateCommand", () => {
       name: "test-provider",
       fetch: vi.fn(async () => [{ path: "SKILL.md", content: "---\nname: test\n---\nBody" }]),
       info: vi.fn(async () => null),
-      list: vi.fn(async () => [
-        { name: "skill-a", version: "2.0.0", description: "Skill A" },
-      ]),
+      list: vi.fn(async () => [{ name: "skill-a", version: "2.0.0", description: "Skill A" }]),
       search: vi.fn(async () => []),
     };
 
     vi.doMock("../utils/ui.js", () => ({
       ui: { bold: (s: string) => s, dim: (s: string) => s, error: (s: string) => s, success: (s: string) => s },
       banner: vi.fn(),
-      spinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
-      noopSpinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
+      spinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
+      noopSpinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
     }));
     vi.doMock("../utils/fs.js", () => ({
       getInstallDir: vi.fn(() => "/fake/skills"),
@@ -477,7 +561,9 @@ describe("updateCommand", () => {
 
     const fetchFailProvider = {
       name: "test-provider",
-      fetch: vi.fn(async () => { throw new Error("Fetch exploded"); }),
+      fetch: vi.fn(async () => {
+        throw new Error("Fetch exploded");
+      }),
       info: vi.fn(async (name: string) => ({ name, version: "2.0.0", description: "desc" })),
       list: vi.fn(async () => []),
       search: vi.fn(async () => []),
@@ -486,8 +572,22 @@ describe("updateCommand", () => {
     vi.doMock("../utils/ui.js", () => ({
       ui: { bold: (s: string) => s, dim: (s: string) => s, error: (s: string) => s, success: (s: string) => s },
       banner: vi.fn(),
-      spinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
-      noopSpinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), succeed: vi.fn(), fail: vi.fn(), info: vi.fn(), set text(_: string) {} })),
+      spinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
+      noopSpinner: vi.fn(() => ({
+        start: vi.fn(),
+        stop: vi.fn(),
+        succeed: vi.fn(),
+        fail: vi.fn(),
+        info: vi.fn(),
+        set text(_: string) {},
+      })),
     }));
     vi.doMock("../utils/fs.js", () => ({
       getInstallDir: vi.fn(() => "/fake/skills"),

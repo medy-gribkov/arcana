@@ -35,7 +35,11 @@ describe("compress", () => {
   it("truncates output beyond maxLines", () => {
     // Use truly diverse lines that won't be grouped by normalization
     const words = ["alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliet"];
-    const lines = Array.from({ length: 200 }, (_, i) => `${words[i % words.length]} says ${String.fromCharCode(65 + (i % 26))} about ${words[(i + 3) % words.length]}`);
+    const lines = Array.from(
+      { length: 200 },
+      (_, i) =>
+        `${words[i % words.length]} says ${String.fromCharCode(65 + (i % 26))} about ${words[(i + 3) % words.length]}`,
+    );
     const input = lines.join("\n");
     const result = compress(input, undefined, 50);
     expect(result).toContain("omitted");

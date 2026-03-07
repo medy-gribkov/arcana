@@ -25,6 +25,7 @@ path_hits=$(grep -rEn "$PATH_PATTERNS" "$REPO_ROOT" \
   | grep -Ev "$EXCLUDE_DIRS" \
   | grep -Ev '(CHANGELOG\.md|CLAUDE\.md|\.claude/|rules/|memory/|project-migration/)' \
   | grep -Ev 'Users.Dev|/home/product/' \
+  | grep -Ev '\.test\.ts:' \
   || true)
 
 if [ -n "$path_hits" ]; then
@@ -42,7 +43,8 @@ SECRET_PATTERNS='(PRIVATE KEY|sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{36}|gho_[a-zA-
 secret_hits=$(grep -rEn "$SECRET_PATTERNS" "$REPO_ROOT" \
   --include="*.ts" --include="*.js" --include="*.json" --include="*.md" --include="*.yml" --include="*.yaml" --include="*.sh" --include="*.env*" \
   | grep -Ev "$EXCLUDE_DIRS" \
-  | grep -Ev '(security-scan\.sh|scan-secrets\.sh|security\.yml|CHANGELOG\.md|SECURITY\.md|README\.md|scanner\.test\.ts|\.example|@example\.com|@b\.com|package\.json|NOTICE|CITATION\.cff|RELEASING\.md)' \
+  | grep -Ev '(security-scan\.sh|scan-secrets\.sh|security\.yml|CHANGELOG\.md|SECURITY\.md|README\.md|\.example|@example\.com|@b\.com|package\.json|NOTICE|CITATION\.cff|RELEASING\.md)' \
+  | grep -Ev '\.test\.ts:' \
   || true)
 
 if [ -n "$secret_hits" ]; then

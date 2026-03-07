@@ -18,7 +18,12 @@ describe("mcpCommand", () => {
 
     listRegistryMock = vi.fn(() => [
       { name: "context7", description: "Docs server", command: "npx", args: ["-y", "@upstash/context7-mcp"] },
-      { name: "filesystem", description: "File system", command: "npx", args: ["-y", "@modelcontextprotocol/server-filesystem"] },
+      {
+        name: "filesystem",
+        description: "File system",
+        command: "npx",
+        args: ["-y", "@modelcontextprotocol/server-filesystem"],
+      },
     ]);
 
     installMcpServerMock = vi.fn(() => ({ installed: true, path: "/home/.claude.json" }));

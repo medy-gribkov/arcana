@@ -51,14 +51,7 @@ beforeEach(async () => {
   delete process.env.ARCANA_DEFAULT_PROVIDER;
 });
 
-import {
-  loadConfig,
-  saveConfig,
-  addProvider,
-  removeProvider,
-  validateConfig,
-  clearConfigCache,
-} from "./config.js";
+import { loadConfig, saveConfig, addProvider, removeProvider, validateConfig, clearConfigCache } from "./config.js";
 
 describe("loadConfig", () => {
   it("returns defaults when no config file", () => {

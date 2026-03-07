@@ -9,9 +9,7 @@ const mockScoring = vi.hoisted(() => ({
 }));
 
 const mockLoad = vi.hoisted(() => ({
-  readSkillContent: vi.fn(
-    () => null as { content: string; bytes: number } | null,
-  ),
+  readSkillContent: vi.fn(() => null as { content: string; bytes: number } | null),
 }));
 
 const mockUsage = vi.hoisted(() => ({
@@ -122,9 +120,7 @@ describe("curateForContext", () => {
 
   it("skips unreadable skills", () => {
     mockHelpers.getInstalledNames.mockReturnValue(["broken"]);
-    mockScoring.rankSkills.mockReturnValue([
-      { skill: "broken", score: 80, verdict: "include", reasons: ["match"] },
-    ]);
+    mockScoring.rankSkills.mockReturnValue([{ skill: "broken", score: 80, verdict: "include", reasons: ["match"] }]);
     mockLoad.readSkillContent.mockReturnValue(null);
 
     const result = curateForContext("/project", {});
@@ -134,9 +130,7 @@ describe("curateForContext", () => {
 
   it("resolves model context for budget calculation", () => {
     mockHelpers.getInstalledNames.mockReturnValue(["small"]);
-    mockScoring.rankSkills.mockReturnValue([
-      { skill: "small", score: 80, verdict: "include", reasons: ["match"] },
-    ]);
+    mockScoring.rankSkills.mockReturnValue([{ skill: "small", score: 80, verdict: "include", reasons: ["match"] }]);
     mockLoad.readSkillContent.mockReturnValue({ content: "# Small", bytes: 256 });
 
     // Use a known model
@@ -147,9 +141,7 @@ describe("curateForContext", () => {
 
   it("uses custom budget percentage", () => {
     mockHelpers.getInstalledNames.mockReturnValue(["small"]);
-    mockScoring.rankSkills.mockReturnValue([
-      { skill: "small", score: 80, verdict: "include", reasons: ["match"] },
-    ]);
+    mockScoring.rankSkills.mockReturnValue([{ skill: "small", score: 80, verdict: "include", reasons: ["match"] }]);
     mockLoad.readSkillContent.mockReturnValue({ content: "# Small", bytes: 256 });
 
     const result = curateForContext("/project", { budgetPct: 50 });
@@ -170,9 +162,7 @@ describe("curateForContext", () => {
 
   it("estimates tokens from byte size", () => {
     mockHelpers.getInstalledNames.mockReturnValue(["skill"]);
-    mockScoring.rankSkills.mockReturnValue([
-      { skill: "skill", score: 80, verdict: "include", reasons: ["match"] },
-    ]);
+    mockScoring.rankSkills.mockReturnValue([{ skill: "skill", score: 80, verdict: "include", reasons: ["match"] }]);
     // 1024 bytes = 1 KB -> 256 tokens per KB -> 256 tokens
     mockLoad.readSkillContent.mockReturnValue({ content: "x".repeat(1024), bytes: 1024 });
 
@@ -184,9 +174,7 @@ describe("curateForContext", () => {
 describe("curateCommand", () => {
   it("outputs JSON when json flag set", async () => {
     mockHelpers.getInstalledNames.mockReturnValue(["ts"]);
-    mockScoring.rankSkills.mockReturnValue([
-      { skill: "ts", score: 80, verdict: "include", reasons: ["match"] },
-    ]);
+    mockScoring.rankSkills.mockReturnValue([{ skill: "ts", score: 80, verdict: "include", reasons: ["match"] }]);
     mockLoad.readSkillContent.mockReturnValue({ content: "# TS", bytes: 256 });
 
     await curateCommand({ json: true });
@@ -207,9 +195,7 @@ describe("curateCommand", () => {
 
   it("displays budget bar in non-JSON mode", async () => {
     mockHelpers.getInstalledNames.mockReturnValue(["ts"]);
-    mockScoring.rankSkills.mockReturnValue([
-      { skill: "ts", score: 80, verdict: "include", reasons: ["match"] },
-    ]);
+    mockScoring.rankSkills.mockReturnValue([{ skill: "ts", score: 80, verdict: "include", reasons: ["match"] }]);
     mockLoad.readSkillContent.mockReturnValue({ content: "# TS", bytes: 256 });
 
     await curateCommand({});
@@ -293,9 +279,7 @@ describe("regenerateActive", () => {
 
   it("handles recordCuration throwing an error (best-effort)", () => {
     mockHelpers.getInstalledNames.mockReturnValue(["ts"]);
-    mockScoring.rankSkills.mockReturnValue([
-      { skill: "ts", score: 80, verdict: "include", reasons: ["match"] },
-    ]);
+    mockScoring.rankSkills.mockReturnValue([{ skill: "ts", score: 80, verdict: "include", reasons: ["match"] }]);
     mockLoad.readSkillContent.mockReturnValue({ content: "# Skill body", bytes: 512 });
     mockUsage.recordCuration.mockImplementation(() => {
       throw new Error("Write failed");
@@ -308,9 +292,7 @@ describe("regenerateActive", () => {
 
   it("skips content insertion when readSkillContent returns null during file generation", () => {
     mockHelpers.getInstalledNames.mockReturnValue(["ghost"]);
-    mockScoring.rankSkills.mockReturnValue([
-      { skill: "ghost", score: 80, verdict: "include", reasons: ["match"] },
-    ]);
+    mockScoring.rankSkills.mockReturnValue([{ skill: "ghost", score: 80, verdict: "include", reasons: ["match"] }]);
     // First call (during curateForContext) returns valid content, second (during file generation) returns null
     let callCount = 0;
     mockLoad.readSkillContent.mockImplementation(() => {

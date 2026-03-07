@@ -137,9 +137,7 @@ describe("validateSlug", () => {
 
     it("should reject slug exceeding max length of 128 characters", () => {
       const longSlug = "a".repeat(129);
-      expect(() => validateSlug(longSlug, "skill name")).toThrow(
-        /exceeds max length of 128 characters/,
-      );
+      expect(() => validateSlug(longSlug, "skill name")).toThrow(/exceeds max length of 128 characters/);
     });
 
     it("should accept slug at exactly 128 characters", () => {

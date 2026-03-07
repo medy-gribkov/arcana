@@ -380,9 +380,7 @@ describe("GitHubProvider", () => {
   it("returns empty when Levenshtein distance is too large", async () => {
     httpGetMock.mockResolvedValueOnce({
       body: JSON.stringify({
-        plugins: [
-          { name: "typescript", description: "TS skill", version: "1.0.0" },
-        ],
+        plugins: [{ name: "typescript", description: "TS skill", version: "1.0.0" }],
       }),
       statusCode: 200,
     });
@@ -496,9 +494,7 @@ describe("GitHubProvider", () => {
     await provider.fetch("skill-b");
 
     // Tree should be fetched only once (first httpGet call), then cached
-    const treeCalls = httpGetMock.mock.calls.filter((c: string[]) =>
-      c[0].includes("git/trees"),
-    );
+    const treeCalls = httpGetMock.mock.calls.filter((c: string[]) => c[0].includes("git/trees"));
     expect(treeCalls).toHaveLength(1);
   });
 
@@ -545,9 +541,7 @@ describe("GitHubProvider", () => {
     await provider.fetch("s");
 
     // Tree endpoint should have been called twice (once before clear, once after)
-    const treeCalls = httpGetMock.mock.calls.filter((c: string[]) =>
-      c[0].includes("git/trees"),
-    );
+    const treeCalls = httpGetMock.mock.calls.filter((c: string[]) => c[0].includes("git/trees"));
     expect(treeCalls).toHaveLength(2);
   });
 });

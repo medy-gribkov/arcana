@@ -285,50 +285,39 @@ describe("validateSkillDir", () => {
   });
 
   it("warns when body is very short", () => {
-    const dir = makeTempSkill(
-      "short-body",
-      `---\nname: short-body\ndescription: ${longDesc}\n---\nShort`,
-    );
+    const dir = makeTempSkill("short-body", `---\nname: short-body\ndescription: ${longDesc}\n---\nShort`);
     const result = validateSkillDir(dir, "short-body");
     expect(result.warnings.some((w) => w.includes("very short"))).toBe(true);
   });
 
   it("warns when body has no headings", () => {
-    const bodyContent = "This is a long body without any headings at all, just plain text that goes on for more than fifty characters easily.";
-    const dir = makeTempSkill(
-      "no-headings",
-      `---\nname: no-headings\ndescription: ${longDesc}\n---\n${bodyContent}`,
-    );
+    const bodyContent =
+      "This is a long body without any headings at all, just plain text that goes on for more than fifty characters easily.";
+    const dir = makeTempSkill("no-headings", `---\nname: no-headings\ndescription: ${longDesc}\n---\n${bodyContent}`);
     const result = validateSkillDir(dir, "no-headings");
     expect(result.warnings.some((w) => w.includes("no ## headings"))).toBe(true);
   });
 
   it("warns when body has no code blocks", () => {
-    const bodyContent = "## Heading\nThis is a long body with a heading but no code blocks at all, just plain text content filling space.";
-    const dir = makeTempSkill(
-      "no-code",
-      `---\nname: no-code\ndescription: ${longDesc}\n---\n${bodyContent}`,
-    );
+    const bodyContent =
+      "## Heading\nThis is a long body with a heading but no code blocks at all, just plain text content filling space.";
+    const dir = makeTempSkill("no-code", `---\nname: no-code\ndescription: ${longDesc}\n---\n${bodyContent}`);
     const result = validateSkillDir(dir, "no-code");
     expect(result.warnings.some((w) => w.includes("No code blocks"))).toBe(true);
   });
 
   it("reports missing BAD/GOOD patterns as info", () => {
-    const bodyContent = "## Heading\nThis is a long body that has a heading and code blocks but no contrast patterns anywhere at all in the entire content.\n\n```js\nconst x = 1;\n```";
-    const dir = makeTempSkill(
-      "no-patterns",
-      `---\nname: no-patterns\ndescription: ${longDesc}\n---\n${bodyContent}`,
-    );
+    const bodyContent =
+      "## Heading\nThis is a long body that has a heading and code blocks but no contrast patterns anywhere at all in the entire content.\n\n```js\nconst x = 1;\n```";
+    const dir = makeTempSkill("no-patterns", `---\nname: no-patterns\ndescription: ${longDesc}\n---\n${bodyContent}`);
     const result = validateSkillDir(dir, "no-patterns");
     expect(result.infos.some((i) => i.includes("BAD/GOOD"))).toBe(true);
   });
 
   it("does not report BAD/GOOD info when patterns present", () => {
-    const bodyContent = "## Heading\nThis is a long body that has a heading and code blocks and also has BAD and GOOD pattern examples throughout.\n\n```js\nconst x = 1;\n```";
-    const dir = makeTempSkill(
-      "has-patterns",
-      `---\nname: has-patterns\ndescription: ${longDesc}\n---\n${bodyContent}`,
-    );
+    const bodyContent =
+      "## Heading\nThis is a long body that has a heading and code blocks and also has BAD and GOOD pattern examples throughout.\n\n```js\nconst x = 1;\n```";
+    const dir = makeTempSkill("has-patterns", `---\nname: has-patterns\ndescription: ${longDesc}\n---\n${bodyContent}`);
     const result = validateSkillDir(dir, "has-patterns");
     expect(result.infos.some((i) => i.includes("BAD/GOOD"))).toBe(false);
   });

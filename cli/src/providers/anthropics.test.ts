@@ -12,7 +12,9 @@ describe("AnthropicsProvider", () => {
     vi.doMock("../utils/http.js", () => ({ httpGet: vi.fn() }));
     vi.doMock("../utils/validate.js", () => ({ validateSlug: validateSlugMock }));
     vi.doMock("../utils/parallel.js", () => ({
-      parallelMap: vi.fn(async (items: unknown[], fn: (item: unknown) => Promise<unknown>) => Promise.all(items.map(fn))),
+      parallelMap: vi.fn(async (items: unknown[], fn: (item: unknown) => Promise<unknown>) =>
+        Promise.all(items.map(fn)),
+      ),
     }));
     vi.doMock("../utils/cache.js", () => ({
       readCache: vi.fn(() => null),

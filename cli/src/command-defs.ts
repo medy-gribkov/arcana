@@ -25,7 +25,10 @@ export const COMMANDS: CommandDef[] = [
     description: "Initialize arcana in current project",
     group: "GETTING STARTED",
     options: [
-      { flags: "-t, --tool <name>", description: "Target tool (claude, cursor, codex, gemini, antigravity, windsurf, aider, all)" },
+      {
+        flags: "-t, --tool <name>",
+        description: "Target tool (claude, cursor, codex, gemini, antigravity, windsurf, aider, all)",
+      },
     ],
     module: "./commands/init.js",
     handler: "initCommand",
@@ -69,7 +72,8 @@ export const COMMANDS: CommandDef[] = [
       { flags: "-s, --smart", description: "Context-aware ranking (uses project detection)" },
       { flags: "-j, --json", description: "Output as JSON" },
     ],
-    helpText: '\nExamples:\n  arcana search testing\n  arcana search "code review"\n  arcana search react --tag typescript\n  arcana search api --smart',
+    helpText:
+      '\nExamples:\n  arcana search testing\n  arcana search "code review"\n  arcana search react --tag typescript\n  arcana search api --smart',
     module: "./commands/search.js",
     handler: "searchCommand",
   },
@@ -96,7 +100,8 @@ export const COMMANDS: CommandDef[] = [
       { flags: "-j, --json", description: "Output as JSON" },
       { flags: "--no-check", description: "Skip conflict detection" },
     ],
-    helpText: "\nExamples:\n  arcana install code-reviewer\n  arcana install skill1 skill2 skill3\n  arcana install --all --force",
+    helpText:
+      "\nExamples:\n  arcana install code-reviewer\n  arcana install skill1 skill2 skill3\n  arcana install --all --force",
     module: "./commands/install.js",
     handler: "installCommand",
   },
@@ -110,7 +115,8 @@ export const COMMANDS: CommandDef[] = [
       { flags: "-n, --dry-run", description: "Show what would be updated without updating" },
       { flags: "-j, --json", description: "Output as JSON" },
     ],
-    helpText: "\nExamples:\n  arcana update code-reviewer\n  arcana update skill1 skill2\n  arcana update --all --dry-run",
+    helpText:
+      "\nExamples:\n  arcana update code-reviewer\n  arcana update skill1 skill2\n  arcana update --all --dry-run",
     module: "./commands/update.js",
     handler: "updateCommand",
   },
@@ -151,7 +157,8 @@ export const COMMANDS: CommandDef[] = [
       { flags: "-i, --include <skills...>", description: "Force-include specific skills" },
       { flags: "-j, --json", description: "Output as JSON" },
     ],
-    helpText: "\nExamples:\n  arcana curate\n  arcana curate --model gpt-5.4 --budget 40\n  arcana curate --include golang-pro typescript",
+    helpText:
+      "\nExamples:\n  arcana curate\n  arcana curate --model gpt-5.4 --budget 40\n  arcana curate --include golang-pro typescript",
     module: "./commands/curate.js",
     handler: "curateCommand",
   },
@@ -197,9 +204,7 @@ export const COMMANDS: CommandDef[] = [
     command: "forget <id>",
     description: "Remove a saved memory by ID",
     group: "CONTEXT",
-    options: [
-      { flags: "-j, --json", description: "Output as JSON" },
-    ],
+    options: [{ flags: "-j, --json", description: "Output as JSON" }],
     module: "./commands/remember.js",
     handler: "forgetCommand",
   },
@@ -211,7 +216,8 @@ export const COMMANDS: CommandDef[] = [
       { flags: "-t, --tool <name>", description: "Target tool: claude or cursor (default: claude)" },
       { flags: "-j, --json", description: "Output as JSON" },
     ],
-    helpText: "\nActions:\n  list              Show available MCP servers\n  install <name>    Install an MCP server\n  remove <name>     Remove an MCP server\n  status            Show configured MCP servers\n\nExamples:\n  arcana mcp list\n  arcana mcp install context7\n  arcana mcp status",
+    helpText:
+      "\nActions:\n  list              Show available MCP servers\n  install <name>    Install an MCP server\n  remove <name>     Remove an MCP server\n  status            Show configured MCP servers\n\nExamples:\n  arcana mcp list\n  arcana mcp install context7\n  arcana mcp status",
     module: "./commands/mcp.js",
     handler: "mcpCommand",
   },
@@ -234,7 +240,11 @@ export const COMMANDS: CommandDef[] = [
       { flags: "-j, --json", description: "Output as JSON" },
       { flags: "--source <dir>", description: "Validate from source directory instead of install dir" },
       { flags: "--cross", description: "Run cross-validation (marketplace sync, companions, orphans)" },
-      { flags: "--min-score <n>", description: "Minimum quality score (0-100), fail if any skill scores below", parseAs: "int" },
+      {
+        flags: "--min-score <n>",
+        description: "Minimum quality score (0-100), fail if any skill scores below",
+        parseAs: "int",
+      },
     ],
     module: "./commands/validate.js",
     handler: "validateCommand",
@@ -263,7 +273,8 @@ export const COMMANDS: CommandDef[] = [
       { flags: "-v, --verbose", description: "Show suppressed findings from BAD/DON'T blocks" },
       { flags: "-j, --json", description: "Output as JSON" },
     ],
-    helpText: "\nExamples:\n  arcana scan code-reviewer\n  arcana scan --all\n  arcana scan --all --strict\n  arcana scan --all --json",
+    helpText:
+      "\nExamples:\n  arcana scan code-reviewer\n  arcana scan --all\n  arcana scan --all --strict\n  arcana scan --all --json",
     module: "./commands/scan.js",
     handler: "scanCommand",
   },
@@ -322,10 +333,9 @@ export const COMMANDS: CommandDef[] = [
     command: "config [action] [value]",
     description: "View or modify arcana configuration",
     group: "CONFIGURATION",
-    options: [
-      { flags: "-j, --json", description: "Output as JSON" },
-    ],
-    helpText: "\nExamples:\n  arcana config\n  arcana config path\n  arcana config defaultProvider arcana\n  arcana config reset",
+    options: [{ flags: "-j, --json", description: "Output as JSON" }],
+    helpText:
+      "\nExamples:\n  arcana config\n  arcana config path\n  arcana config defaultProvider arcana\n  arcana config reset",
     module: "./commands/config.js",
     handler: "configCommand",
   },
@@ -348,7 +358,11 @@ export const COMMANDS: CommandDef[] = [
     options: [
       { flags: "-n, --dry-run", description: "Show what would be removed without deleting" },
       { flags: "--aggressive", description: "Delete all session logs regardless of age" },
-      { flags: "--keep-days <days>", description: "Keep main session logs newer than N days (default: 30)", parseAs: "int" },
+      {
+        flags: "--keep-days <days>",
+        description: "Keep main session logs newer than N days (default: 30)",
+        parseAs: "int",
+      },
       { flags: "--trim", description: "Trim bloat from the latest session (large tool results, base64)" },
       { flags: "--json", description: "Output as JSON" },
     ],
@@ -384,10 +398,9 @@ export const COMMANDS: CommandDef[] = [
     command: "completions <shell>",
     description: "Generate shell completion scripts",
     group: "WORKFLOW",
-    options: [
-      { flags: "-j, --json", description: "Output as JSON" },
-    ],
-    helpText: "\nSupported shells: bash, zsh, fish\n\nExamples:\n  arcana completions bash >> ~/.bashrc\n  arcana completions zsh >> ~/.zshrc\n  arcana completions fish > ~/.config/fish/completions/arcana.fish",
+    options: [{ flags: "-j, --json", description: "Output as JSON" }],
+    helpText:
+      "\nSupported shells: bash, zsh, fish\n\nExamples:\n  arcana completions bash >> ~/.bashrc\n  arcana completions zsh >> ~/.zshrc\n  arcana completions fish > ~/.config/fish/completions/arcana.fish",
     module: "./commands/completions.js",
     handler: "completionsCommand",
   },
@@ -397,9 +410,7 @@ export const COMMANDS: CommandDef[] = [
     command: "index",
     description: "Generate skill metadata index for on-demand loading",
     group: "DISCLOSURE",
-    options: [
-      { flags: "-j, --json", description: "Output as JSON" },
-    ],
+    options: [{ flags: "-j, --json", description: "Output as JSON" }],
     module: "./commands/index.js",
     handler: "indexCommand",
   },
@@ -411,7 +422,8 @@ export const COMMANDS: CommandDef[] = [
       { flags: "--append", description: "Write loaded skills to _loaded.md aggregate file" },
       { flags: "-j, --json", description: "Output as JSON" },
     ],
-    helpText: "\nExamples:\n  arcana load golang-pro\n  arcana load golang-pro typescript\n  arcana load golang-pro --append",
+    helpText:
+      "\nExamples:\n  arcana load golang-pro\n  arcana load golang-pro typescript\n  arcana load golang-pro --append",
     module: "./commands/load.js",
     handler: "loadCommand",
   },
@@ -423,7 +435,10 @@ export function getCommandNames(): string[] {
   return COMMANDS.map((c) => c.command.split(/\s/)[0]!);
 }
 
-export function getGroupedCommands(): Record<string, { name: string; usage: string; description: string; group: string }[]> {
+export function getGroupedCommands(): Record<
+  string,
+  { name: string; usage: string; description: string; group: string }[]
+> {
   const groups: Record<string, { name: string; usage: string; description: string; group: string }[]> = {};
   for (const cmd of COMMANDS) {
     const name = cmd.command.split(/\s/)[0]!;

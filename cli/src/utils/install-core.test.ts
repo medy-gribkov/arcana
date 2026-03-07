@@ -84,9 +84,7 @@ describe("install-core", () => {
       }));
       vi.doMock("./integrity.js", () => ({ updateLockEntry: vi.fn() }));
       vi.doMock("./conflict-check.js", () => ({
-        checkConflicts: vi.fn(() => [
-          { severity: "block", message: "Framework conflict detected" },
-        ]),
+        checkConflicts: vi.fn(() => [{ severity: "block", message: "Framework conflict detected" }]),
       }));
       vi.doMock("./project-context.js", () => ({
         detectProjectContext: vi.fn(() => ({ type: "unknown", lang: "general", frameworks: [], hasTests: false })),
@@ -122,9 +120,7 @@ describe("install-core", () => {
       }));
       vi.doMock("./integrity.js", () => ({ updateLockEntry: vi.fn() }));
       vi.doMock("./conflict-check.js", () => ({
-        checkConflicts: vi.fn(() => [
-          { severity: "block", message: "Framework conflict detected" },
-        ]),
+        checkConflicts: vi.fn(() => [{ severity: "block", message: "Framework conflict detected" }]),
       }));
       vi.doMock("./project-context.js", () => ({
         detectProjectContext: vi.fn(() => ({ type: "unknown", lang: "general", frameworks: [], hasTests: false })),
@@ -470,9 +466,7 @@ describe("install-core", () => {
       }));
       vi.doMock("./integrity.js", () => ({ updateLockEntry: vi.fn() }));
       vi.doMock("./conflict-check.js", () => ({
-        checkConflicts: vi.fn(() => [
-          { severity: "block", message: "Conflicts with existing framework skill" },
-        ]),
+        checkConflicts: vi.fn(() => [{ severity: "block", message: "Conflicts with existing framework skill" }]),
       }));
       vi.doMock("./project-context.js", () => ({
         detectProjectContext: vi.fn(() => ({ type: "unknown", lang: "general", frameworks: [], hasTests: false })),
@@ -511,9 +505,7 @@ describe("install-core", () => {
       }));
       vi.doMock("./integrity.js", () => ({ updateLockEntry: vi.fn() }));
       vi.doMock("./conflict-check.js", () => ({
-        checkConflicts: vi.fn(() => [
-          { severity: "block", message: "Conflicts with existing framework skill" },
-        ]),
+        checkConflicts: vi.fn(() => [{ severity: "block", message: "Conflicts with existing framework skill" }]),
       }));
       vi.doMock("./project-context.js", () => ({
         detectProjectContext: vi.fn(() => ({ type: "unknown", lang: "general", frameworks: [], hasTests: false })),

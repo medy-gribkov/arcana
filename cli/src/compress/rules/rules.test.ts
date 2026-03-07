@@ -74,12 +74,7 @@ describe("git-status rule", () => {
 
   it("truncates staged files when > 5", () => {
     const stagedFiles = Array.from({ length: 8 }, (_, i) => `\tnew file:   file${i}.ts`);
-    const input = [
-      "On branch main",
-      "Changes to be committed:",
-      "",
-      ...stagedFiles,
-    ].join("\n");
+    const input = ["On branch main", "Changes to be committed:", "", ...stagedFiles].join("\n");
 
     const result = compress(input, "git");
     expect(result).toContain("staged (8)");
@@ -88,12 +83,7 @@ describe("git-status rule", () => {
 
   it("truncates unstaged files when > 5", () => {
     const unstagedFiles = Array.from({ length: 7 }, (_, i) => `\tmodified:   src/file${i}.ts`);
-    const input = [
-      "On branch main",
-      "Changes not staged for commit:",
-      "",
-      ...unstagedFiles,
-    ].join("\n");
+    const input = ["On branch main", "Changes not staged for commit:", "", ...unstagedFiles].join("\n");
 
     const result = compress(input, "git");
     expect(result).toContain("modified (7)");
@@ -115,10 +105,7 @@ describe("git-status rule", () => {
   });
 
   it("outputs branch info when no changes detected", () => {
-    const input = [
-      "On branch main",
-      "nothing to commit, working tree clean",
-    ].join("\n");
+    const input = ["On branch main", "nothing to commit, working tree clean"].join("\n");
 
     const result = compress(input, "git");
     expect(result).toContain("branch: main");
@@ -393,9 +380,7 @@ describe("git-diff-stat rule", () => {
   });
 
   it("handles diff with stat but no hunks after it", () => {
-    const lines = [
-      " 1 file changed, 1 insertion(+)",
-    ].join("\n");
+    const lines = [" 1 file changed, 1 insertion(+)"].join("\n");
 
     const result = compress(lines, "git");
     expect(result).toContain("1 file changed");
@@ -408,11 +393,9 @@ describe("git-diff-stat rule", () => {
 
 describe("npm rules", () => {
   it("compresses npm install output", () => {
-    const input = [
-      "npm warn deprecated something",
-      "npm warn deprecated another",
-      "added 150 packages in 3s",
-    ].join("\n");
+    const input = ["npm warn deprecated something", "npm warn deprecated another", "added 150 packages in 3s"].join(
+      "\n",
+    );
 
     const result = compress(input, "npm");
     expect(result).toContain("added 150 packages");
@@ -434,11 +417,7 @@ describe("npm rules", () => {
   });
 
   it("keeps + package@version lines in npm install", () => {
-    const input = [
-      "+ lodash@4.17.21",
-      "+ express@4.18.2",
-      "added 50 packages in 2s",
-    ].join("\n");
+    const input = ["+ lodash@4.17.21", "+ express@4.18.2", "added 50 packages in 2s"].join("\n");
 
     const result = compress(input, "npm");
     expect(result).toContain("+ lodash@4.17.21");
@@ -461,12 +440,9 @@ describe("npm rules", () => {
   });
 
   it("keeps severity breakdown lines in npm audit", () => {
-    const input = [
-      "# npm audit report",
-      "high | 3",
-      "moderate | 2",
-      "5 vulnerabilities (2 moderate, 3 high)",
-    ].join("\n");
+    const input = ["# npm audit report", "high | 3", "moderate | 2", "5 vulnerabilities (2 moderate, 3 high)"].join(
+      "\n",
+    );
 
     const result = compress(input, "npm");
     expect(result).toContain("high | 3");
@@ -506,12 +482,9 @@ describe("npm rules", () => {
   });
 
   it("keeps Duration/Time lines in npm test output", () => {
-    const input = [
-      "PASS src/utils.test.ts",
-      "Duration  3.5s",
-      "Time:     5.2s",
-      "Tests  10 passed, 10 total",
-    ].join("\n");
+    const input = ["PASS src/utils.test.ts", "Duration  3.5s", "Time:     5.2s", "Tests  10 passed, 10 total"].join(
+      "\n",
+    );
 
     const result = compress(input, "npm");
     expect(result).toContain("Duration");
@@ -520,22 +493,14 @@ describe("npm rules", () => {
 
   it("returns original npm test lines when no patterns match", () => {
     // hasSummary matches but no individual lines match keep conditions
-    const input = [
-      "random preamble",
-      "1 passed",
-      "random epilogue",
-    ].join("\n");
+    const input = ["random preamble", "1 passed", "random epilogue"].join("\n");
 
     const result = compress(input, "npm");
     expect(result).toContain("1 passed");
   });
 
   it("returns original npm audit lines when no summary found", () => {
-    const input = [
-      "# npm audit report",
-      "checking packages",
-      "1 vulnerability found",
-    ].join("\n");
+    const input = ["# npm audit report", "checking packages", "1 vulnerability found"].join("\n");
 
     const result = compress(input, "npm");
     expect(result).toContain("1 vulnerability found");
@@ -628,11 +593,7 @@ describe("test-runner rules", () => {
 
   it("returns original lines when vitest produces no matched output", () => {
     // This triggers isVitest (due to Tests pattern) but no lines match the keep conditions
-    const input = [
-      "some random preamble output",
-      "Tests 0",
-      "more random output",
-    ].join("\n");
+    const input = ["some random preamble output", "Tests 0", "more random output"].join("\n");
 
     const result = compress(input, "vitest");
     expect(result).toContain("Tests 0");
@@ -668,11 +629,7 @@ describe("test-runner rules", () => {
 
   it("returns original jest lines when no patterns match", () => {
     // isJest matches (has "Tests:") but nothing else matches keep conditions
-    const input = [
-      "some preamble",
-      "Tests: 0",
-      "end",
-    ].join("\n");
+    const input = ["some preamble", "Tests: 0", "end"].join("\n");
 
     const result = compress(input, "jest");
     expect(result).toContain("Tests: 0");
@@ -704,10 +661,7 @@ describe("test-runner rules", () => {
   });
 
   it("keeps pytest ERRORS section header", () => {
-    const input = [
-      "ERRORS",
-      "==================== 1 failed ====================",
-    ].join("\n");
+    const input = ["ERRORS", "==================== 1 failed ===================="].join("\n");
 
     const result = compress(input, "pytest");
     expect(result).toContain("ERRORS");
@@ -727,10 +681,7 @@ describe("test-runner rules", () => {
 
   it("passes through non-go-test output unchanged", () => {
     // Input doesn't match isGoTest (no "ok", "FAIL", or "---" prefix)
-    const input = [
-      "building package",
-      "compilation complete",
-    ].join("\n");
+    const input = ["building package", "compilation complete"].join("\n");
 
     const result = compress(input, "go");
     expect(result).toContain("building package");

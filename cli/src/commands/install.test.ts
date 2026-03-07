@@ -417,9 +417,7 @@ describe("installCommand JSON mode", () => {
       name: "all-provider",
       fetch: vi.fn(async () => [{ path: "SKILL.md", content: "---\nname: test\n---\nBody" }]),
       info: vi.fn(async () => ({ name: "test", version: "1.0.0", description: "Test" })),
-      list: vi.fn(async () => [
-        { name: "already-here", version: "1.0.0", description: "Already installed" },
-      ]),
+      list: vi.fn(async () => [{ name: "already-here", version: "1.0.0", description: "Already installed" }]),
     };
 
     vi.doMock("../registry.js", () => ({
