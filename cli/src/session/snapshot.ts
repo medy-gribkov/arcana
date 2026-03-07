@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync, mkdirSync, copyFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync, mkdirSync, copyFileSync, rmSync } from "node:fs";
 import { join, basename } from "node:path";
 import { homedir } from "node:os";
 import { atomicWriteSync } from "../utils/atomic.js";
@@ -130,9 +130,10 @@ export function deleteSnapshot(name: string): boolean {
 
   const filePath = join(snapshotDir(), `${name}.jsonl`);
   try {
-    const { rmSync } = require("node:fs") as typeof import("node:fs");
     if (existsSync(filePath)) rmSync(filePath);
-  } catch { /* best effort */ }
+  } catch {
+    /* best effort */
+  }
 
   metas.splice(idx, 1);
   writeSnapshotMetas(metas);

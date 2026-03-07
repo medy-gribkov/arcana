@@ -368,7 +368,13 @@ describe("install-core", () => {
       const mockProvider = {
         name: "test-provider",
         fetch: vi.fn(async () => [{ path: "SKILL.md", content: "---\nname: test\n---\nBody" }]),
-        info: vi.fn(async () => ({ name: "golang-pro", version: "1.0.0", description: "Test", tags: [], verified: false })),
+        info: vi.fn(async () => ({
+          name: "golang-pro",
+          version: "1.0.0",
+          description: "Test",
+          tags: [],
+          verified: false,
+        })),
         list: vi.fn(async () => []),
         search: vi.fn(async () => []),
       };

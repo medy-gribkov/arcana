@@ -36,9 +36,18 @@ registerRule({
     }
 
     if (branch) result.push(`branch: ${branch}`);
-    if (staged.length > 0) result.push(`staged (${staged.length}): ${staged.slice(0, 5).join(", ")}${staged.length > 5 ? ` +${staged.length - 5}` : ""}`);
-    if (unstaged.length > 0) result.push(`modified (${unstaged.length}): ${unstaged.slice(0, 5).join(", ")}${unstaged.length > 5 ? ` +${unstaged.length - 5}` : ""}`);
-    if (untracked.length > 0) result.push(`untracked (${untracked.length}): ${untracked.slice(0, 3).join(", ")}${untracked.length > 3 ? ` +${untracked.length - 3}` : ""}`);
+    if (staged.length > 0)
+      result.push(
+        `staged (${staged.length}): ${staged.slice(0, 5).join(", ")}${staged.length > 5 ? ` +${staged.length - 5}` : ""}`,
+      );
+    if (unstaged.length > 0)
+      result.push(
+        `modified (${unstaged.length}): ${unstaged.slice(0, 5).join(", ")}${unstaged.length > 5 ? ` +${unstaged.length - 5}` : ""}`,
+      );
+    if (untracked.length > 0)
+      result.push(
+        `untracked (${untracked.length}): ${untracked.slice(0, 3).join(", ")}${untracked.length > 3 ? ` +${untracked.length - 3}` : ""}`,
+      );
     if (result.length === 0) result.push("clean");
 
     return result.length > 0 ? result : lines;
@@ -65,7 +74,12 @@ registerRule({
         }
         currentHash = trimmed.replace("commit ", "");
         currentMsg = "";
-      } else if (trimmed && !trimmed.startsWith("Author:") && !trimmed.startsWith("Date:") && !trimmed.startsWith("Merge:")) {
+      } else if (
+        trimmed &&
+        !trimmed.startsWith("Author:") &&
+        !trimmed.startsWith("Date:") &&
+        !trimmed.startsWith("Merge:")
+      ) {
         if (!currentMsg) currentMsg = trimmed;
       }
     }

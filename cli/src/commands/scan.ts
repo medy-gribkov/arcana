@@ -79,7 +79,12 @@ export async function scanCommand(
       }
       totalSuppressed += suppressed.length;
     } catch (err) {
-      results.push({ skill: name, issues: [], suppressed: [], error: err instanceof Error ? err.message : "Read failed" });
+      results.push({
+        skill: name,
+        issues: [],
+        suppressed: [],
+        error: err instanceof Error ? err.message : "Read failed",
+      });
     }
   }
 
@@ -98,7 +103,16 @@ export async function scanCommand(
         skill: r.skill,
         ...(r.error ? { error: r.error } : {}),
         issues: r.issues.map((i) => ({ level: i.level, category: i.category, detail: i.detail, line: i.line })),
-        ...(opts.verbose ? { suppressed: r.suppressed.map((i) => ({ level: i.level, category: i.category, detail: i.detail, line: i.line })) } : {}),
+        ...(opts.verbose
+          ? {
+              suppressed: r.suppressed.map((i) => ({
+                level: i.level,
+                category: i.category,
+                detail: i.detail,
+                line: i.line,
+              })),
+            }
+          : {}),
       })),
     };
     console.log(JSON.stringify(jsonOutput, null, 2));

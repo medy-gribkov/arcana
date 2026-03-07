@@ -62,10 +62,7 @@ export function readSkillContent(skillName: string): { content: string; files: n
   return { content: parts.join("\n"), files: fileCount, bytes: totalBytes };
 }
 
-export async function loadCommand(
-  skillNames: string[],
-  opts: { json?: boolean; append?: boolean },
-): Promise<void> {
+export async function loadCommand(skillNames: string[], opts: { json?: boolean; append?: boolean }): Promise<void> {
   if (skillNames.length === 0) {
     if (opts.json) {
       console.log(JSON.stringify({ error: "Specify one or more skill names" }));
@@ -88,7 +85,11 @@ export async function loadCommand(
     }
     results.push({ name, files: result.files, bytes: result.bytes });
     loadedParts.push(result.content);
-    try { recordLoad(name); } catch { /* best-effort */ }
+    try {
+      recordLoad(name);
+    } catch {
+      /* best-effort */
+    }
   }
 
   if (opts.json) {

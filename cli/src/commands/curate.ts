@@ -131,7 +131,9 @@ export function regenerateActive(opts?: { budgetPct?: number; model?: string }):
   const parts: string[] = [];
   parts.push(`# Active Skills (${result.selected.length})`);
   parts.push("");
-  parts.push(`Budget: ${result.totalTokens.toLocaleString()} / ${result.budgetTokens.toLocaleString()} tokens (${result.budgetPct}% of context)`);
+  parts.push(
+    `Budget: ${result.totalTokens.toLocaleString()} / ${result.budgetTokens.toLocaleString()} tokens (${result.budgetPct}% of context)`,
+  );
   parts.push(`Curated for project at: ${process.cwd()}`);
   parts.push(`Generated: ${new Date().toISOString()}`);
   parts.push("");
@@ -152,7 +154,11 @@ export function regenerateActive(opts?: { budgetPct?: number; model?: string }):
 
   // Record usage for each curated skill
   for (const skill of result.selected) {
-    try { recordCuration(skill.name); } catch { /* best-effort */ }
+    try {
+      recordCuration(skill.name);
+    } catch {
+      /* best-effort */
+    }
   }
 
   return result;
@@ -192,7 +198,9 @@ export async function curateCommand(opts: {
   const parts: string[] = [];
   parts.push(`# Active Skills (${result.selected.length})`);
   parts.push("");
-  parts.push(`Budget: ${result.totalTokens.toLocaleString()} / ${result.budgetTokens.toLocaleString()} tokens (${result.budgetPct}% of context)`);
+  parts.push(
+    `Budget: ${result.totalTokens.toLocaleString()} / ${result.budgetTokens.toLocaleString()} tokens (${result.budgetPct}% of context)`,
+  );
   parts.push(`Curated for project at: ${process.cwd()}`);
   parts.push(`Generated: ${new Date().toISOString()}`);
   parts.push("");
@@ -212,13 +220,15 @@ export async function curateCommand(opts: {
   atomicWriteSync(activePath, parts.join("\n"), 0o644);
 
   if (opts.json) {
-    console.log(JSON.stringify({
-      selected: result.selected,
-      skipped: result.skipped,
-      totalTokens: result.totalTokens,
-      budgetTokens: result.budgetTokens,
-      path: activePath,
-    }));
+    console.log(
+      JSON.stringify({
+        selected: result.selected,
+        skipped: result.skipped,
+        totalTokens: result.totalTokens,
+        budgetTokens: result.budgetTokens,
+        path: activePath,
+      }),
+    );
     return;
   }
 

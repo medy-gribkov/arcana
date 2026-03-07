@@ -23,7 +23,16 @@ const RESULT_THRESHOLD = 500;
  */
 export function analyzeSession(filePath: string): TrimResult {
   if (!existsSync(filePath)) {
-    return { originalLines: 0, trimmedLines: 0, originalBytes: 0, trimmedBytes: 0, savedBytes: 0, savedPct: 0, toolResultsTrimmed: 0, base64Removed: 0 };
+    return {
+      originalLines: 0,
+      trimmedLines: 0,
+      originalBytes: 0,
+      trimmedBytes: 0,
+      savedBytes: 0,
+      savedPct: 0,
+      toolResultsTrimmed: 0,
+      base64Removed: 0,
+    };
   }
 
   const content = readFileSync(filePath, "utf-8");
@@ -38,7 +47,7 @@ export function analyzeSession(filePath: string): TrimResult {
       const role = msg.role as string | undefined;
 
       // Tool results: stub if too large
-      if (role === "tool" || (msg.type === "tool_result")) {
+      if (role === "tool" || msg.type === "tool_result") {
         const content = JSON.stringify(msg);
         if (content.length > RESULT_THRESHOLD) {
           toolResultsTrimmed++;

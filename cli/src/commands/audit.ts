@@ -73,7 +73,11 @@ export function auditSkill(skillDir: string, skillName: string): AuditResult {
 
   // 7. Reasonable length (50-300 lines)
   const goodLength = lineCount >= 50 && lineCount <= SKILL_MAX_LINES;
-  checks.push({ name: `Reasonable length (50-${SKILL_MAX_LINES} lines)`, passed: goodLength, detail: `${lineCount} lines` });
+  checks.push({
+    name: `Reasonable length (50-${SKILL_MAX_LINES} lines)`,
+    passed: goodLength,
+    detail: `${lineCount} lines`,
+  });
   if (goodLength) score += 10;
   if (lineCount > SKILL_MAX_LINES) score -= 10;
 

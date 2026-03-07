@@ -47,7 +47,13 @@ export function addMemory(content: string, opts?: { tags?: string[]; project?: s
   // Auto-extract simple tags from content if none provided
   if (tags.length === 0) {
     const words = content.toLowerCase().split(/\s+/);
-    const keywords = words.filter((w) => w.length > 3 && !["always", "never", "should", "this", "that", "with", "from", "have", "will", "when", "then", "than"].includes(w));
+    const keywords = words.filter(
+      (w) =>
+        w.length > 3 &&
+        !["always", "never", "should", "this", "that", "with", "from", "have", "will", "when", "then", "than"].includes(
+          w,
+        ),
+    );
     tags.push(...keywords.slice(0, 3));
   }
 

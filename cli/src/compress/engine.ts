@@ -19,6 +19,7 @@ export function registerRule(rule: CompressRule): void {
 
 /** Strip ANSI escape codes */
 function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
   return str.replace(/\x1b\[[0-9;]*m/g, "");
 }
 
@@ -29,7 +30,7 @@ function filterLines(lines: string[]): string[] {
     // Remove empty lines in sequences of 2+
     if (clean === "") return true; // keep single blanks, dedup handles runs
     // Remove progress bars and spinners
-    if (/^[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏\|\\\/\-]/.test(clean)) return false;
+    if (/^[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏|\\/-]/.test(clean)) return false;
     // Remove timing-only lines
     if (/^\s*\d+(\.\d+)?\s*(ms|s|sec|seconds)\s*$/.test(clean)) return false;
     return true;
@@ -111,7 +112,10 @@ export function compress(input: string, tool?: string, maxLines = 80): string {
 }
 
 /** Calculate compression stats. */
-export function compressionStats(original: string, compressed: string): {
+export function compressionStats(
+  original: string,
+  compressed: string,
+): {
   originalTokens: number;
   compressedTokens: number;
   savedTokens: number;

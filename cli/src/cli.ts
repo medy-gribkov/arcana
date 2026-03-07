@@ -486,9 +486,14 @@ export function createCli(): Command {
         // Run the command and capture output
         const { execSync } = await import("node:child_process");
         try {
-          input = execSync(command.join(" "), { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"], maxBuffer: 10 * 1024 * 1024 });
+          input = execSync(command.join(" "), {
+            encoding: "utf-8",
+            stdio: ["pipe", "pipe", "pipe"],
+            maxBuffer: 10 * 1024 * 1024,
+          });
         } catch (err) {
-          input = (err as { stdout?: string; stderr?: string }).stdout ?? "" + ((err as { stderr?: string }).stderr ?? "");
+          input =
+            (err as { stdout?: string; stderr?: string }).stdout ?? "" + ((err as { stderr?: string }).stderr ?? "");
         }
       } else {
         console.error("Usage: arcana compress <command> or echo ... | arcana compress --stdin --tool git");
@@ -554,7 +559,10 @@ export function createCli(): Command {
     .description("Save a fact or preference for cross-session persistence")
     .option("-t, --tag <tags...>", "Tags for the memory")
     .option("-j, --json", "Output as JSON")
-    .addHelpText("after", '\nExamples:\n  arcana remember "always use pnpm"\n  arcana remember "use vitest" --tag testing')
+    .addHelpText(
+      "after",
+      '\nExamples:\n  arcana remember "always use pnpm"\n  arcana remember "use vitest" --tag testing',
+    )
     .action(async (content: string[], opts) => {
       const { rememberCommand } = await import("./commands/remember.js");
       return rememberCommand(content, opts);
@@ -566,7 +574,10 @@ export function createCli(): Command {
     .option("-a, --all", "List all memories")
     .option("-p, --project <name>", "Filter by project")
     .option("-j, --json", "Output as JSON")
-    .addHelpText("after", '\nExamples:\n  arcana recall "package manager"\n  arcana recall --all\n  arcana recall --project arcana')
+    .addHelpText(
+      "after",
+      '\nExamples:\n  arcana recall "package manager"\n  arcana recall --all\n  arcana recall --project arcana',
+    )
     .action(async (query: string[], opts) => {
       const { recallCommand } = await import("./commands/remember.js");
       return recallCommand(query, opts);
@@ -589,7 +600,10 @@ export function createCli(): Command {
     .option("-l, --list", "List all snapshots")
     .option("--delete <name>", "Delete a snapshot")
     .option("-j, --json", "Output as JSON")
-    .addHelpText("after", "\nExamples:\n  arcana snapshot analysis\n  arcana snapshot --list\n  arcana snapshot --delete analysis")
+    .addHelpText(
+      "after",
+      "\nExamples:\n  arcana snapshot analysis\n  arcana snapshot --list\n  arcana snapshot --delete analysis",
+    )
     .action(async (name: string | undefined, opts) => {
       const { ui, banner } = await import("./utils/ui.js");
 
@@ -606,7 +620,9 @@ export function createCli(): Command {
           console.log(ui.dim("  No snapshots. Use: arcana snapshot <name>"));
         } else {
           for (const s of snaps) {
-            console.log(`  ${ui.success(s.name)} ${s.project} (${(s.sizeBytes / 1024).toFixed(0)} KB, ${s.messageCount} messages)`);
+            console.log(
+              `  ${ui.success(s.name)} ${s.project} (${(s.sizeBytes / 1024).toFixed(0)} KB, ${s.messageCount} messages)`,
+            );
             console.log(ui.dim(`       ${s.created.slice(0, 19)}`));
           }
         }
@@ -617,8 +633,13 @@ export function createCli(): Command {
       if (opts.delete) {
         const { deleteSnapshot } = await import("./session/snapshot.js");
         const ok = deleteSnapshot(opts.delete);
-        if (opts.json) { console.log(JSON.stringify({ deleted: ok, name: opts.delete })); return; }
-        console.log(ok ? `${ui.success("[OK]")} Deleted ${opts.delete}` : `${ui.warn("[!!]")} Not found: ${opts.delete}`);
+        if (opts.json) {
+          console.log(JSON.stringify({ deleted: ok, name: opts.delete }));
+          return;
+        }
+        console.log(
+          ok ? `${ui.success("[OK]")} Deleted ${opts.delete}` : `${ui.warn("[!!]")} Not found: ${opts.delete}`,
+        );
         return;
       }
 
@@ -630,14 +651,22 @@ export function createCli(): Command {
       const { createSnapshot } = await import("./session/snapshot.js");
       const meta = createSnapshot(name, process.cwd());
       if (!meta) {
-        if (opts.json) { console.log(JSON.stringify({ error: "No session found for current project" })); return; }
+        if (opts.json) {
+          console.log(JSON.stringify({ error: "No session found for current project" }));
+          return;
+        }
         console.log(`${ui.warn("[!!]")} No session found for current project.`);
         return;
       }
-      if (opts.json) { console.log(JSON.stringify(meta)); return; }
+      if (opts.json) {
+        console.log(JSON.stringify(meta));
+        return;
+      }
       banner();
       console.log(ui.bold("  Snapshot\n"));
-      console.log(`  ${ui.success("[OK]")} Saved "${meta.name}" (${(meta.sizeBytes / 1024).toFixed(0)} KB, ${meta.messageCount} messages)`);
+      console.log(
+        `  ${ui.success("[OK]")} Saved "${meta.name}" (${(meta.sizeBytes / 1024).toFixed(0)} KB, ${meta.messageCount} messages)`,
+      );
       console.log();
     });
 
@@ -653,14 +682,20 @@ export function createCli(): Command {
 
       const sessionPath = findLatestSession(process.cwd());
       if (!sessionPath) {
-        if (opts.json) { console.log(JSON.stringify({ error: "No session found" })); return; }
+        if (opts.json) {
+          console.log(JSON.stringify({ error: "No session found" }));
+          return;
+        }
         console.log(`${ui.warn("[!!]")} No session found for current project.`);
         return;
       }
 
       if (opts.dryRun) {
         const analysis = analyzeSession(sessionPath);
-        if (opts.json) { console.log(JSON.stringify(analysis)); return; }
+        if (opts.json) {
+          console.log(JSON.stringify(analysis));
+          return;
+        }
         banner();
         console.log(ui.bold("  Trim Analysis (dry run)\n"));
         console.log(`  Original: ${(analysis.originalBytes / 1024).toFixed(0)} KB (${analysis.originalLines} lines)`);
@@ -673,14 +708,22 @@ export function createCli(): Command {
 
       const trimmed = trimSession(sessionPath);
       if (!trimmed) {
-        if (opts.json) { console.log(JSON.stringify({ error: "Trim failed" })); return; }
+        if (opts.json) {
+          console.log(JSON.stringify({ error: "Trim failed" }));
+          return;
+        }
         console.log(`${ui.warn("[!!]")} Trim failed.`);
         return;
       }
-      if (opts.json) { console.log(JSON.stringify({ ...trimmed.result, destPath: trimmed.destPath })); return; }
+      if (opts.json) {
+        console.log(JSON.stringify({ ...trimmed.result, destPath: trimmed.destPath }));
+        return;
+      }
       banner();
       console.log(ui.bold("  Session Trim\n"));
-      console.log(`  ${ui.success("[OK]")} Saved ${(trimmed.result.savedBytes / 1024).toFixed(0)} KB (${trimmed.result.savedPct}%)`);
+      console.log(
+        `  ${ui.success("[OK]")} Saved ${(trimmed.result.savedBytes / 1024).toFixed(0)} KB (${trimmed.result.savedPct}%)`,
+      );
       console.log(`  Tool results trimmed: ${trimmed.result.toolResultsTrimmed}`);
       console.log(`  Base64 removed: ${trimmed.result.base64Removed}`);
       console.log(ui.dim(`  Trimmed copy: ${trimmed.destPath}`));
@@ -705,7 +748,10 @@ export function createCli(): Command {
       if (action === "list") {
         const { listRegistry } = await import("./mcp/registry.js");
         const servers = listRegistry();
-        if (opts.json) { console.log(JSON.stringify(servers)); return; }
+        if (opts.json) {
+          console.log(JSON.stringify(servers));
+          return;
+        }
         banner();
         console.log(ui.bold("  Available MCP Servers\n"));
         for (const s of servers) {
@@ -717,11 +763,17 @@ export function createCli(): Command {
       }
 
       if (action === "install") {
-        if (!name) { console.error("Usage: arcana mcp install <name>"); process.exit(1); }
+        if (!name) {
+          console.error("Usage: arcana mcp install <name>");
+          process.exit(1);
+        }
         const { installMcpServer } = await import("./mcp/install.js");
         const tool = (opts.tool ?? "claude") as "claude" | "cursor";
         const result = installMcpServer(name, tool, process.cwd());
-        if (opts.json) { console.log(JSON.stringify(result)); return; }
+        if (opts.json) {
+          console.log(JSON.stringify(result));
+          return;
+        }
         if (result.installed) {
           console.log(`${ui.success("[OK]")} ${name} configured in ${result.path}`);
           if (result.error) console.log(ui.dim(`  Note: ${result.error}`));
@@ -732,11 +784,17 @@ export function createCli(): Command {
       }
 
       if (action === "remove") {
-        if (!name) { console.error("Usage: arcana mcp remove <name>"); process.exit(1); }
+        if (!name) {
+          console.error("Usage: arcana mcp remove <name>");
+          process.exit(1);
+        }
         const { removeMcpServer } = await import("./mcp/install.js");
         const tool = (opts.tool ?? "claude") as "claude" | "cursor";
         const ok = removeMcpServer(name, tool, process.cwd());
-        if (opts.json) { console.log(JSON.stringify({ removed: ok, name })); return; }
+        if (opts.json) {
+          console.log(JSON.stringify({ removed: ok, name }));
+          return;
+        }
         console.log(ok ? `${ui.success("[OK]")} Removed ${name}` : `${ui.warn("[!!]")} ${name} not found`);
         return;
       }
@@ -745,7 +803,10 @@ export function createCli(): Command {
         const { listConfiguredServers } = await import("./mcp/install.js");
         const tool = (opts.tool ?? "claude") as "claude" | "cursor";
         const servers = listConfiguredServers(tool, process.cwd());
-        if (opts.json) { console.log(JSON.stringify({ tool, servers })); return; }
+        if (opts.json) {
+          console.log(JSON.stringify({ tool, servers }));
+          return;
+        }
         banner();
         console.log(ui.bold(`  MCP Status (${tool})\n`));
         if (servers.length === 0) {

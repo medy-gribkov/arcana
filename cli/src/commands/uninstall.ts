@@ -73,11 +73,15 @@ async function uninstallOneInteractive(skillName: string, skipConfirm?: boolean)
   try {
     const { regenerateIndex } = await import("./index.js");
     regenerateIndex();
-  } catch { /* best-effort */ }
+  } catch {
+    /* best-effort */
+  }
   try {
     const { regenerateActive } = await import("./curate.js");
     regenerateActive();
-  } catch { /* best-effort */ }
+  } catch {
+    /* best-effort */
+  }
 
   spin.stop(`Removed ${chalk.bold(skillName)}`);
 
@@ -134,11 +138,15 @@ async function uninstallMultipleInteractive(skillNames: string[], skipConfirm?: 
   try {
     const { regenerateIndex } = await import("./index.js");
     regenerateIndex();
-  } catch { /* best-effort */ }
+  } catch {
+    /* best-effort */
+  }
   try {
     const { regenerateActive } = await import("./curate.js");
     regenerateActive();
-  } catch { /* best-effort */ }
+  } catch {
+    /* best-effort */
+  }
 
   spin.stop(`Removed ${toRemove.length} skills`);
 

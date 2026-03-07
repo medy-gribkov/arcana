@@ -1,4 +1,15 @@
-import { existsSync, readdirSync, readFileSync, statSync, openSync, readSync, closeSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  openSync,
+  readSync,
+  closeSync,
+  mkdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { execSync } from "node:child_process";
@@ -12,12 +23,21 @@ function autoFix(check: DoctorCheck): boolean {
     switch (check.name) {
       case "Skills directory": {
         const dir = getInstallDir();
-        if (!existsSync(dir)) { mkdirSync(dir, { recursive: true }); return true; }
+        if (!existsSync(dir)) {
+          mkdirSync(dir, { recursive: true });
+          return true;
+        }
         return false;
       }
       case "Symlinks": {
         const broken = listSymlinks().filter((s) => s.broken);
-        for (const s of broken) { try { rmSync(s.fullPath); } catch { /* skip */ } }
+        for (const s of broken) {
+          try {
+            rmSync(s.fullPath);
+          } catch {
+            /* skip */
+          }
+        }
         return broken.length > 0;
       }
       case "Arcana config": {

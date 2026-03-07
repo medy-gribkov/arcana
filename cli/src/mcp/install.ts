@@ -32,11 +32,7 @@ function readMcpConfig(filePath: string): McpConfig {
 }
 
 /** Write MCP server config to a tool's config file. */
-function writeMcpServer(
-  filePath: string,
-  name: string,
-  def: McpServerDef,
-): void {
+function writeMcpServer(filePath: string, name: string, def: McpServerDef): void {
   // Read existing config, preserving all other keys
   let fullConfig: Record<string, unknown> = {};
   if (existsSync(filePath)) {
@@ -79,7 +75,11 @@ export function installMcpServer(
 ): { installed: boolean; path: string; error?: string } {
   const def = getServerDef(name);
   if (!def) {
-    return { installed: false, path: "", error: `Unknown MCP server: ${name}. Use 'arcana mcp list' to see available servers.` };
+    return {
+      installed: false,
+      path: "",
+      error: `Unknown MCP server: ${name}. Use 'arcana mcp list' to see available servers.`,
+    };
   }
 
   const filePath = tool === "claude" ? getClaudeMcpPath() : getCursorMcpPath(cwd);
@@ -106,15 +106,11 @@ export function listConfiguredServers(tool: "claude" | "cursor", cwd: string): s
 }
 
 /** Remove an MCP server from tool config. */
-export function removeMcpServer(
-  name: string,
-  tool: "claude" | "cursor",
-  cwd: string,
-): boolean {
+export function removeMcpServer(name: string, tool: "claude" | "cursor", cwd: string): boolean {
   const filePath = tool === "claude" ? getClaudeMcpPath() : getCursorMcpPath(cwd);
 
-  let fullConfig: Record<string, unknown> = {};
   if (!existsSync(filePath)) return false;
+  let fullConfig: Record<string, unknown>;
   try {
     fullConfig = JSON.parse(readFileSync(filePath, "utf-8")) as Record<string, unknown>;
   } catch {

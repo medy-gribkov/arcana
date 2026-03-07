@@ -191,7 +191,9 @@ describe("scanCommand", () => {
     vi.doMock("../utils/scanner.js", () => ({
       scanSkillContentFull: vi.fn(() => ({
         issues: [],
-        suppressed: [{ level: "medium", category: "System modification", detail: "In example", line: 5, context: "bad" }],
+        suppressed: [
+          { level: "medium", category: "System modification", detail: "In example", line: 5, context: "bad" },
+        ],
       })),
       formatScanResults: vi.fn(() => "  [OK] test"),
     }));

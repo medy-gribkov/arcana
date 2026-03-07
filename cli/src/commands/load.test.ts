@@ -29,7 +29,12 @@ describe("loadCommand", () => {
     vi.resetModules();
   });
 
-  function createSkill(name: string, content: string, refs?: Record<string, string>, rules?: Record<string, string>): void {
+  function createSkill(
+    name: string,
+    content: string,
+    refs?: Record<string, string>,
+    rules?: Record<string, string>,
+  ): void {
     const skillDir = join(testInstallDir, name);
     mkdirSync(skillDir, { recursive: true });
     writeFileSync(join(skillDir, "SKILL.md"), content, "utf-8");
@@ -222,12 +227,7 @@ describe("loadCommand", () => {
   });
 
   it("counts files correctly including references and rules", async () => {
-    createSkill(
-      "multi-file",
-      "# Main",
-      { "ref1.md": "Ref 1", "ref2.md": "Ref 2" },
-      { "rule1.md": "Rule 1" },
-    );
+    createSkill("multi-file", "# Main", { "ref1.md": "Ref 1", "ref2.md": "Ref 2" }, { "rule1.md": "Rule 1" });
     setupMocks();
 
     const { loadCommand } = await import("./load.js");

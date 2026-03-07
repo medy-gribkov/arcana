@@ -54,7 +54,12 @@ const COMMANDS: CommandEntry[] = [
 
   // Context Intelligence
   { name: "curate", usage: "curate", description: "Auto-generate budget-aware _active.md", group: "CONTEXT" },
-  { name: "compress", usage: "compress [command...]", description: "Run command with output compression", group: "CONTEXT" },
+  {
+    name: "compress",
+    usage: "compress [command...]",
+    description: "Run command with output compression",
+    group: "CONTEXT",
+  },
   { name: "hook", usage: "hook <action>", description: "Manage shell compression hooks", group: "CONTEXT" },
   { name: "remember", usage: "remember [content...]", description: "Save a cross-session memory", group: "CONTEXT" },
   { name: "recall", usage: "recall [query...]", description: "Search saved memories", group: "CONTEXT" },

@@ -54,9 +54,7 @@ export function recordCompression(tool: string, inputTokens: number, outputToken
 
 export function getCompressionStats(): CompressionStats & { savingsPct: number } {
   const stats = readStats();
-  const savingsPct = stats.totalInputTokens > 0
-    ? Math.round((stats.totalSaved / stats.totalInputTokens) * 100)
-    : 0;
+  const savingsPct = stats.totalInputTokens > 0 ? Math.round((stats.totalSaved / stats.totalInputTokens) * 100) : 0;
   return { ...stats, savingsPct };
 }
 

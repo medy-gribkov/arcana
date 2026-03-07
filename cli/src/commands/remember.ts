@@ -2,16 +2,13 @@ import { basename } from "node:path";
 import { addMemory, searchMemories, listMemories, removeMemory } from "../utils/memory.js";
 import { ui, banner } from "../utils/ui.js";
 
-export async function rememberCommand(
-  content: string[],
-  opts: { tag?: string[]; json?: boolean },
-): Promise<void> {
+export async function rememberCommand(content: string[], opts: { tag?: string[]; json?: boolean }): Promise<void> {
   const text = content.join(" ").trim();
   if (!text) {
     if (opts.json) {
       console.log(JSON.stringify({ error: "Provide content to remember" }));
     } else {
-      console.error("Usage: arcana remember \"your fact or preference\"");
+      console.error('Usage: arcana remember "your fact or preference"');
     }
     process.exit(1);
   }
@@ -45,11 +42,13 @@ export async function recallCommand(
     banner();
     console.log(ui.bold("  Recall\n"));
     if (memories.length === 0) {
-      console.log(ui.dim("  No memories stored. Use: arcana remember \"your fact\""));
+      console.log(ui.dim('  No memories stored. Use: arcana remember "your fact"'));
     } else {
       for (const m of memories) {
         console.log(`  ${ui.success(m.id)} ${m.content}`);
-        console.log(ui.dim(`       Tags: ${m.tags.join(", ")} | Project: ${m.project ?? "global"} | ${m.created.slice(0, 10)}`));
+        console.log(
+          ui.dim(`       Tags: ${m.tags.join(", ")} | Project: ${m.project ?? "global"} | ${m.created.slice(0, 10)}`),
+        );
       }
       console.log();
       console.log(ui.dim(`  ${memories.length} memories total`));
@@ -63,7 +62,7 @@ export async function recallCommand(
     if (opts.json) {
       console.log(JSON.stringify({ error: "Provide a search query or use --all" }));
     } else {
-      console.error("Usage: arcana recall \"search query\" or arcana recall --all");
+      console.error('Usage: arcana recall "search query" or arcana recall --all');
     }
     process.exit(1);
   }
@@ -82,7 +81,9 @@ export async function recallCommand(
   } else {
     for (const m of results) {
       console.log(`  ${ui.success(m.id)} ${m.content}`);
-      console.log(ui.dim(`       Tags: ${m.tags.join(", ")} | Project: ${m.project ?? "global"} | ${m.created.slice(0, 10)}`));
+      console.log(
+        ui.dim(`       Tags: ${m.tags.join(", ")} | Project: ${m.project ?? "global"} | ${m.created.slice(0, 10)}`),
+      );
     }
     console.log();
     console.log(ui.dim(`  ${results.length} result${results.length > 1 ? "s" : ""}`));
@@ -90,10 +91,7 @@ export async function recallCommand(
   console.log();
 }
 
-export async function forgetCommand(
-  id: string,
-  opts: { json?: boolean },
-): Promise<void> {
+export async function forgetCommand(id: string, opts: { json?: boolean }): Promise<void> {
   if (!id) {
     if (opts.json) {
       console.log(JSON.stringify({ error: "Provide a memory ID to forget" }));
