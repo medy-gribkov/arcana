@@ -20,6 +20,15 @@ describe("atomicWriteSync", () => {
     expect(readFileSync(filePath, "utf-8")).toBe("nested content");
   });
 
+  it("re-throws on write failure and cleans up tmp file", () => {
+    // Write to an invalid path (directory name as file) to trigger error
+    const dir = mkdtempSync(join(tmpdir(), "arcana-atomic-"));
+    // Create a directory where the tmp file would go, but make the target a directory
+    // so renameSync fails or writeFileSync fails
+    const filePath = join(dir, "\0invalid"); // null byte in filename
+    expect(() => atomicWriteSync(filePath, "content")).toThrow();
+  });
+
   it("applies file mode on non-Windows", () => {
     if (process.platform === "win32") return; // Windows doesn't support Unix file modes
     const dir = mkdtempSync(join(tmpdir(), "arcana-atomic-"));

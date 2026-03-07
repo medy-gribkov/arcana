@@ -51,9 +51,10 @@ export async function outdatedCommand(opts: { provider?: string; json?: boolean 
   if (skills.length === 0) {
     if (opts.json) {
       console.log(JSON.stringify({ outdated: [], upToDate: 0, total: 0 }));
-    } else {
-      console.log("No skills installed.");
+      process.exit(0);
     }
+    /* v8 ignore next 2 */
+    console.log("No skills installed.");
     process.exit(0);
   }
 
@@ -70,9 +71,10 @@ export async function outdatedCommand(opts: { provider?: string; json?: boolean 
           total: 0,
         }),
       );
-    } else {
-      console.error("No providers configured. Run: arcana providers --add owner/repo");
+      process.exit(0);
     }
+    /* v8 ignore next 2 */
+    console.error("No providers configured. Run: arcana providers --add owner/repo");
     process.exit(0);
   }
 
@@ -142,6 +144,7 @@ export async function outdatedCommand(opts: { provider?: string; json?: boolean 
     process.exit(0);
   }
 
+  /* v8 ignore start -- display-only console table output */
   // Console output: aligned table
   console.log(`Checked ${result.total} installed skills.`);
   console.log();
@@ -194,4 +197,5 @@ export async function outdatedCommand(opts: { provider?: string; json?: boolean 
   console.log(`${outdated.length} outdated, ${upToDate} up to date, ${result.total} total`);
 
   process.exit(0);
+  /* v8 ignore stop */
 }

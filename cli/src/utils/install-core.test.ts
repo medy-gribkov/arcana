@@ -71,6 +71,81 @@ describe("install-core", () => {
       expect(result.proceed).toBe(true);
       expect(result.blocks).toHaveLength(0);
     });
+
+    it("blocks when conflicts exist and force=false", async () => {
+      vi.resetModules();
+
+      vi.doMock("@clack/prompts", () => ({
+        confirm: vi.fn(async () => true),
+        isCancel: vi.fn(() => false),
+      }));
+      vi.doMock("./scanner.js", () => ({
+        scanSkillContent: vi.fn(() => []),
+      }));
+      vi.doMock("./integrity.js", () => ({ updateLockEntry: vi.fn() }));
+      vi.doMock("./conflict-check.js", () => ({
+        checkConflicts: vi.fn(() => [
+          { severity: "block", message: "Framework conflict detected" },
+        ]),
+      }));
+      vi.doMock("./project-context.js", () => ({
+        detectProjectContext: vi.fn(() => ({ type: "unknown", lang: "general", frameworks: [], hasTests: false })),
+      }));
+      vi.doMock("./fs.js", () => ({
+        installSkill: vi.fn(),
+        isSkillInstalled: vi.fn(() => false),
+        writeSkillMeta: vi.fn(),
+        readSkillMeta: vi.fn(() => null),
+      }));
+
+      const mod = await import("./install-core.js");
+      const result = mod.preInstallConflictCheck(
+        "test",
+        { name: "test", version: "1.0.0", description: "Test", tags: [], verified: false },
+        [{ path: "SKILL.md", content: "---\nname: test\n---\nBody" }],
+        false,
+      );
+      expect(result.proceed).toBe(false);
+      expect(result.blocks).toHaveLength(1);
+      expect(result.blocks[0]).toContain("Framework conflict");
+    });
+
+    it("proceeds when conflicts exist but force=true", async () => {
+      vi.resetModules();
+
+      vi.doMock("@clack/prompts", () => ({
+        confirm: vi.fn(async () => true),
+        isCancel: vi.fn(() => false),
+      }));
+      vi.doMock("./scanner.js", () => ({
+        scanSkillContent: vi.fn(() => []),
+      }));
+      vi.doMock("./integrity.js", () => ({ updateLockEntry: vi.fn() }));
+      vi.doMock("./conflict-check.js", () => ({
+        checkConflicts: vi.fn(() => [
+          { severity: "block", message: "Framework conflict detected" },
+        ]),
+      }));
+      vi.doMock("./project-context.js", () => ({
+        detectProjectContext: vi.fn(() => ({ type: "unknown", lang: "general", frameworks: [], hasTests: false })),
+      }));
+      vi.doMock("./fs.js", () => ({
+        installSkill: vi.fn(),
+        isSkillInstalled: vi.fn(() => false),
+        writeSkillMeta: vi.fn(),
+        readSkillMeta: vi.fn(() => null),
+      }));
+
+      const mod = await import("./install-core.js");
+      const result = mod.preInstallConflictCheck(
+        "test",
+        { name: "test", version: "1.0.0", description: "Test", tags: [], verified: false },
+        [{ path: "SKILL.md", content: "---\nname: test\n---\nBody" }],
+        true,
+      );
+      expect(result.proceed).toBe(true);
+      expect(result.blocks).toHaveLength(1);
+    });
   });
 
   describe("sizeWarning", () => {
@@ -381,6 +456,87 @@ describe("install-core", () => {
 
       const result = await installOneCore("golang-pro", mockProvider, {});
       expect(result.success).toBe(true);
+    });
+
+    it("conflict detection blocks install when force=false", async () => {
+      vi.resetModules();
+
+      vi.doMock("@clack/prompts", () => ({
+        confirm: vi.fn(async () => true),
+        isCancel: vi.fn(() => false),
+      }));
+      vi.doMock("./scanner.js", () => ({
+        scanSkillContent: vi.fn(() => []),
+      }));
+      vi.doMock("./integrity.js", () => ({ updateLockEntry: vi.fn() }));
+      vi.doMock("./conflict-check.js", () => ({
+        checkConflicts: vi.fn(() => [
+          { severity: "block", message: "Conflicts with existing framework skill" },
+        ]),
+      }));
+      vi.doMock("./project-context.js", () => ({
+        detectProjectContext: vi.fn(() => ({ type: "unknown", lang: "general", frameworks: [], hasTests: false })),
+      }));
+      vi.doMock("./fs.js", () => ({
+        installSkill: vi.fn(),
+        isSkillInstalled: vi.fn(() => false),
+        writeSkillMeta: vi.fn(),
+        readSkillMeta: vi.fn(() => null),
+      }));
+
+      const mod = await import("./install-core.js");
+      const mockProvider = {
+        name: "test-provider",
+        fetch: vi.fn(async () => [{ path: "SKILL.md", content: "---\nname: test\n---\nBody" }]),
+        info: vi.fn(async () => ({ name: "test", version: "1.0.0", description: "Test", tags: [], verified: false })),
+        list: vi.fn(async () => []),
+        search: vi.fn(async () => []),
+      };
+
+      const result = await mod.installOneCore("test", mockProvider, {});
+      expect(result.success).toBe(false);
+      expect(result.conflictBlocked).toBe(true);
+      expect(result.error).toBe("Blocked by conflict detection");
+    });
+
+    it("conflict detection allows install when force=true", async () => {
+      vi.resetModules();
+
+      vi.doMock("@clack/prompts", () => ({
+        confirm: vi.fn(async () => true),
+        isCancel: vi.fn(() => false),
+      }));
+      vi.doMock("./scanner.js", () => ({
+        scanSkillContent: vi.fn(() => []),
+      }));
+      vi.doMock("./integrity.js", () => ({ updateLockEntry: vi.fn() }));
+      vi.doMock("./conflict-check.js", () => ({
+        checkConflicts: vi.fn(() => [
+          { severity: "block", message: "Conflicts with existing framework skill" },
+        ]),
+      }));
+      vi.doMock("./project-context.js", () => ({
+        detectProjectContext: vi.fn(() => ({ type: "unknown", lang: "general", frameworks: [], hasTests: false })),
+      }));
+      vi.doMock("./fs.js", () => ({
+        installSkill: vi.fn(),
+        isSkillInstalled: vi.fn(() => false),
+        writeSkillMeta: vi.fn(),
+        readSkillMeta: vi.fn(() => null),
+      }));
+
+      const mod = await import("./install-core.js");
+      const mockProvider = {
+        name: "test-provider",
+        fetch: vi.fn(async () => [{ path: "SKILL.md", content: "---\nname: test\n---\nBody" }]),
+        info: vi.fn(async () => ({ name: "test", version: "1.0.0", description: "Test", tags: [], verified: false })),
+        list: vi.fn(async () => []),
+        search: vi.fn(async () => []),
+      };
+
+      const result = await mod.installOneCore("test", mockProvider, { force: true });
+      expect(result.success).toBe(true);
+      expect(result.conflictWarnings).toBeDefined();
     });
 
     it("install-core.ts source imports regenerateIndex for post-install", async () => {

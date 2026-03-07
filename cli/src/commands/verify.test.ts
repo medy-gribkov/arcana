@@ -208,4 +208,118 @@ describe("verifyCommand", () => {
     // Should exit 1 because there's a modified skill
     expect(processExitSpy).toHaveBeenCalledWith(1);
   });
+
+  it("JSON mode with no skills and no --all shows error", async () => {
+    setupMocks();
+    const { verifyCommand } = await import("./verify.js");
+
+    await expect(verifyCommand([], { json: true })).rejects.toThrow("process.exit");
+
+    const jsonCall = consoleLogSpy.mock.calls.find((call: unknown[]) => {
+      try {
+        JSON.parse(call[0]);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+
+    expect(jsonCall).toBeDefined();
+    const output = JSON.parse(jsonCall[0]);
+    expect(output.error).toBe("Specify a skill name or use --all");
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it("JSON --all with readdirSync error returns empty results", async () => {
+    vi.resetModules();
+
+    vi.doMock("chalk", () => ({
+      default: Object.assign((s: string) => s, {
+        bold: (s: string) => s,
+        cyan: (s: string) => s,
+        dim: (s: string) => s,
+        green: (s: string) => s,
+        yellow: (s: string) => s,
+        hex: () => (s: string) => s,
+      }),
+    }));
+
+    vi.doMock("@clack/prompts", () => ({
+      log: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+      intro: vi.fn(),
+      cancel: vi.fn(),
+      outro: vi.fn(),
+      spinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn(), message: vi.fn() })),
+    }));
+
+    vi.doMock("../utils/ui.js", () => ({
+      printErrorWithHint: vi.fn(),
+    }));
+
+    vi.doMock("../utils/fs.js", () => ({
+      getInstallDir: vi.fn(() => "/fake/install"),
+      isSkillInstalled: vi.fn(() => false),
+    }));
+
+    vi.doMock("../utils/integrity.js", () => ({
+      verifySkillIntegrity: vi.fn(() => "ok"),
+      readLockfile: vi.fn(() => []),
+    }));
+
+    vi.doMock("../utils/validate.js", () => ({
+      validateSlug: vi.fn(),
+    }));
+
+    vi.doMock("../utils/help.js", () => ({
+      renderBanner: vi.fn(() => "Banner"),
+    }));
+
+    vi.doMock("node:fs", () => ({
+      readdirSync: vi.fn(() => { throw new Error("ENOENT"); }),
+      statSync: vi.fn(() => ({ isDirectory: () => true })),
+    }));
+
+    const { verifyCommand } = await import("./verify.js");
+
+    await verifyCommand([], { all: true, json: true });
+
+    const jsonCall = consoleLogSpy.mock.calls.find((call: unknown[]) => {
+      try {
+        JSON.parse(call[0]);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+
+    expect(jsonCall).toBeDefined();
+    const output = JSON.parse(jsonCall[0]);
+    expect(output.results).toHaveLength(0);
+    expect(output.summary).toMatchObject({ total: 0, ok: 0, modified: 0, missing: 0 });
+  });
+
+  it("JSON mode verifies specific skills", async () => {
+    setupMocks({
+      isSkillInstalled: () => true,
+      verifySkillIntegrity: () => "ok",
+    });
+    const { verifyCommand } = await import("./verify.js");
+
+    await verifyCommand(["skill-a"], { json: true });
+
+    const jsonCall = consoleLogSpy.mock.calls.find((call: unknown[]) => {
+      try {
+        JSON.parse(call[0]);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+
+    expect(jsonCall).toBeDefined();
+    const output = JSON.parse(jsonCall[0]);
+    expect(output.results).toHaveLength(1);
+    expect(output.results[0]).toEqual({ skill: "skill-a", status: "ok" });
+    expect(output.summary).toMatchObject({ total: 1, ok: 1, modified: 0, missing: 0 });
+  });
 });

@@ -134,5 +134,17 @@ describe("validateSlug", () => {
         'Invalid provider: "bad-name-". Only letters, numbers, hyphens, dots, underscores allowed.',
       );
     });
+
+    it("should reject slug exceeding max length of 128 characters", () => {
+      const longSlug = "a".repeat(129);
+      expect(() => validateSlug(longSlug, "skill name")).toThrow(
+        /exceeds max length of 128 characters/,
+      );
+    });
+
+    it("should accept slug at exactly 128 characters", () => {
+      const maxSlug = "a".repeat(128);
+      expect(() => validateSlug(maxSlug, "skill name")).not.toThrow();
+    });
   });
 });

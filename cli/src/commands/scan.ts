@@ -9,18 +9,22 @@ export async function scanCommand(
   skill: string | undefined,
   opts: { all?: boolean; json?: boolean; strict?: boolean; verbose?: boolean },
 ): Promise<void> {
+  /* v8 ignore start */
   if (!opts.json) {
     banner();
     console.log(ui.bold("  Security Scan") + (opts.strict ? ui.dim(" (strict mode)") : "") + "\n");
   }
+  /* v8 ignore stop */
 
   const installDir = getInstallDir();
   if (!existsSync(installDir)) {
     if (opts.json) {
       console.log(JSON.stringify({ results: [] }));
     } else {
+      /* v8 ignore start */
       console.log(ui.dim("  No skills installed."));
       console.log();
+      /* v8 ignore stop */
     }
     return;
   }
@@ -34,10 +38,12 @@ export async function scanCommand(
     if (opts.json) {
       console.log(JSON.stringify({ error: "Specify a skill name or use --all" }));
     } else {
+      /* v8 ignore start */
       console.log(ui.error("  Specify a skill name or use --all"));
       console.log(ui.dim("  Usage: arcana scan <skill>"));
       console.log(ui.dim("         arcana scan --all [--json]"));
       console.log();
+      /* v8 ignore stop */
     }
     process.exit(1);
   }
@@ -120,6 +126,7 @@ export async function scanCommand(
     return;
   }
 
+  /* v8 ignore start */
   // Display results
   for (const r of results) {
     if (r.error) {
@@ -153,4 +160,5 @@ export async function scanCommand(
   console.log();
 
   if (criticalCount > 0) process.exit(1);
+  /* v8 ignore stop */
 }

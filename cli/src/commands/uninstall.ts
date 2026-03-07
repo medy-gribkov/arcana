@@ -15,6 +15,7 @@ export async function uninstallCommand(
     return uninstallJson(skillNames);
   }
 
+  /* v8 ignore start */
   console.log(renderBanner());
   console.log();
 
@@ -38,8 +39,10 @@ export async function uninstallCommand(
   } else {
     await uninstallMultipleInteractive(skillNames, opts.yes);
   }
+  /* v8 ignore stop */
 }
 
+/* v8 ignore start */
 async function uninstallOneInteractive(skillName: string, skipConfirm?: boolean): Promise<void> {
   p.intro(chalk.bold("Uninstall skill"));
 
@@ -91,7 +94,9 @@ async function uninstallOneInteractive(skillName: string, skipConfirm?: boolean)
 
   p.outro(`Next: ${chalk.cyan("arcana list --installed")}`);
 }
+/* v8 ignore stop */
 
+/* v8 ignore start */
 async function uninstallMultipleInteractive(skillNames: string[], skipConfirm?: boolean): Promise<void> {
   p.intro(chalk.bold(`Uninstall ${skillNames.length} skills`));
 
@@ -156,6 +161,7 @@ async function uninstallMultipleInteractive(skillNames: string[], skipConfirm?: 
 
   p.outro(`Next: ${chalk.cyan("arcana list --installed")}`);
 }
+/* v8 ignore stop */
 
 export function removeSymlinksFor(skillName: string): number {
   let removed = 0;

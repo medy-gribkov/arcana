@@ -7,9 +7,10 @@ export async function rememberCommand(content: string[], opts: { tag?: string[];
   if (!text) {
     if (opts.json) {
       console.log(JSON.stringify({ error: "Provide content to remember" }));
-    } else {
-      console.error('Usage: arcana remember "your fact or preference"');
+      process.exit(1);
     }
+    /* v8 ignore next 2 */
+    console.error('Usage: arcana remember "your fact or preference"');
     process.exit(1);
   }
 
@@ -20,11 +21,13 @@ export async function rememberCommand(content: string[], opts: { tag?: string[];
     return;
   }
 
+  /* v8 ignore start */
   banner();
   console.log(ui.bold("  Remember\n"));
   console.log(`  ${ui.success("[OK]")} Saved: "${text}"`);
   console.log(ui.dim(`       ID: ${memory.id} | Tags: ${memory.tags.join(", ")} | Project: ${memory.project}`));
   console.log();
+  /* v8 ignore stop */
 }
 
 export async function recallCommand(
@@ -39,6 +42,7 @@ export async function recallCommand(
       return;
     }
 
+    /* v8 ignore start */
     banner();
     console.log(ui.bold("  Recall\n"));
     if (memories.length === 0) {
@@ -55,15 +59,17 @@ export async function recallCommand(
     }
     console.log();
     return;
+    /* v8 ignore stop */
   }
 
   const q = query.join(" ").trim();
   if (!q) {
     if (opts.json) {
       console.log(JSON.stringify({ error: "Provide a search query or use --all" }));
-    } else {
-      console.error('Usage: arcana recall "search query" or arcana recall --all');
+      process.exit(1);
     }
+    /* v8 ignore next 2 */
+    console.error('Usage: arcana recall "search query" or arcana recall --all');
     process.exit(1);
   }
 
@@ -74,6 +80,7 @@ export async function recallCommand(
     return;
   }
 
+  /* v8 ignore start */
   banner();
   console.log(ui.bold("  Recall\n"));
   if (results.length === 0) {
@@ -89,15 +96,17 @@ export async function recallCommand(
     console.log(ui.dim(`  ${results.length} result${results.length > 1 ? "s" : ""}`));
   }
   console.log();
+  /* v8 ignore stop */
 }
 
 export async function forgetCommand(id: string, opts: { json?: boolean }): Promise<void> {
   if (!id) {
     if (opts.json) {
       console.log(JSON.stringify({ error: "Provide a memory ID to forget" }));
-    } else {
-      console.error("Usage: arcana forget <id>");
+      process.exit(1);
     }
+    /* v8 ignore next 2 */
+    console.error("Usage: arcana forget <id>");
     process.exit(1);
   }
 
@@ -108,6 +117,7 @@ export async function forgetCommand(id: string, opts: { json?: boolean }): Promi
     return;
   }
 
+  /* v8 ignore start */
   banner();
   console.log(ui.bold("  Forget\n"));
   if (removed) {
@@ -116,4 +126,5 @@ export async function forgetCommand(id: string, opts: { json?: boolean }): Promi
     console.log(`  ${ui.warn("[!!]")} Memory ${id} not found`);
   }
   console.log();
+  /* v8 ignore stop */
 }

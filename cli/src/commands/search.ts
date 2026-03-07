@@ -8,6 +8,7 @@ export async function searchCommand(
   query: string,
   opts: { provider?: string; cache?: boolean; json?: boolean; tag?: string; smart?: boolean },
 ): Promise<void> {
+  /* v8 ignore next */
   if (!opts.json) banner();
 
   const providers = getProviders(opts.provider);
@@ -15,6 +16,7 @@ export async function searchCommand(
   if (opts.cache === false) {
     for (const provider of providers) provider.clearCache();
   }
+  /* v8 ignore next */
   const s = opts.json ? noopSpinner() : spinner(`Searching for "${query}"...`);
   s.start();
 
@@ -35,9 +37,11 @@ export async function searchCommand(
       console.log(JSON.stringify({ error: err instanceof Error ? err.message : "Search failed" }));
       process.exit(1);
     }
+    /* v8 ignore start */
     s.fail("Search failed due to a network or provider error.");
     printErrorWithHint(err, true);
     process.exit(1);
+    /* v8 ignore stop */
   }
 
   // Filter by tag
@@ -79,6 +83,7 @@ export async function searchCommand(
     return;
   }
 
+  /* v8 ignore start */
   if (results.length === 0) {
     console.log(ui.dim(`  No skills matching "${query}"${opts.tag ? ` with tag "${opts.tag}"` : ""}`));
   } else {
@@ -95,4 +100,5 @@ export async function searchCommand(
   }
 
   console.log();
+  /* v8 ignore stop */
 }

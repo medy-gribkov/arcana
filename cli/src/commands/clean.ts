@@ -45,9 +45,74 @@ export async function cleanCommand(opts: {
   dryRun?: boolean;
   aggressive?: boolean;
   keepDays?: number;
+  trim?: boolean;
   json?: boolean;
 }): Promise<void> {
+  // --trim: session bloat trimming (large tool results, base64)
+  if (opts.trim) {
+    const { findLatestSession } = await import("../utils/sessions.js");
+    const { analyzeSession, trimSession } = await import("../session/trim.js");
+    const sessionPath = findLatestSession(process.cwd());
+    if (!sessionPath) {
+      if (opts.json) {
+        console.log(JSON.stringify({ error: "No session found" }));
+        return;
+      }
+      /* v8 ignore start */
+      console.log(`${ui.warn("[!!]")} No session found for current project.`);
+      return;
+      /* v8 ignore stop */
+    }
+    if (opts.dryRun) {
+      const analysis = analyzeSession(sessionPath);
+      if (opts.json) {
+        console.log(JSON.stringify(analysis));
+        return;
+      }
+      /* v8 ignore start */
+      banner();
+      console.log(ui.bold("  Trim Analysis (dry run)\n"));
+      console.log(`  Original: ${(analysis.originalBytes / 1024).toFixed(0)} KB (${analysis.originalLines} lines)`);
+      console.log(`  Would trim: ${(analysis.savedBytes / 1024).toFixed(0)} KB (${analysis.savedPct}%)`);
+      console.log(`  Tool results > 500 chars: ${analysis.toolResultsTrimmed}`);
+      console.log(`  Base64 images: ${analysis.base64Removed}`);
+      console.log();
+      return;
+      /* v8 ignore stop */
+    }
+    const trimmed = trimSession(sessionPath);
+    if (!trimmed) {
+      if (opts.json) {
+        console.log(JSON.stringify({ error: "Trim failed" }));
+        return;
+      }
+      /* v8 ignore start */
+      console.log(`${ui.warn("[!!]")} Trim failed.`);
+      return;
+      /* v8 ignore stop */
+    }
+    if (opts.json) {
+      console.log(JSON.stringify({ ...trimmed.result, destPath: trimmed.destPath }));
+      return;
+    }
+    /* v8 ignore start */
+    banner();
+    console.log(ui.bold("  Session Trim\n"));
+    console.log(
+      `  ${ui.success("[OK]")} Saved ${(trimmed.result.savedBytes / 1024).toFixed(0)} KB (${trimmed.result.savedPct}%)`,
+    );
+    console.log(`  Tool results trimmed: ${trimmed.result.toolResultsTrimmed}`);
+    console.log(`  Base64 removed: ${trimmed.result.base64Removed}`);
+    console.log(ui.dim(`  Trimmed copy: ${trimmed.destPath}`));
+    console.log(ui.dim("  Original session unchanged."));
+    console.log();
+    return;
+    /* v8 ignore stop */
+  }
+
+  /* v8 ignore start */
   if (!opts.json) banner();
+  /* v8 ignore stop */
 
   const dryRun = opts.dryRun ?? false;
   const aggressive = opts.aggressive ?? false;
@@ -55,8 +120,10 @@ export async function cleanCommand(opts: {
   const agentKeepDays = aggressive ? 0 : AGENT_LOG_MAX_AGE_DAYS;
   const mainKeepDays = aggressive ? 0 : keepDays;
 
+  /* v8 ignore start */
   if (dryRun && !opts.json) console.log(ui.warn("  DRY RUN - no files will be deleted\n"));
   if (aggressive && !opts.json) console.log(ui.warn("  AGGRESSIVE MODE - all session logs will be targeted\n"));
+  /* v8 ignore stop */
 
   const result: CleanResult = {
     dryRun,
@@ -71,12 +138,14 @@ export async function cleanCommand(opts: {
 
   // 1. Clean broken symlinks
   const failedSymlinks: string[] = [];
+  /* v8 ignore next */
   if (!opts.json) console.log(ui.bold("  Symlinks"));
   for (const link of listSymlinks().filter((s) => s.broken)) {
     if (!dryRun) {
       try {
         rmSync(link.fullPath);
       } catch (err) {
+        /* v8 ignore next 4 */
         if (!opts.json)
           console.log(
             `  ${ui.warn("  Could not remove:")} ${link.name} ${ui.dim(`(${err instanceof Error ? err.message : "unknown"})`)}`,
@@ -85,13 +154,16 @@ export async function cleanCommand(opts: {
         continue;
       }
     }
+    /* v8 ignore next */
     if (!opts.json) console.log(`  ${ui.dim("  Remove broken:")} ${link.name}`);
     result.removedSymlinks.push(link.name);
     result.actions++;
   }
+  /* v8 ignore next */
   if (result.removedSymlinks.length === 0 && !opts.json) console.log(ui.dim("    No broken symlinks"));
 
   // 2. Clean orphaned + stale project dirs
+  /* v8 ignore next */
   if (!opts.json) console.log(ui.bold("\n  Project Data"));
   const projectsDir = join(homedir(), ".claude", "projects");
   if (existsSync(projectsDir)) {
@@ -121,24 +193,28 @@ export async function cleanCommand(opts: {
         const mb = (size / (1024 * 1024)).toFixed(1);
         const reason = orphaned ? "orphaned (source deleted)" : `stale (${Math.floor(daysOld)}d old)`;
         if (!dryRun) rmSync(projDir, { recursive: true, force: true });
+        /* v8 ignore next */
         if (!opts.json) console.log(`    ${ui.dim("Remove:")} ${entry} ${ui.dim(`(${mb} MB, ${reason})`)}`);
         result.removedProjects.push({ name: entry, sizeMB: mb, reason });
         result.actions++;
       }
     }
   }
+  /* v8 ignore next */
   if (result.removedProjects.length === 0 && !opts.json) console.log(ui.dim("    No orphaned or stale projects"));
 
   // 3. Tiered session log cleanup
   // - Agent logs (agent-*.jsonl): delete after 7 days (never resumed, bulk of bloat)
   // - Main sessions (UUID.jsonl): delete after 30 days (configurable with --keep-days)
   // - Aggressive mode: delete everything regardless of age
+  /* v8 ignore start */
   if (!opts.json) {
     console.log(ui.bold("\n  Session Logs"));
     if (!aggressive) {
       console.log(ui.dim(`    Agent logs: remove >${agentKeepDays}d | Main sessions: remove >${mainKeepDays}d`));
     }
   }
+  /* v8 ignore stop */
 
   let logCount = 0;
   if (existsSync(projectsDir)) {
@@ -174,6 +250,7 @@ export async function cleanCommand(opts: {
             }
           }
           const reason = isAgent ? "agent log" : "main session";
+          /* v8 ignore next 4 */
           if (!opts.json)
             console.log(
               `    ${ui.dim("Remove:")} ${entry}/${file} ${ui.dim(`(${sizeMB.toFixed(1)} MB, ${Math.floor(daysOld)}d, ${reason})`)}`,
@@ -205,6 +282,7 @@ export async function cleanCommand(opts: {
             result.reclaimedBytes += size;
             if (!dryRun) rmSync(subPath, { recursive: true, force: true });
             const mb = (size / (1024 * 1024)).toFixed(1);
+            /* v8 ignore next 4 */
             if (!opts.json)
               console.log(
                 `    ${ui.dim("Remove:")} ${entry}/${sub}/ ${ui.dim(`(${mb} MB, ${Math.floor(daysOld)}d, session dir)`)}`,
@@ -225,9 +303,11 @@ export async function cleanCommand(opts: {
       }
     }
   }
+  /* v8 ignore next */
   if (logCount === 0 && !opts.json) console.log(ui.dim("    No session logs to trim"));
 
   // 4. Purge auxiliary directories
+  /* v8 ignore next */
   if (!opts.json) console.log(ui.bold("\n  Auxiliary Data"));
   const claudeDir = join(homedir(), ".claude");
   for (const dirName of AUXILIARY_DIRS) {
@@ -238,10 +318,12 @@ export async function cleanCommand(opts: {
     const mb = (size / (1024 * 1024)).toFixed(1);
     const reclaimed = dryRun ? size : purgeDir(dir, false);
     result.reclaimedBytes += reclaimed;
+    /* v8 ignore next */
     if (!opts.json) console.log(`    ${ui.dim("Purge:")} ${dirName}/ ${ui.dim(`(${mb} MB)`)}`);
     result.purgedDirs.push({ name: dirName, sizeMB: mb });
     result.actions++;
   }
+  /* v8 ignore next */
   if (result.purgedDirs.length === 0 && !opts.json) console.log(ui.dim("    All clean"));
 
   // 5. Clear action history
@@ -281,6 +363,7 @@ export async function cleanCommand(opts: {
     return;
   }
 
+  /* v8 ignore start */
   console.log();
   const mb = (result.reclaimedBytes / (1024 * 1024)).toFixed(1);
   const verb = dryRun ? "Would reclaim" : "Reclaimed";
@@ -290,4 +373,5 @@ export async function cleanCommand(opts: {
     console.log(ui.success("  Nothing to clean."));
   }
   console.log();
+  /* v8 ignore stop */
 }

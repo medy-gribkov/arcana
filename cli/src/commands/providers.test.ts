@@ -105,4 +105,52 @@ describe("providers command", () => {
     const output = JSON.parse(consoleLogSpy.mock.calls[0][0]);
     expect(output).toMatchObject({ action: "add", success: true });
   });
+
+  it("add provider falls back to master branch", async () => {
+    let callCount = 0;
+    mockHttpGet.mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return Promise.reject(new Error("404 Not Found"));
+      return Promise.resolve({ body: "{}", statusCode: 200 });
+    });
+
+    const { providersCommand } = await import("./providers.js");
+    await providersCommand({ json: true, add: "user/repo" });
+
+    expect(mockHttpGet).toHaveBeenCalledTimes(2);
+    expect(mockAddProvider).toHaveBeenCalled();
+    const output = JSON.parse(consoleLogSpy.mock.calls[0][0]);
+    expect(output).toMatchObject({ action: "add", provider: "user/repo", success: true });
+  });
+
+  it("add provider fails on both branches", async () => {
+    mockHttpGet.mockImplementation(() => Promise.reject(new Error("404 Not Found")));
+
+    const { providersCommand } = await import("./providers.js");
+    await expect(providersCommand({ json: true, add: "user/repo" })).rejects.toThrow("process.exit");
+
+    expect(mockHttpGet).toHaveBeenCalledTimes(2);
+    const jsonCall = consoleLogSpy.mock.calls.find((call: unknown[]) => {
+      try {
+        const p = JSON.parse(call[0]);
+        return p.error;
+      } catch {
+        return false;
+      }
+    });
+    expect(jsonCall).toBeDefined();
+    const output = JSON.parse(jsonCall[0]);
+    expect(output.error).toContain("Could not find marketplace.json");
+  });
+
+  it("remove provider that doesn't exist", async () => {
+    mockRemoveProvider.mockReturnValue(false);
+
+    const { providersCommand } = await import("./providers.js");
+    await providersCommand({ json: true, remove: "nonexistent" });
+
+    expect(mockRemoveProvider).toHaveBeenCalledWith("nonexistent");
+    const output = JSON.parse(consoleLogSpy.mock.calls[0][0]);
+    expect(output).toMatchObject({ action: "remove", provider: "nonexistent", success: false });
+  });
 });

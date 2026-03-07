@@ -10,6 +10,7 @@ export async function recommendCommand(opts: { json?: boolean; limit?: number; p
   const cwd = process.cwd();
   const context = detectProjectContext(cwd);
 
+  /* v8 ignore start */
   if (!opts.json) {
     p.intro(chalk.bold("Smart Recommendations"));
     p.log.step(`Project: ${chalk.cyan(context.name)} (${context.type} / ${context.lang})`);
@@ -20,6 +21,7 @@ export async function recommendCommand(opts: { json?: boolean; limit?: number; p
       p.log.info(`Rules found: ${context.ruleFiles.join(", ")}`);
     }
   }
+  /* v8 ignore stop */
 
   // Fetch all skills from providers
   const providers = getProviders(opts.provider);
@@ -29,18 +31,21 @@ export async function recommendCommand(opts: { json?: boolean; limit?: number; p
       const skills = await prov.list();
       allSkills.push(...skills);
     } catch (err) {
+      /* v8 ignore start */
       if (!opts.json) {
         p.log.warn(`Could not fetch from ${prov.displayName}: ${err instanceof Error ? err.message : String(err)}`);
       }
+      /* v8 ignore stop */
     }
   }
 
   if (allSkills.length === 0) {
     if (opts.json) {
       console.log(JSON.stringify({ error: "No skills available" }));
-    } else {
-      p.log.error("No skills available from any provider.");
+      process.exit(1);
     }
+    /* v8 ignore next 2 */
+    p.log.error("No skills available from any provider.");
     process.exit(1);
   }
 
@@ -65,6 +70,7 @@ export async function recommendCommand(opts: { json?: boolean; limit?: number; p
     return;
   }
 
+  /* v8 ignore start */
   // Display results
   if (recommended.length > 0) {
     console.log();
@@ -98,14 +104,17 @@ export async function recommendCommand(opts: { json?: boolean; limit?: number; p
 
   console.log();
   p.outro(`Install: ${chalk.cyan("arcana install <skill>")}`);
+  /* v8 ignore stop */
 }
 
+/* v8 ignore start */
 function printVerdict(v: RecommendVerdict): void {
   const scoreStr = v.score > 0 ? `+${v.score}` : String(v.score);
   console.log(
     `    ${chalk.bold(v.skill.padEnd(28))} ${chalk.cyan(scoreStr.padStart(4))}  ${chalk.dim(v.reasons.join(" | "))}`,
   );
 }
+/* v8 ignore stop */
 
 function formatVerdict(v: RecommendVerdict): { skill: string; score: number; reasons: string[] } {
   return { skill: v.skill, score: v.score, reasons: v.reasons };

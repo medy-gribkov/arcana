@@ -142,6 +142,27 @@ describe("infoCommand", () => {
     expect(processExitSpy).not.toHaveBeenCalled();
   });
 
+  it("returns error JSON when provider throws and skill is NOT installed", async () => {
+    const { getProviders } = await import("../registry.js");
+    const { isSkillInstalled } = await import("../utils/fs.js");
+
+    vi.mocked(isSkillInstalled).mockReturnValue(false);
+    vi.mocked(getProviders).mockReturnValue([
+      {
+        info: vi.fn(async () => {
+          throw new Error("Connection refused");
+        }),
+      } as unknown as MockProvider,
+    ] as unknown as ReturnType<typeof getProviders>);
+
+    const { infoCommand } = await import("./info.js");
+    await infoCommand("missing-offline", { json: true });
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('"error"'));
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("Connection refused"));
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+  });
+
   it("exits with error JSON when skill not found by any provider", async () => {
     const { getProviders } = await import("../registry.js");
     const { isSkillInstalled } = await import("../utils/fs.js");

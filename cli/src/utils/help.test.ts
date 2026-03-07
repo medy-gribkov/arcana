@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { buildCustomHelp, renderBanner } from "./help.js";
 
 describe("renderBanner", () => {
@@ -55,8 +55,6 @@ describe("buildCustomHelp", () => {
       "compress",
       "remember",
       "recall",
-      "snapshot",
-      "trim",
       "mcp",
       "scan",
       "verify",
@@ -64,7 +62,6 @@ describe("buildCustomHelp", () => {
       "config",
       "providers",
       "clean",
-      "stats",
     ];
     for (const cmd of commands) {
       expect(help).toContain(cmd);
@@ -91,5 +88,73 @@ describe("buildCustomHelp", () => {
   it("contains ASCII banner", () => {
     const help = buildCustomHelp("1.0.0");
     expect(help).toContain("█████");
+  });
+});
+
+describe("isFirstRun and markInitialized", () => {
+  let mockExistsSync: ReturnType<typeof vi.fn>;
+  let mockMkdirSync: ReturnType<typeof vi.fn>;
+  let mockWriteFileSync: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    vi.resetModules();
+    mockExistsSync = vi.fn(() => false);
+    mockMkdirSync = vi.fn();
+    mockWriteFileSync = vi.fn();
+
+    vi.doMock("node:fs", () => ({
+      existsSync: mockExistsSync,
+      mkdirSync: mockMkdirSync,
+      writeFileSync: mockWriteFileSync,
+    }));
+    vi.doMock("node:os", () => ({
+      homedir: vi.fn(() => "/fake/home"),
+    }));
+    vi.doMock("node:path", async () => {
+      const actual = await vi.importActual("node:path");
+      return actual;
+    });
+    vi.doMock("chalk", () => ({
+      default: Object.assign((s: string) => s, { hex: () => (s: string) => s }),
+    }));
+    vi.doMock("./ui.js", () => ({
+      ui: { bold: (s: string) => s, dim: (s: string) => s, cyan: (s: string) => s },
+    }));
+    vi.doMock("../command-defs.js", () => ({
+      getGroupedCommands: vi.fn(() => ({})),
+    }));
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+  });
+
+  it("isFirstRun returns true when no .initialized file", async () => {
+    const { isFirstRun } = await import("./help.js");
+    expect(isFirstRun()).toBe(true);
+  });
+
+  it("isFirstRun returns false when .initialized exists", async () => {
+    mockExistsSync.mockReturnValue(true);
+    const { isFirstRun } = await import("./help.js");
+    expect(isFirstRun()).toBe(false);
+  });
+
+  it("markInitialized creates dir and file", async () => {
+    const { markInitialized } = await import("./help.js");
+    markInitialized();
+    expect(mockMkdirSync).toHaveBeenCalled();
+    expect(mockWriteFileSync).toHaveBeenCalled();
+  });
+
+  it("markInitialized skips mkdir when dir exists", async () => {
+    mockExistsSync.mockImplementation((p: string) => {
+      if (p.endsWith(".initialized")) return false;
+      return true; // dir exists
+    });
+    const { markInitialized } = await import("./help.js");
+    markInitialized();
+    expect(mockMkdirSync).not.toHaveBeenCalled();
+    expect(mockWriteFileSync).toHaveBeenCalled();
   });
 });

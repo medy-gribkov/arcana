@@ -180,4 +180,93 @@ describe("importCommand", () => {
     expect(output.skipped).toEqual(["already-here"]);
     expect(output.failed).toEqual([]);
   });
+
+  it("--json: invalid skill name appears in failed+errors", async () => {
+    const manifest = {
+      skills: [{ name: "bad skill!" }],
+    };
+
+    setupMocks({
+      readFileSync: () => JSON.stringify(manifest),
+      validateSlug: () => {
+        throw new Error("Invalid skill name");
+      },
+    });
+    const { importCommand } = await import("./import-cmd.js");
+
+    await expect(importCommand("manifest.json", { json: true })).rejects.toThrow("process.exit");
+
+    const jsonCall = consoleLogSpy.mock.calls.find((call: unknown[]) => {
+      try {
+        const parsed = JSON.parse(call[0] as string);
+        return parsed.failed !== undefined;
+      } catch {
+        return false;
+      }
+    });
+
+    expect(jsonCall).toBeDefined();
+    const output = JSON.parse(jsonCall![0] as string);
+    expect(output.failed).toContain("bad skill!");
+    expect(output.errors["bad skill!"]).toBe("Invalid skill name");
+  });
+
+  it("--json: install failure (provider.fetch throws) appears in failed+errors", async () => {
+    const manifest = {
+      skills: [{ name: "fail-skill" }],
+    };
+
+    setupMocks({
+      readFileSync: () => JSON.stringify(manifest),
+      isSkillInstalled: () => false,
+      providerFetch: async () => {
+        throw new Error("Network timeout");
+      },
+    });
+    const { importCommand } = await import("./import-cmd.js");
+
+    await expect(importCommand("manifest.json", { json: true })).rejects.toThrow("process.exit");
+
+    const jsonCall = consoleLogSpy.mock.calls.find((call: unknown[]) => {
+      try {
+        const parsed = JSON.parse(call[0] as string);
+        return parsed.failed !== undefined;
+      } catch {
+        return false;
+      }
+    });
+
+    expect(jsonCall).toBeDefined();
+    const output = JSON.parse(jsonCall![0] as string);
+    expect(output.failed).toContain("fail-skill");
+    expect(output.errors["fail-skill"]).toBe("Network timeout");
+  });
+
+  it("--json: skill already installed without --force appears in skipped", async () => {
+    const manifest = {
+      skills: [{ name: "existing-skill" }],
+    };
+
+    setupMocks({
+      readFileSync: () => JSON.stringify(manifest),
+      isSkillInstalled: () => true,
+    });
+    const { importCommand } = await import("./import-cmd.js");
+
+    await importCommand("manifest.json", { json: true });
+
+    const jsonCall = consoleLogSpy.mock.calls.find((call: unknown[]) => {
+      try {
+        const parsed = JSON.parse(call[0] as string);
+        return parsed.skipped !== undefined;
+      } catch {
+        return false;
+      }
+    });
+
+    expect(jsonCall).toBeDefined();
+    const output = JSON.parse(jsonCall![0] as string);
+    expect(output.skipped).toContain("existing-skill");
+    expect(output.installed).toEqual([]);
+  });
 });

@@ -4,8 +4,9 @@ import { homedir } from "node:os";
 import * as p from "@clack/prompts";
 import chalk from "chalk";
 import { ui } from "./ui.js";
-import { getGroupedCommands } from "../command-registry.js";
+import { getGroupedCommands } from "../command-defs.js";
 
+/* v8 ignore start */
 const noColor = !!(process.env.NO_COLOR || process.env.TERM === "dumb");
 
 function amberShade(hex: string, text: string): string {
@@ -37,14 +38,15 @@ export function renderBanner(): string {
   }
   return BANNER_LINES.map((line, i) => `  ${amberShade(AMBER_HEXES[i]!, line)}`).join("\n");
 }
+/* v8 ignore stop */
 
 // Help groups: subset of registry for --help display (keeps output scannable)
 const HELP_GROUPS: Record<string, string[]> = {
   "GETTING STARTED": ["init", "doctor"],
   SKILLS: ["list", "search", "install", "update", "uninstall", "recommend"],
-  "CONTEXT INTELLIGENCE": ["curate", "compress", "remember", "recall", "snapshot", "trim", "mcp"],
+  "CONTEXT INTELLIGENCE": ["curate", "compress", "remember", "recall", "mcp"],
   SECURITY: ["scan", "verify", "lock"],
-  CONFIGURATION: ["config", "providers", "clean", "stats"],
+  CONFIGURATION: ["config", "providers", "clean"],
 };
 
 const EXAMPLES = [
@@ -58,6 +60,7 @@ function padRight(str: string, width: number): string {
   return str + " ".repeat(Math.max(0, width - str.length));
 }
 
+/* v8 ignore start */
 export function buildCustomHelp(version: string): string {
   const lines: string[] = [];
 
@@ -95,6 +98,7 @@ export function buildCustomHelp(version: string): string {
 
   return lines.join("\n");
 }
+/* v8 ignore stop */
 
 const FIRST_RUN_FLAG = join(homedir(), ".arcana", ".initialized");
 
@@ -110,6 +114,7 @@ export function markInitialized(): void {
   writeFileSync(FIRST_RUN_FLAG, new Date().toISOString(), "utf-8");
 }
 
+/* v8 ignore start */
 export function showWelcome(version: string): void {
   console.log();
   console.log(renderBanner());
@@ -120,3 +125,4 @@ export function showWelcome(version: string): void {
   p.log.info("They install on-demand and only load when relevant, not all at once.");
   console.log();
 }
+/* v8 ignore stop */

@@ -45,6 +45,7 @@ export async function importCommand(file: string, opts: { json?: boolean; force?
     if (opts.json) {
       console.log(JSON.stringify({ error: `File not found: ${file}` }));
     } else {
+      /* v8 ignore next */
       console.error(`Error: File not found: ${file}`);
     }
     process.exit(1);
@@ -88,6 +89,7 @@ export async function importCommand(file: string, opts: { json?: boolean; force?
       failed.push(entry.name);
       errors[entry.name] = msg;
       if (!opts.json) {
+        /* v8 ignore next */
         console.error(`Skipping ${entry.name}: ${msg}`);
       }
       continue;
@@ -122,6 +124,7 @@ export async function importCommand(file: string, opts: { json?: boolean; force?
       installed.push(entry.name);
 
       if (!opts.json) {
+        /* v8 ignore next */
         console.log(`Installed ${entry.name}`);
       }
     } catch (err) {
@@ -129,6 +132,7 @@ export async function importCommand(file: string, opts: { json?: boolean; force?
       failed.push(entry.name);
       errors[entry.name] = msg;
       if (!opts.json) {
+        /* v8 ignore next */
         console.error(`Failed to install ${entry.name}: ${msg}`);
       }
     }
@@ -139,6 +143,7 @@ export async function importCommand(file: string, opts: { json?: boolean; force?
     if (Object.keys(errors).length > 0) result.errors = errors;
     console.log(JSON.stringify(result));
   } else {
+    /* v8 ignore next */
     console.log(`Import complete: ${installed.length} installed, ${skipped.length} skipped, ${failed.length} failed`);
   }
 

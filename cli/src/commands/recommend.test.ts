@@ -132,6 +132,50 @@ describe("recommendCommand", () => {
     expect(parsed.conflicts[0].skill).toBe("skill-b");
   });
 
+  it("exits with error when no skills available (JSON)", async () => {
+    vi.mocked(detectProjectContext).mockReturnValue(makeContext());
+    vi.mocked(getProviders).mockReturnValue([mockProvider([])] as never);
+
+    const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+
+    await recommendCommand({ json: true });
+
+    const output = vi.mocked(console.log).mock.calls.find((c) => {
+      try {
+        const parsed = JSON.parse(c[0] as string);
+        return parsed.error !== undefined;
+      } catch {
+        return false;
+      }
+    });
+    expect(output).toBeDefined();
+    const parsed = JSON.parse(output![0] as string);
+    expect(parsed.error).toBe("No skills available");
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+    processExitSpy.mockRestore();
+  });
+
+  it("handles provider list() error gracefully", async () => {
+    vi.mocked(detectProjectContext).mockReturnValue(makeContext());
+    const failingProvider = {
+      name: "broken",
+      displayName: "Broken",
+      list: vi.fn().mockRejectedValue(new Error("Network error")),
+      search: vi.fn(),
+      fetch: vi.fn(),
+      info: vi.fn(),
+      clearCache: vi.fn(),
+    };
+    vi.mocked(getProviders).mockReturnValue([failingProvider] as never);
+
+    const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+
+    await recommendCommand({ json: true });
+
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+    processExitSpy.mockRestore();
+  });
+
   it("respects --limit option", async () => {
     vi.mocked(detectProjectContext).mockReturnValue(makeContext());
     const skills = [

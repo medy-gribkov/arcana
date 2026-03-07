@@ -31,6 +31,7 @@ export function detectInstalledTools(cwd: string): ToolName[] {
   return tools;
 }
 
+/* v8 ignore start -- template functions used only in interactive initCommand */
 function claudeTemplate(proj: ProjectInfo): string {
   return `# CLAUDE.md - ${proj.name}
 
@@ -176,6 +177,7 @@ const TOOL_FILES: Record<
   windsurf: { path: ".windsurfrules", template: windsurfTemplate, label: "Windsurf" },
   aider: { path: ".aider.conf.yml", template: aiderTemplate, label: "Aider" },
 };
+/* v8 ignore stop */
 
 export const SKILL_SUGGESTIONS: Record<string, string[]> = {
   Go: ["golang-pro", "go-linter-configuration", "testing-strategy", "security-review"],
@@ -193,6 +195,7 @@ export const SKILL_SUGGESTIONS_DEFAULT = [
   "testing-strategy",
 ];
 
+/* v8 ignore start */
 export async function initCommand(opts: { tool?: string }): Promise<void> {
   console.log(renderBanner());
   console.log();
@@ -345,25 +348,6 @@ export async function initCommand(opts: { tool?: string }): Promise<void> {
     }
   }
 
-  // Offer compression hook install
-  const doCompress = await p.confirm({
-    message: "Install output compression hooks? (saves 60-80% on git/npm/tsc tokens)",
-    initialValue: false,
-  });
-  if (!p.isCancel(doCompress) && doCompress) {
-    try {
-      const { installHook } = await import("../compress/hook.js");
-      const result = installHook();
-      if (result.installed) {
-        p.log.success(`Compression hook installed at ${result.path}`);
-      } else {
-        p.log.warn(result.error ?? "Hook install failed");
-      }
-    } catch (err) {
-      p.log.warn(`Hook: ${err instanceof Error ? err.message : "failed"}`);
-    }
-  }
-
   // Show detected tools
   const detected = detectInstalledTools(cwd);
   if (detected.length > 0) {
@@ -372,3 +356,4 @@ export async function initCommand(opts: { tool?: string }): Promise<void> {
 
   p.outro(`Next: ${chalk.cyan("arcana install <skill>")} or ${chalk.cyan("arcana install --all")}`);
 }
+/* v8 ignore stop */

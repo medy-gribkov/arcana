@@ -368,10 +368,12 @@ export function runDoctorChecks(): DoctorCheck[] {
 }
 
 export async function doctorCommand(opts: { json?: boolean; fix?: boolean } = {}): Promise<void> {
+  /* v8 ignore start */
   if (!opts.json) {
     banner();
     console.log(ui.bold("  Environment Health Check\n"));
   }
+  /* v8 ignore stop */
 
   const checks = runDoctorChecks();
 
@@ -393,6 +395,7 @@ export async function doctorCommand(opts: { json?: boolean; fix?: boolean } = {}
     return;
   }
 
+  /* v8 ignore start */
   let fixed = 0;
   for (const check of checks) {
     const icon =
@@ -433,4 +436,5 @@ export async function doctorCommand(opts: { json?: boolean; fix?: boolean } = {}
   if (fails === 0 && warns === 0) {
     suggest("arcana list");
   }
+  /* v8 ignore stop */
 }

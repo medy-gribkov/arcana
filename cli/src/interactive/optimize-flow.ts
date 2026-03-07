@@ -32,14 +32,14 @@ export async function optimizeInteractive(): Promise<void> {
   const action = await p.select({
     message: "What next?",
     options: [
-      { value: "full", label: "Run full optimization report" },
+      { value: "doctor", label: "Run doctor report" },
       { value: "__back", label: "Back" },
     ],
   });
   handleCancel(action);
 
-  if (action === "full") {
-    const { optimizeCommand } = await import("../commands/optimize.js");
-    await optimizeCommand({ json: false });
+  if (action === "doctor") {
+    const { doctorCommand } = await import("../commands/doctor.js");
+    await doctorCommand({ json: false });
   }
 }

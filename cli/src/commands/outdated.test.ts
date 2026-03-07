@@ -172,6 +172,102 @@ describe("outdatedCommand", () => {
     expect(parsed.outdated[0].available).toBe("3.0.0");
   });
 
+  it("no skills installed outputs JSON", async () => {
+    vi.doMock("../utils/fs.js", () => ({
+      getInstallDir: vi.fn(() => "/fake/skills"),
+      readSkillMeta: vi.fn(() => null),
+    }));
+    vi.doMock("../utils/config.js", () => ({
+      loadConfig: vi.fn(() => ({ defaultProvider: "arcana" })),
+    }));
+    vi.doMock("../registry.js", () => ({
+      getProvider: vi.fn(),
+      getProviders: vi.fn(() => []),
+    }));
+    vi.doMock("node:fs", () => ({
+      existsSync: vi.fn(() => false),
+      readdirSync: vi.fn(() => []),
+      statSync: vi.fn(),
+    }));
+
+    const { outdatedCommand } = await import("./outdated.js");
+    await outdatedCommand({ json: true });
+
+    const output = JSON.parse(consoleLogSpy.mock.calls[0]?.[0] as string);
+    expect(output).toEqual({ outdated: [], upToDate: 0, total: 0 });
+    expect(processExitSpy).toHaveBeenCalledWith(0);
+  });
+
+  it("no providers configured outputs JSON error", async () => {
+    vi.doMock("../utils/fs.js", () => ({
+      getInstallDir: vi.fn(() => "/fake/skills"),
+      readSkillMeta: vi.fn(() => ({ version: "1.0.0", source: "prov" })),
+    }));
+    vi.doMock("../utils/config.js", () => ({
+      loadConfig: vi.fn(() => ({ defaultProvider: "arcana" })),
+    }));
+    vi.doMock("../registry.js", () => ({
+      getProvider: vi.fn(),
+      getProviders: vi.fn(() => []),
+    }));
+    vi.doMock("node:fs", () => ({
+      existsSync: vi.fn((p: string) => {
+        if (p === "/fake/skills") return true;
+        if (p.endsWith("SKILL.md")) return true;
+        return false;
+      }),
+      readdirSync: vi.fn(() => ["my-skill"]),
+      statSync: vi.fn(() => ({ isDirectory: () => true })),
+    }));
+
+    const { outdatedCommand } = await import("./outdated.js");
+    await outdatedCommand({ json: true });
+
+    const output = JSON.parse(consoleLogSpy.mock.calls[0]?.[0] as string);
+    expect(output.error).toBe("No providers configured");
+    expect(processExitSpy).toHaveBeenCalledWith(0);
+  });
+
+  it("reorders providers to prefer skill source", async () => {
+    const secondProvider = {
+      name: "preferred",
+      info: vi.fn(async () => ({ version: "3.0.0" })),
+    };
+    const firstProvider = {
+      name: "other",
+      info: vi.fn(async () => ({ version: "2.0.0" })),
+    };
+
+    vi.doMock("../utils/fs.js", () => ({
+      getInstallDir: vi.fn(() => "/fake/skills"),
+      readSkillMeta: vi.fn(() => ({ version: "1.0.0", source: "preferred" })),
+    }));
+    vi.doMock("../utils/config.js", () => ({
+      loadConfig: vi.fn(() => ({ defaultProvider: "other" })),
+    }));
+    vi.doMock("../registry.js", () => ({
+      getProvider: vi.fn(),
+      getProviders: vi.fn(() => [firstProvider, secondProvider]),
+    }));
+    vi.doMock("node:fs", () => ({
+      existsSync: vi.fn((p: string) => {
+        if (p === "/fake/skills") return true;
+        if (p.endsWith("SKILL.md")) return true;
+        return false;
+      }),
+      readdirSync: vi.fn(() => ["my-skill"]),
+      statSync: vi.fn(() => ({ isDirectory: () => true })),
+    }));
+
+    const { outdatedCommand } = await import("./outdated.js");
+    await outdatedCommand({ json: true });
+
+    // The preferred provider should be checked first
+    expect(secondProvider.info).toHaveBeenCalledWith("my-skill");
+    const output = JSON.parse(consoleLogSpy.mock.calls[0]?.[0] as string);
+    expect(output.outdated[0].source).toBe("preferred");
+  });
+
   it("handles provider errors gracefully", async () => {
     vi.doMock("../utils/fs.js", () => ({
       getInstallDir: vi.fn(() => "/fake/skills"),

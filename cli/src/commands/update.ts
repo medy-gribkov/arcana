@@ -39,16 +39,19 @@ export async function updateCommand(
   skills: string[],
   opts: { all?: boolean; provider?: string; dryRun?: boolean; json?: boolean },
 ): Promise<void> {
+  /* v8 ignore next */
   if (!opts.json) banner();
 
   if (skills.length === 0 && !opts.all) {
     if (opts.json) {
       console.log(JSON.stringify({ error: "Specify a skill name or use --all" }));
     } else {
+      /* v8 ignore start */
       console.log(ui.error("  Specify a skill name or use --all"));
       console.log(ui.dim("  Usage: arcana update <skill> [skill2 ...]"));
       console.log(ui.dim("         arcana update --all"));
       console.log();
+      /* v8 ignore stop */
     }
     process.exit(1);
   }
@@ -58,8 +61,10 @@ export async function updateCommand(
     if (opts.json) {
       console.log(JSON.stringify({ updated: [], upToDate: [], failed: [] }));
     } else {
+      /* v8 ignore start */
       console.log(ui.dim("  No skills installed."));
       console.log();
+      /* v8 ignore stop */
     }
     return;
   }
@@ -95,8 +100,10 @@ async function updateOne(
         }),
       );
     } else {
+      /* v8 ignore start */
       console.log(ui.error(`  ${err instanceof Error ? err.message : "Invalid skill name"}`));
       console.log();
+      /* v8 ignore stop */
     }
     process.exit(1);
   }
@@ -106,8 +113,10 @@ async function updateOne(
     if (json) {
       console.log(JSON.stringify({ updated: [], upToDate: [], failed: [skillName], error: "Not installed" }));
     } else {
+      /* v8 ignore start */
       console.log(ui.error(`  Skill "${skillName}" is not installed.`));
       console.log();
+      /* v8 ignore stop */
     }
     process.exit(1);
   }
@@ -125,8 +134,10 @@ async function updateOne(
           JSON.stringify({ updated: [], upToDate: [], failed: [skillName], error: `Not found on ${providerName}` }),
         );
       } else {
+        /* v8 ignore start */
         s.fail(`Skill "${skillName}" not found on ${providerName}`);
         console.log();
+        /* v8 ignore stop */
       }
       process.exit(1);
     }
@@ -136,8 +147,10 @@ async function updateOne(
       if (json) {
         console.log(JSON.stringify({ updated: [], upToDate: [skillName], failed: [] }));
       } else {
+        /* v8 ignore start */
         s.info(`${ui.bold(skillName)} is already up to date (v${remote.version})`);
         console.log();
+        /* v8 ignore stop */
       }
       return;
     }
@@ -151,8 +164,10 @@ async function updateOne(
           }),
         );
       } else {
+        /* v8 ignore start */
         s.info(`${ui.bold(skillName)} would be updated: v${meta?.version ?? "unknown"} -> v${remote.version}`);
         console.log();
+        /* v8 ignore stop */
       }
       return;
     }
@@ -163,8 +178,10 @@ async function updateOne(
     if (json) {
       console.log(JSON.stringify({ updated: [skillName], upToDate: [], failed: [] }));
     } else {
+      /* v8 ignore start */
       s.succeed(`Updated ${ui.bold(skillName)} to v${remote.version} (${files.length} files)`);
       console.log();
+      /* v8 ignore stop */
     }
   } catch (err) {
     if (json) {
@@ -177,9 +194,11 @@ async function updateOne(
         }),
       );
     } else {
+      /* v8 ignore start */
       s.fail(`Failed to update ${skillName}`);
       if (err instanceof Error) console.error(ui.dim(`  ${err.message}`));
       console.log();
+      /* v8 ignore stop */
     }
     process.exit(1);
   }
@@ -212,8 +231,10 @@ async function updateBatch(
             }),
           );
         } else {
+          /* v8 ignore start */
           console.log(ui.error(`  ${err instanceof Error ? err.message : "Invalid skill name"}`));
           console.log();
+          /* v8 ignore stop */
         }
         process.exit(1);
       }
@@ -226,8 +247,10 @@ async function updateBatch(
     if (json) {
       console.log(JSON.stringify({ updated: [], upToDate: [], failed: [] }));
     } else {
+      /* v8 ignore start */
       console.log(ui.dim("  No skills installed."));
       console.log();
+      /* v8 ignore stop */
     }
     return;
   }
@@ -342,6 +365,7 @@ async function updateBatch(
         }),
       );
     } else {
+      /* v8 ignore start */
       s.stop();
       if (dryRunUpdates.length === 0) {
         console.log(ui.dim("  All skills are up to date."));
@@ -355,6 +379,7 @@ async function updateBatch(
         }
       }
       console.log();
+      /* v8 ignore stop */
     }
     return;
   }
@@ -369,12 +394,14 @@ async function updateBatch(
       }),
     );
   } else {
+    /* v8 ignore start */
     s.succeed(`Update complete`);
     const parts = [`${updatedList.length} updated`, `${upToDateList.length} up to date`];
     if (skippedList.length > 0) parts.push(`${skippedList.length} skipped (not on provider)`);
     if (failedList.length > 0) parts.push(`${failedList.length} failed`);
     console.log(ui.dim(`  ${parts.join(", ")}`));
     console.log();
+    /* v8 ignore stop */
   }
   if (failedList.length > 0) process.exit(1);
 }

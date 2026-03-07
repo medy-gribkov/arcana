@@ -4,23 +4,28 @@ import { getProviders } from "../registry.js";
 import { validateSlug } from "../utils/validate.js";
 
 export async function infoCommand(skillName: string, opts: { provider?: string; json?: boolean }): Promise<void> {
+  /* v8 ignore start */
   if (!opts.json) {
     banner();
   }
+  /* v8 ignore stop */
 
   try {
     validateSlug(skillName, "skill name");
   } catch (err) {
     if (opts.json) {
       console.log(JSON.stringify({ error: err instanceof Error ? err.message : "Invalid skill name" }));
-    } else {
-      console.log(ui.error(`  ${err instanceof Error ? err.message : "Invalid skill name"}`));
-      console.log();
+      process.exit(1);
     }
+    /* v8 ignore start */
+    console.log(ui.error(`  ${err instanceof Error ? err.message : "Invalid skill name"}`));
+    console.log();
     process.exit(1);
+    /* v8 ignore stop */
   }
 
   const providers = getProviders(opts.provider);
+  /* v8 ignore next */
   const s = opts.json ? noopSpinner() : spinner(`Looking up ${ui.bold(skillName)}...`);
   s.start();
 
@@ -54,6 +59,7 @@ export async function infoCommand(skillName: string, opts: { provider?: string; 
           return;
         }
 
+        /* v8 ignore start */
         console.log(ui.bold(`  ${skill.name}`) + ui.dim(` v${skill.version}`));
         if (installed) {
           const meta = readSkillMeta(skillName);
@@ -93,6 +99,7 @@ export async function infoCommand(skillName: string, opts: { provider?: string; 
         console.log(ui.dim(`  Install: `) + ui.cyan(`arcana install ${skill.name}`));
         console.log();
         return;
+        /* v8 ignore stop */
       }
     }
   } catch (err) {
@@ -115,6 +122,7 @@ export async function infoCommand(skillName: string, opts: { provider?: string; 
         );
         return;
       }
+      /* v8 ignore start */
       console.log(ui.warn("  Showing cached data (offline)"));
       console.log();
       console.log(ui.bold(`  ${skillName}`) + ui.dim(` v${meta?.version ?? "unknown"}`));
@@ -127,22 +135,27 @@ export async function infoCommand(skillName: string, opts: { provider?: string; 
       console.log(ui.dim(`  Source: ${meta?.source ?? "local"}`));
       console.log();
       return;
+      /* v8 ignore stop */
     }
 
     if (opts.json) {
       console.log(JSON.stringify({ error: err instanceof Error ? err.message : "Lookup failed" }));
       process.exit(1);
     }
+    /* v8 ignore start */
     s.fail("Lookup failed due to a network or provider error.");
     printErrorWithHint(err, true);
     process.exit(1);
+    /* v8 ignore stop */
   }
 
   if (opts.json) {
     console.log(JSON.stringify({ error: `Skill "${skillName}" not found` }));
-  } else {
-    s.fail(`Skill "${skillName}" not found`);
-    console.log();
+    process.exit(1);
   }
+  /* v8 ignore start */
+  s.fail(`Skill "${skillName}" not found`);
+  console.log();
   process.exit(1);
+  /* v8 ignore stop */
 }

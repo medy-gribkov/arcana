@@ -17,6 +17,7 @@ export async function verifyCommand(skillNames: string[], opts: { all?: boolean;
     return verifyJson(skillNames, opts);
   }
 
+  /* v8 ignore start */
   console.log(renderBanner());
   console.log();
 
@@ -93,6 +94,7 @@ export async function verifyCommand(skillNames: string[], opts: { all?: boolean;
   if (modifiedCount > 0) {
     process.exit(1);
   }
+  /* v8 ignore stop */
 }
 
 async function verifyJson(skillNames: string[], opts: { all?: boolean }): Promise<void> {

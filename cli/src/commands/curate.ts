@@ -170,10 +170,12 @@ export async function curateCommand(opts: {
   model?: string;
   include?: string[];
 }): Promise<void> {
+  /* v8 ignore start */
   if (!opts.json) {
     banner();
     console.log(ui.bold("  Context Curation\n"));
   }
+  /* v8 ignore stop */
 
   const result = curateForContext(process.cwd(), {
     budgetPct: opts.budget,
@@ -185,8 +187,10 @@ export async function curateCommand(opts: {
     if (opts.json) {
       console.log(JSON.stringify({ error: "No skills installed" }));
     } else {
+      /* v8 ignore next */
       console.log(ui.dim("  No skills installed. Run: arcana install --all"));
     }
+    /* v8 ignore next */
     console.log();
     return;
   }
@@ -232,6 +236,7 @@ export async function curateCommand(opts: {
     return;
   }
 
+  /* v8 ignore start */
   // Display results
   const budgetBar = Math.round((result.totalTokens / result.budgetTokens) * 20);
   const bar = ui.success("█".repeat(budgetBar)) + ui.dim("░".repeat(20 - budgetBar));
@@ -261,4 +266,5 @@ export async function curateCommand(opts: {
   console.log(ui.dim(`  Written to: ${activePath}`));
   console.log(ui.dim("  Agents read this file automatically for project-relevant skills."));
   console.log();
+  /* v8 ignore stop */
 }

@@ -115,6 +115,50 @@ describe("parseFrontmatter", () => {
   it("returns null when name is missing", () => {
     expect(parseFrontmatter("description: test")).toBeNull();
   });
+
+  it("handles YAML |- chomp indicator", () => {
+    const raw = "name: test\ndescription: |-\n  Line one\n  Line two";
+    const result = parseFrontmatter(raw);
+    expect(result).not.toBeNull();
+    // |- is not "|", so multiline lines join with space
+    expect(result!.description).toBe("Line one Line two");
+  });
+
+  it("handles YAML >- chomp indicator", () => {
+    const raw = "name: test\ndescription: >-\n  Line one\n  Line two";
+    const result = parseFrontmatter(raw);
+    expect(result).not.toBeNull();
+    expect(result!.description).toBe("Line one Line two");
+  });
+
+  it("handles YAML >+ keep indicator", () => {
+    const raw = "name: test\ndescription: >+\n  Line one\n  Line two";
+    const result = parseFrontmatter(raw);
+    expect(result).not.toBeNull();
+    expect(result!.description).toBe("Line one Line two");
+  });
+
+  it("handles YAML |+ keep indicator", () => {
+    const raw = "name: test\ndescription: |+\n  Line one\n  Line two";
+    const result = parseFrontmatter(raw);
+    expect(result).not.toBeNull();
+    expect(result!.description).toBe("Line one Line two");
+  });
+
+  it("handles empty continuation lines in multiline", () => {
+    const raw = "name: test\ndescription: |\n  First paragraph\n\n  Second paragraph";
+    const result = parseFrontmatter(raw);
+    expect(result).not.toBeNull();
+    expect(result!.description).toBe("First paragraph\n\nSecond paragraph");
+  });
+
+  it("returns empty description for empty multiline block", () => {
+    const raw = "name: test\ndescription: |\nnext-field: value";
+    const result = parseFrontmatter(raw);
+    expect(result).not.toBeNull();
+    // No continuation lines, so description stays empty
+    expect(result!.description).toBe("");
+  });
 });
 
 describe("fixSkillFrontmatter", () => {
@@ -189,5 +233,114 @@ describe("validateSkillDir", () => {
     const result = validateSkillDir(dir, "bad-fm");
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes("frontmatter"))).toBe(true);
+  });
+
+  it("warns about metadata field", () => {
+    const dir = makeTempSkill(
+      "meta-skill",
+      `---\nname: meta-skill\ndescription: ${longDesc}\nmetadata: some-value\n---\n## Heading\nBody content goes here, needs at least 50 chars in the body section\n\n\`\`\`js\nconst x = 1;\n\`\`\``,
+    );
+    const result = validateSkillDir(dir, "meta-skill");
+    expect(result.warnings.some((w) => w.includes("metadata"))).toBe(true);
+  });
+
+  it("reports non-standard field as info", () => {
+    const dir = makeTempSkill(
+      "unknown-field",
+      `---\nname: unknown-field\ndescription: ${longDesc}\nunknown-field: value\n---\n## Heading\nBody content goes here, needs at least 50 chars in the body section\n\n\`\`\`js\nconst x = 1;\n\`\`\``,
+    );
+    const result = validateSkillDir(dir, "unknown-field");
+    expect(result.infos.some((i) => i.includes("Non-standard field"))).toBe(true);
+    expect(result.infos.some((i) => i.includes("unknown-field"))).toBe(true);
+  });
+
+  it("reports valid optional fields as info", () => {
+    const dir = makeTempSkill(
+      "license-skill",
+      `---\nname: license-skill\ndescription: ${longDesc}\nlicense: MIT\n---\n## Heading\nBody content goes here, needs at least 50 chars in the body section\n\n\`\`\`js\nconst x = 1;\n\`\`\``,
+    );
+    const result = validateSkillDir(dir, "license-skill");
+    expect(result.infos.some((i) => i.includes("Optional field"))).toBe(true);
+  });
+
+  it("warns about description starting with quote", () => {
+    // Use multiline syntax so the description isn't quote-stripped by parseFrontmatter
+    const quotedLine = '"' + "A".repeat(MIN_DESC_LENGTH);
+    const content = [
+      "---",
+      "name: quoted-desc",
+      "description: >",
+      `  ${quotedLine}`,
+      "---",
+      "## Heading",
+      "Body content goes here, needs at least 50 chars in the body section",
+      "",
+      "```js",
+      "const x = 1;",
+      "```",
+    ].join("\n");
+    const dir = makeTempSkill("quoted-desc", content);
+    const result = validateSkillDir(dir, "quoted-desc");
+    expect(result.warnings.some((w) => w.includes("quote character"))).toBe(true);
+  });
+
+  it("warns when body is very short", () => {
+    const dir = makeTempSkill(
+      "short-body",
+      `---\nname: short-body\ndescription: ${longDesc}\n---\nShort`,
+    );
+    const result = validateSkillDir(dir, "short-body");
+    expect(result.warnings.some((w) => w.includes("very short"))).toBe(true);
+  });
+
+  it("warns when body has no headings", () => {
+    const bodyContent = "This is a long body without any headings at all, just plain text that goes on for more than fifty characters easily.";
+    const dir = makeTempSkill(
+      "no-headings",
+      `---\nname: no-headings\ndescription: ${longDesc}\n---\n${bodyContent}`,
+    );
+    const result = validateSkillDir(dir, "no-headings");
+    expect(result.warnings.some((w) => w.includes("no ## headings"))).toBe(true);
+  });
+
+  it("warns when body has no code blocks", () => {
+    const bodyContent = "## Heading\nThis is a long body with a heading but no code blocks at all, just plain text content filling space.";
+    const dir = makeTempSkill(
+      "no-code",
+      `---\nname: no-code\ndescription: ${longDesc}\n---\n${bodyContent}`,
+    );
+    const result = validateSkillDir(dir, "no-code");
+    expect(result.warnings.some((w) => w.includes("No code blocks"))).toBe(true);
+  });
+
+  it("reports missing BAD/GOOD patterns as info", () => {
+    const bodyContent = "## Heading\nThis is a long body that has a heading and code blocks but no contrast patterns anywhere at all in the entire content.\n\n```js\nconst x = 1;\n```";
+    const dir = makeTempSkill(
+      "no-patterns",
+      `---\nname: no-patterns\ndescription: ${longDesc}\n---\n${bodyContent}`,
+    );
+    const result = validateSkillDir(dir, "no-patterns");
+    expect(result.infos.some((i) => i.includes("BAD/GOOD"))).toBe(true);
+  });
+
+  it("does not report BAD/GOOD info when patterns present", () => {
+    const bodyContent = "## Heading\nThis is a long body that has a heading and code blocks and also has BAD and GOOD pattern examples throughout.\n\n```js\nconst x = 1;\n```";
+    const dir = makeTempSkill(
+      "has-patterns",
+      `---\nname: has-patterns\ndescription: ${longDesc}\n---\n${bodyContent}`,
+    );
+    const result = validateSkillDir(dir, "has-patterns");
+    expect(result.infos.some((i) => i.includes("BAD/GOOD"))).toBe(false);
+  });
+
+  it("returns error when description too long", () => {
+    const tooLongDesc = "A".repeat(1025);
+    const dir = makeTempSkill(
+      "long-desc",
+      `---\nname: long-desc\ndescription: ${tooLongDesc}\n---\n## Heading\nBody content goes here, needs at least 50 chars in the body section\n\n\`\`\`js\nconst x = 1;\n\`\`\``,
+    );
+    const result = validateSkillDir(dir, "long-desc");
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes("too long"))).toBe(true);
   });
 });

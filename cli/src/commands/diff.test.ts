@@ -190,6 +190,136 @@ describe("diffCommand", () => {
     expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 
+  it("handles subdirectories in readDirRecursive (JSON mode)", async () => {
+    vi.doMock("../utils/validate.js", () => ({
+      validateSlug: vi.fn(),
+    }));
+    vi.doMock("../utils/fs.js", () => ({
+      getInstallDir: vi.fn(() => INSTALL_DIR),
+      readSkillMeta: vi.fn(() => ({ version: "1.0.0" })),
+    }));
+    vi.doMock("../utils/config.js", () => ({
+      loadConfig: vi.fn(() => ({ defaultProvider: "arcana" })),
+    }));
+    vi.doMock("../registry.js", () => ({
+      getProvider: vi.fn(() => ({
+        fetch: vi.fn(async () => [
+          { path: "SKILL.md", content: "# Hello" },
+          { path: "rules/rule1.md", content: "# Rule 1" },
+        ]),
+        info: vi.fn(async () => ({ version: "1.0.0" })),
+      })),
+    }));
+    vi.doMock("node:fs", () => ({
+      existsSync: vi.fn(() => true),
+      readFileSync: vi.fn((path: string) => {
+        if (path.toString().includes("rule1.md")) return "# Rule 1";
+        return "# Hello";
+      }),
+      readdirSync: vi.fn((dir: string) => {
+        if (dir === SKILL_DIR) return ["SKILL.md", "rules"];
+        if (dir === join(SKILL_DIR, "rules")) return ["rule1.md"];
+        return [];
+      }),
+      lstatSync: vi.fn((path: string) => ({
+        isDirectory: () => path.toString().includes("rules") && !path.toString().includes("rule1"),
+        isSymbolicLink: () => false,
+      })),
+    }));
+
+    const { diffCommand } = await import("./diff.js");
+    await diffCommand("my-skill", { json: true });
+
+    const output = consoleLogSpy.mock.calls[0]?.[0] as string;
+    const parsed = JSON.parse(output);
+    // Both files should be present with no differences
+    expect(parsed.added).toEqual([]);
+    expect(parsed.removed).toEqual([]);
+    expect(parsed.modified).toEqual([]);
+  });
+
+  it("shows error and exits when provider.fetch throws (JSON mode)", async () => {
+    vi.doMock("../utils/validate.js", () => ({
+      validateSlug: vi.fn(),
+    }));
+    vi.doMock("../utils/fs.js", () => ({
+      getInstallDir: vi.fn(() => INSTALL_DIR),
+      readSkillMeta: vi.fn(() => ({ version: "1.0.0" })),
+    }));
+    vi.doMock("../utils/config.js", () => ({
+      loadConfig: vi.fn(() => ({ defaultProvider: "arcana" })),
+    }));
+    vi.doMock("../registry.js", () => ({
+      getProvider: vi.fn(() => ({
+        fetch: vi.fn(async () => {
+          throw new Error("Network error");
+        }),
+        info: vi.fn(async () => null),
+      })),
+    }));
+    vi.doMock("node:fs", () => ({
+      existsSync: vi.fn(() => true),
+      readFileSync: vi.fn(() => "# Hello"),
+      readdirSync: vi.fn(() => []),
+      lstatSync: vi.fn(() => ({
+        isDirectory: () => false,
+        isSymbolicLink: () => false,
+      })),
+    }));
+
+    const { diffCommand } = await import("./diff.js");
+
+    await expect(diffCommand("my-skill", {})).rejects.toThrow(ExitError);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Failed to fetch remote skill"));
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Network error"));
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it("readDirRecursive continues on unreadable entries", async () => {
+    vi.doMock("../utils/validate.js", () => ({
+      validateSlug: vi.fn(),
+    }));
+    vi.doMock("../utils/fs.js", () => ({
+      getInstallDir: vi.fn(() => INSTALL_DIR),
+      readSkillMeta: vi.fn(() => ({ version: "1.0.0" })),
+    }));
+    vi.doMock("../utils/config.js", () => ({
+      loadConfig: vi.fn(() => ({ defaultProvider: "arcana" })),
+    }));
+    vi.doMock("../registry.js", () => ({
+      getProvider: vi.fn(() => ({
+        fetch: vi.fn(async () => [{ path: "SKILL.md", content: "# Hello" }]),
+        info: vi.fn(async () => ({ version: "1.0.0" })),
+      })),
+    }));
+    vi.doMock("node:fs", () => ({
+      existsSync: vi.fn(() => true),
+      readFileSync: vi.fn(() => "# Hello"),
+      readdirSync: vi.fn((dir: string) => {
+        if (dir === SKILL_DIR) return ["SKILL.md", "unreadable-file"];
+        return [];
+      }),
+      lstatSync: vi.fn((path: string) => {
+        if (path.toString().includes("unreadable-file")) {
+          throw new Error("Permission denied");
+        }
+        return {
+          isDirectory: () => false,
+          isSymbolicLink: () => false,
+        };
+      }),
+    }));
+
+    const { diffCommand } = await import("./diff.js");
+    await diffCommand("my-skill", { json: true });
+
+    const output = consoleLogSpy.mock.calls[0]?.[0] as string;
+    const parsed = JSON.parse(output);
+    // Should still work, just skipping the unreadable file
+    expect(parsed.skill).toBe("my-skill");
+    expect(parsed.removed).toEqual([]);
+  });
+
   it("exits with error for invalid skill name", async () => {
     vi.doMock("../utils/validate.js", () => ({
       validateSlug: vi.fn(() => {

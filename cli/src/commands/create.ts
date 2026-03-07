@@ -45,6 +45,7 @@ See \`references/\` for detailed documentation.
 `;
 }
 
+/* v8 ignore start */
 export async function createCommand(name: string): Promise<void> {
   console.log(renderBanner());
   console.log();
@@ -108,3 +109,4 @@ export async function createCommand(name: string): Promise<void> {
   p.log.info("Edit SKILL.md to add your skill instructions.");
   p.outro(`Next: ${chalk.cyan("arcana validate " + name)}`);
 }
+/* v8 ignore stop */

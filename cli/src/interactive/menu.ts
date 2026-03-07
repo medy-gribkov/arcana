@@ -3,7 +3,7 @@ import chalk from "chalk";
 import { renderBanner } from "../utils/help.js";
 import { loadConfig } from "../utils/config.js";
 import { getProviders, clearProviderCache } from "../registry.js";
-import { getCliReference } from "../command-registry.js";
+import { getCliReference } from "../command-defs.js";
 import type { SkillInfo } from "../types.js";
 import { AMBER, countInstalled, buildMenuOptions } from "./helpers.js";
 import { SKILL_CATEGORIES } from "./categories.js";

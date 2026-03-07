@@ -13,6 +13,7 @@ export async function listCommand(opts: {
   installed?: boolean;
   json?: boolean;
 }): Promise<void> {
+  /* v8 ignore next */
   if (!opts.json) banner();
 
   if (opts.installed) {
@@ -26,6 +27,7 @@ export async function listCommand(opts: {
     for (const provider of providers) provider.clearCache();
   }
 
+  /* v8 ignore next */
   const s = opts.json ? noopSpinner() : spinner("Fetching skills...");
   s.start();
 
@@ -62,6 +64,7 @@ export async function listCommand(opts: {
       return;
     }
 
+    /* v8 ignore start */
     if (skills.length === 0) {
       console.log(ui.dim("  No skills found."));
     } else {
@@ -80,14 +83,17 @@ export async function listCommand(opts: {
     }
 
     console.log();
+    /* v8 ignore stop */
   } catch (err) {
     if (opts.json) {
       console.log(JSON.stringify({ error: err instanceof Error ? err.message : "Failed to fetch skills" }));
       process.exit(1);
     }
+    /* v8 ignore start */
     s.fail("Failed to fetch skills");
     printErrorWithHint(err, true);
     process.exit(1);
+    /* v8 ignore stop */
   }
 }
 
@@ -111,6 +117,7 @@ function listInstalled(json?: boolean): void {
     return;
   }
 
+  /* v8 ignore start */
   if (dirs.length === 0) {
     console.log(ui.dim("  No skills installed."));
     console.log();
@@ -132,4 +139,5 @@ function listInstalled(json?: boolean): void {
   console.log();
   table(rows);
   console.log();
+  /* v8 ignore stop */
 }

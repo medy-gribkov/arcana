@@ -192,4 +192,107 @@ describe("lockCommand", () => {
 
     expect(processExitSpy).toHaveBeenCalledWith(1);
   });
+
+  it("CI mode JSON with valid state", async () => {
+    mockReadLockfile.mockReturnValue([
+      { skill: "my-skill", version: "1.0.0", hash: "abc123", source: "test", installedAt: "2024-01-01" },
+    ]);
+    mockReaddirSync
+      .mockReturnValueOnce(["my-skill"]) // installDir listing
+      .mockReturnValueOnce(["SKILL.md"]); // skill dir listing
+    mockLstatSync
+      .mockReturnValueOnce(makeDirStat()) // my-skill is a dir
+      .mockReturnValueOnce(makeFileStat()); // SKILL.md is a file
+
+    await lockCommand({ ci: true, json: true });
+
+    const jsonCall = consoleLogSpy.mock.calls.find((c: unknown[]) => {
+      try {
+        const p = JSON.parse(c[0]);
+        return p.action === "ci";
+      } catch {
+        return false;
+      }
+    });
+    expect(jsonCall).toBeDefined();
+    const output = JSON.parse(jsonCall[0]);
+    expect(output).toMatchObject({ action: "ci", valid: true, mismatches: [], missing: [], extra: [] });
+  });
+
+  it("CI mode JSON with missing skills", async () => {
+    mockReadLockfile.mockReturnValue([
+      { skill: "skill-a", version: "1.0.0", hash: "abc123", source: "test", installedAt: "2024-01-01" },
+      { skill: "skill-b", version: "1.0.0", hash: "def456", source: "test", installedAt: "2024-01-01" },
+    ]);
+    // installDir exists but has no skill directories
+    mockReaddirSync.mockReturnValueOnce([]);
+
+    await lockCommand({ ci: true, json: true });
+
+    const jsonCall = consoleLogSpy.mock.calls.find((c: unknown[]) => {
+      try {
+        const p = JSON.parse(c[0]);
+        return p.action === "ci";
+      } catch {
+        return false;
+      }
+    });
+    expect(jsonCall).toBeDefined();
+    const output = JSON.parse(jsonCall[0]);
+    expect(output.valid).toBe(false);
+    expect(output.missing).toContain("skill-a");
+    expect(output.missing).toContain("skill-b");
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it("CI mode JSON with extra skills", async () => {
+    mockReadLockfile.mockReturnValue([
+      { skill: "skill-a", version: "1.0.0", hash: "abc123", source: "test", installedAt: "2024-01-01" },
+    ]);
+    // installDir has skill-a plus an extra skill-c not in lockfile
+    mockReaddirSync
+      .mockReturnValueOnce(["skill-a", "skill-c"]) // installDir listing
+      .mockReturnValueOnce(["SKILL.md"]); // skill-a dir listing
+    mockLstatSync
+      .mockReturnValueOnce(makeDirStat()) // skill-a is a dir
+      .mockReturnValueOnce(makeDirStat()) // skill-c is a dir
+      .mockReturnValueOnce(makeFileStat()); // skill-a/SKILL.md is a file
+
+    await lockCommand({ ci: true, json: true });
+
+    const jsonCall = consoleLogSpy.mock.calls.find((c: unknown[]) => {
+      try {
+        const p = JSON.parse(c[0]);
+        return p.action === "ci";
+      } catch {
+        return false;
+      }
+    });
+    expect(jsonCall).toBeDefined();
+    const output = JSON.parse(jsonCall[0]);
+    expect(output.valid).toBe(false);
+    expect(output.extra).toContain("skill-c");
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it("CI mode JSON with no lockfile file", async () => {
+    mockReadLockfile.mockReturnValue([]);
+    mockExistsSync.mockReturnValue(false);
+
+    await lockCommand({ ci: true, json: true });
+
+    const jsonCall = consoleLogSpy.mock.calls.find((c: unknown[]) => {
+      try {
+        const p = JSON.parse(c[0]);
+        return p.action === "ci" || p.error;
+      } catch {
+        return false;
+      }
+    });
+    expect(jsonCall).toBeDefined();
+    const output = JSON.parse(jsonCall[0]);
+    expect(output.valid).toBe(false);
+    expect(output.error).toBe("No lockfile found");
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+  });
 });

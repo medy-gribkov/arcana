@@ -1,5 +1,6 @@
 import { Provider } from "./providers/base.js";
 import { ArcanaProvider } from "./providers/arcana.js";
+import { AnthropicsProvider } from "./providers/anthropics.js";
 import { GitHubProvider, validateSlug } from "./providers/github.js";
 import { loadConfig } from "./utils/config.js";
 import { errorAndExit } from "./utils/ui.js";
@@ -26,6 +27,8 @@ function createProvider(name: string, type: string, url: string): Provider {
 
   if (name === "arcana") {
     provider = new ArcanaProvider();
+  } else if (name === "anthropics") {
+    provider = new AnthropicsProvider();
   } else if (type === "github") {
     const { owner, repo } = parseProviderSlug(url);
     try {

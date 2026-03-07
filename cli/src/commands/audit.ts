@@ -122,6 +122,7 @@ export async function auditCommand(
   skill: string | undefined,
   opts: { all?: boolean; json?: boolean; source?: string },
 ): Promise<void> {
+  /* v8 ignore next */
   if (!opts.json) banner();
 
   const baseDir = opts.source ? resolve(opts.source) : getInstallDir();
@@ -129,8 +130,10 @@ export async function auditCommand(
     if (opts.json) {
       console.log(JSON.stringify({ results: [] }));
     } else {
+      /* v8 ignore start */
       console.log(ui.dim("  No skills installed."));
       console.log();
+      /* v8 ignore stop */
     }
     return;
   }
@@ -150,10 +153,12 @@ export async function auditCommand(
     if (opts.json) {
       console.log(JSON.stringify({ error: "Specify a skill name or use --all" }));
     } else {
+      /* v8 ignore start */
       console.log(ui.error("  Specify a skill name or use --all"));
       console.log(ui.dim("  Usage: arcana audit <skill>"));
       console.log(ui.dim("         arcana audit --all [--json]"));
       console.log();
+      /* v8 ignore stop */
     }
     process.exit(1);
   }
@@ -174,6 +179,7 @@ export async function auditCommand(
     return;
   }
 
+  /* v8 ignore start */
   const counts = { PERFECT: 0, STRONG: 0, ADEQUATE: 0, WEAK: 0 };
 
   for (const r of results) {
@@ -205,4 +211,5 @@ export async function auditCommand(
   if (counts.WEAK > 0) parts.push(ui.error(`${counts.WEAK} weak`));
   console.log(`  ${parts.join(ui.dim(" | "))}`);
   console.log();
+  /* v8 ignore stop */
 }

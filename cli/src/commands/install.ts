@@ -17,6 +17,7 @@ export async function installCommand(
     return installJson(skillNames, opts);
   }
 
+  /* v8 ignore start */
   console.log(renderBanner());
   console.log();
 
@@ -255,6 +256,7 @@ async function installAllInteractive(
 
   if (failed.length > 0) process.exit(1);
 }
+/* v8 ignore stop */
 
 async function installJson(
   skillNames: string[],

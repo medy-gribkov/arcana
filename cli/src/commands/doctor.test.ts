@@ -306,6 +306,123 @@ describe("doctor", () => {
     });
   });
 
+  describe("checkSessionBloat via runDoctorChecks", () => {
+    it("should warn when session .jsonl files exceed 50 MB", async () => {
+      // existsSync: true for projects dir and everything else
+      mockFs.existsSync.mockReturnValue(true);
+      // readdirSync: return projects, then jsonl files inside each project
+      mockFs.readdirSync.mockImplementation((path: string) => {
+        if (path.toString().includes("projects") && !path.toString().includes("proj-a")) {
+          return ["proj-a"];
+        }
+        if (path.toString().includes("proj-a")) {
+          return ["session1.jsonl"];
+        }
+        return [];
+      });
+      // statSync: directories for project folders, bloated size for .jsonl
+      mockFs.statSync.mockImplementation((path: string) => {
+        if (path.toString().includes(".jsonl")) {
+          return { isDirectory: () => false, size: 60 * 1024 * 1024 }; // 60 MB
+        }
+        return { isDirectory: () => true, size: 0 };
+      });
+      // openSync/readSync for skill validity check
+      mockFs.openSync.mockReturnValue(3);
+      mockFs.readSync.mockImplementation((_fd: number, buf: Buffer) => {
+        buf.write("---\n", 0);
+        return 4;
+      });
+      // Git config
+      mockChildProcess.execSync.mockReturnValueOnce("User\n").mockReturnValueOnce("user@test.com\n");
+      mockFsUtils.getDirSize.mockReturnValue(1024);
+
+      const { runDoctorChecks } = await import("./doctor.js");
+      const checks = runDoctorChecks();
+      const sessionCheck = checks.find((c) => c.name === "Session bloat");
+
+      expect(sessionCheck).toBeDefined();
+      expect(sessionCheck?.status).toBe("warn");
+      expect(sessionCheck?.message).toContain("session files >50 MB");
+      expect(sessionCheck?.message).toContain("proj-a");
+      expect(sessionCheck?.fix).toBe("Run: arcana clean --aggressive");
+    });
+
+    it("should sort bloated sessions by size, largest first", async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readdirSync.mockImplementation((path: string) => {
+        if (path.toString().includes("projects") && !path.toString().includes("proj-")) {
+          return ["proj-small", "proj-large"];
+        }
+        if (path.toString().includes("proj-small")) {
+          return ["small.jsonl"];
+        }
+        if (path.toString().includes("proj-large")) {
+          return ["large.jsonl"];
+        }
+        return [];
+      });
+      mockFs.statSync.mockImplementation((path: string) => {
+        if (path.toString().includes("small.jsonl")) {
+          return { isDirectory: () => false, size: 55 * 1024 * 1024 }; // 55 MB
+        }
+        if (path.toString().includes("large.jsonl")) {
+          return { isDirectory: () => false, size: 100 * 1024 * 1024 }; // 100 MB
+        }
+        return { isDirectory: () => true, size: 0 };
+      });
+      mockFs.openSync.mockReturnValue(3);
+      mockFs.readSync.mockImplementation((_fd: number, buf: Buffer) => {
+        buf.write("---\n", 0);
+        return 4;
+      });
+      mockChildProcess.execSync.mockReturnValueOnce("User\n").mockReturnValueOnce("user@test.com\n");
+      mockFsUtils.getDirSize.mockReturnValue(1024);
+
+      const { runDoctorChecks } = await import("./doctor.js");
+      const checks = runDoctorChecks();
+      const sessionCheck = checks.find((c) => c.name === "Session bloat");
+
+      expect(sessionCheck?.status).toBe("warn");
+      expect(sessionCheck?.message).toContain("2 session files");
+      // Largest should be mentioned: proj-large (100 MB)
+      expect(sessionCheck?.message).toContain("proj-large");
+    });
+
+    it("should pass when no session files exceed 50 MB", async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readdirSync.mockImplementation((path: string) => {
+        if (path.toString().includes("projects") && !path.toString().includes("proj-a")) {
+          return ["proj-a"];
+        }
+        if (path.toString().includes("proj-a")) {
+          return ["session.jsonl"];
+        }
+        return [];
+      });
+      mockFs.statSync.mockImplementation((path: string) => {
+        if (path.toString().includes(".jsonl")) {
+          return { isDirectory: () => false, size: 10 * 1024 * 1024 }; // 10 MB, under threshold
+        }
+        return { isDirectory: () => true, size: 0 };
+      });
+      mockFs.openSync.mockReturnValue(3);
+      mockFs.readSync.mockImplementation((_fd: number, buf: Buffer) => {
+        buf.write("---\n", 0);
+        return 4;
+      });
+      mockChildProcess.execSync.mockReturnValueOnce("User\n").mockReturnValueOnce("user@test.com\n");
+      mockFsUtils.getDirSize.mockReturnValue(1024);
+
+      const { runDoctorChecks } = await import("./doctor.js");
+      const checks = runDoctorChecks();
+      const sessionCheck = checks.find((c) => c.name === "Session bloat");
+
+      expect(sessionCheck?.status).toBe("pass");
+      expect(sessionCheck?.message).toBe("No session files >50 MB");
+    });
+  });
+
   describe("RTK check removal verification", () => {
     it("should not include RTK in doctor checks", async () => {
       const { runDoctorChecks } = await import("./doctor.js");

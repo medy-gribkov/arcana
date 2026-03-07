@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { getCommandNames, getGroupedCommands, findClosestCommand, getCliReference } from "./command-registry.js";
+import { getCommandNames, getGroupedCommands, findClosestCommand, getCliReference } from "./command-defs.js";
 
-describe("command-registry", () => {
+describe("command-defs", () => {
   describe("getCommandNames", () => {
     it("returns all command names as strings", () => {
       const names = getCommandNames();

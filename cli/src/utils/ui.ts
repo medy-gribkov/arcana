@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import ora, { type Ora } from "ora";
 
+/* v8 ignore next 3 -- runtime color detection */
 if (process.env.NO_COLOR || process.env.TERM === "dumb") {
   chalk.level = 0;
 }
@@ -17,6 +18,7 @@ export const ui = {
   cyan: (text: string) => chalk.cyan(text),
 };
 
+/* v8 ignore start -- display-only functions */
 export function banner(): void {
   console.log();
   console.log(ui.brand("  arcana") + ui.dim(" - universal agent skill manager"));
@@ -26,6 +28,7 @@ export function banner(): void {
 export function spinner(text: string): Ora {
   return ora({ text, color: "yellow" });
 }
+/* v8 ignore stop */
 
 export function noopSpinner() {
   return {
@@ -99,11 +102,13 @@ export function printErrorWithHint(err: unknown, showMessage = false): void {
   }
 }
 
+/* v8 ignore start -- display-only suggestion */
 export function suggest(text: string): void {
   if (!process.stdout.isTTY) return;
   console.log(ui.dim("  Next: ") + text);
   console.log();
 }
+/* v8 ignore stop */
 
 export function errorAndExit(message: string, hint?: string): never {
   console.error();

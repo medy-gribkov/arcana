@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtempSync, existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { detectProject, SKILL_SUGGESTIONS, SKILL_SUGGESTIONS_DEFAULT } from "./init.js";
+import { detectProject, detectInstalledTools, SKILL_SUGGESTIONS, SKILL_SUGGESTIONS_DEFAULT } from "./init.js";
 
 describe("detectProject", () => {
   it("detects Go project from go.mod", () => {
@@ -115,6 +115,65 @@ describe("SKILL_SUGGESTIONS", () => {
   it("has default suggestions for unknown types", () => {
     expect(SKILL_SUGGESTIONS_DEFAULT.length).toBeGreaterThan(0);
     expect(SKILL_SUGGESTIONS_DEFAULT).toContain("code-reviewer");
+  });
+});
+
+describe("detectInstalledTools", () => {
+  it("detects CLAUDE.md", () => {
+    const dir = mkdtempSync(join(tmpdir(), "arcana-detect-"));
+    writeFileSync(join(dir, "CLAUDE.md"), "# Claude", "utf-8");
+    expect(detectInstalledTools(dir)).toContain("claude");
+  });
+
+  it("detects .cursor directory", () => {
+    const dir = mkdtempSync(join(tmpdir(), "arcana-detect-"));
+    mkdirSync(join(dir, ".cursor"), { recursive: true });
+    writeFileSync(join(dir, ".cursor", "config.json"), "{}", "utf-8");
+    expect(detectInstalledTools(dir)).toContain("cursor");
+  });
+
+  it("detects AGENTS.md for codex", () => {
+    const dir = mkdtempSync(join(tmpdir(), "arcana-detect-"));
+    writeFileSync(join(dir, "AGENTS.md"), "# Agents", "utf-8");
+    expect(detectInstalledTools(dir)).toContain("codex");
+  });
+
+  it("detects GEMINI.md", () => {
+    const dir = mkdtempSync(join(tmpdir(), "arcana-detect-"));
+    writeFileSync(join(dir, "GEMINI.md"), "# Gemini", "utf-8");
+    expect(detectInstalledTools(dir)).toContain("gemini");
+  });
+
+  it("detects .windsurfrules", () => {
+    const dir = mkdtempSync(join(tmpdir(), "arcana-detect-"));
+    writeFileSync(join(dir, ".windsurfrules"), "rules", "utf-8");
+    expect(detectInstalledTools(dir)).toContain("windsurf");
+  });
+
+  it("detects AGENT.md for antigravity", () => {
+    const dir = mkdtempSync(join(tmpdir(), "arcana-detect-"));
+    writeFileSync(join(dir, "AGENT.md"), "# Agent", "utf-8");
+    expect(detectInstalledTools(dir)).toContain("antigravity");
+  });
+
+  it("detects .aider.conf.yml", () => {
+    const dir = mkdtempSync(join(tmpdir(), "arcana-detect-"));
+    writeFileSync(join(dir, ".aider.conf.yml"), "model: gpt-4", "utf-8");
+    expect(detectInstalledTools(dir)).toContain("aider");
+  });
+
+  it("returns empty for clean directory", () => {
+    const dir = mkdtempSync(join(tmpdir(), "arcana-detect-"));
+    expect(detectInstalledTools(dir)).toEqual([]);
+  });
+
+  it("detects multiple tools", () => {
+    const dir = mkdtempSync(join(tmpdir(), "arcana-detect-"));
+    writeFileSync(join(dir, "CLAUDE.md"), "#", "utf-8");
+    writeFileSync(join(dir, "GEMINI.md"), "#", "utf-8");
+    const tools = detectInstalledTools(dir);
+    expect(tools).toContain("claude");
+    expect(tools).toContain("gemini");
   });
 });
 

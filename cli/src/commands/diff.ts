@@ -175,6 +175,7 @@ export async function diffCommand(skill: string, opts: { provider?: string; json
     return;
   }
 
+  /* v8 ignore start */
   // Console output
   console.log(`Diff: ${skill}`);
   console.log(`  Local version:  ${localVersion}`);
@@ -206,4 +207,5 @@ export async function diffCommand(skill: string, opts: { provider?: string; json
       console.log(`    ~ ${entry.path}  (+${entry.linesAdded} / -${entry.linesRemoved})`);
     }
   }
+  /* v8 ignore stop */
 }

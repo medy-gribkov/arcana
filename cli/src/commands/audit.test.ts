@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { mkdtempSync, writeFileSync, mkdirSync, chmodSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { auditSkill } from "./audit.js";
@@ -305,5 +305,125 @@ ${Array(30).fill("Content line for length.\n").join("")}
     expect(bothCheck?.passed).toBe(true);
     expect(bothCheck?.detail).toContain("scripts");
     expect(bothCheck?.detail).toContain("references");
+  });
+
+  it("returns WEAK with 'SKILL.md readable' when readFileSync throws (line 28)", () => {
+    const base = mkdtempSync(join(tmpdir(), "arcana-test-"));
+    const skillDir = join(base, "unreadable");
+    mkdirSync(skillDir, { recursive: true });
+    const skillMd = join(skillDir, "SKILL.md");
+    // Create a directory named SKILL.md so readFileSync throws EISDIR
+    mkdirSync(skillMd, { recursive: true });
+
+    const result = auditSkill(skillDir, "unreadable");
+
+    expect(result.rating).toBe("WEAK");
+    expect(result.score).toBe(0);
+    expect(result.checks).toHaveLength(1);
+    expect(result.checks[0]!.name).toBe("SKILL.md readable");
+    expect(result.checks[0]!.passed).toBe(false);
+  });
+});
+
+describe("auditCommand", () => {
+  let consoleLogSpy: ReturnType<typeof vi.spyOn>;
+  let processExitSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    processExitSpy = vi.spyOn(process, "exit").mockImplementation((() => {}) as never);
+  });
+
+  afterEach(() => {
+    consoleLogSpy.mockRestore();
+    processExitSpy.mockRestore();
+  });
+
+  it("JSON mode --all lists directories and audits each", async () => {
+    const base = mkdtempSync(join(tmpdir(), "arcana-audit-"));
+    const skill1Dir = join(base, "skill-one");
+    const skill2Dir = join(base, "skill-two");
+    mkdirSync(skill1Dir, { recursive: true });
+    mkdirSync(skill2Dir, { recursive: true });
+    writeFileSync(
+      join(skill1Dir, "SKILL.md"),
+      `---\nname: skill-one\ndescription: ${"A".repeat(100)}\n---\n## Heading\n${"Body\n".repeat(60)}`,
+      "utf-8",
+    );
+    writeFileSync(
+      join(skill2Dir, "SKILL.md"),
+      `---\nname: skill-two\ndescription: ${"B".repeat(100)}\n---\n## Heading\n${"Body\n".repeat(60)}`,
+      "utf-8",
+    );
+
+    const { auditCommand } = await import("./audit.js");
+    await auditCommand(undefined, { all: true, json: true, source: base });
+
+    const output = JSON.parse(consoleLogSpy.mock.calls[0]![0] as string);
+    expect(output.results).toBeDefined();
+    expect(output.results.length).toBe(2);
+    const names = output.results.map((r: { skill: string }) => r.skill);
+    expect(names).toContain("skill-one");
+    expect(names).toContain("skill-two");
+  });
+
+  it("JSON mode single skill audit", async () => {
+    const base = mkdtempSync(join(tmpdir(), "arcana-audit-"));
+    const skillDir = join(base, "my-skill");
+    mkdirSync(skillDir, { recursive: true });
+    writeFileSync(
+      join(skillDir, "SKILL.md"),
+      `---\nname: my-skill\ndescription: ${"A".repeat(100)}\n---\n## Heading\n${"Body\n".repeat(60)}`,
+      "utf-8",
+    );
+
+    const { auditCommand } = await import("./audit.js");
+    await auditCommand("my-skill", { json: true, source: base });
+
+    const output = JSON.parse(consoleLogSpy.mock.calls[0]![0] as string);
+    expect(output.results).toBeDefined();
+    expect(output.results.length).toBe(1);
+    expect(output.results[0].skill).toBe("my-skill");
+    expect(output.results[0].rating).toBeDefined();
+    expect(output.results[0].score).toBeGreaterThanOrEqual(0);
+  });
+
+  it("JSON mode no skill and no --all outputs error and exits", async () => {
+    const base = mkdtempSync(join(tmpdir(), "arcana-audit-"));
+
+    const { auditCommand } = await import("./audit.js");
+    // process.exit is mocked as no-op, so execution continues past it
+    // and hits skills.sort() where skills is undefined. We catch the TypeError.
+    try {
+      await auditCommand(undefined, { json: true, source: base });
+    } catch {
+      // Expected: TypeError from continued execution after mocked process.exit
+    }
+
+    const output = JSON.parse(consoleLogSpy.mock.calls[0]![0] as string);
+    expect(output.error).toContain("Specify a skill name or use --all");
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it("JSON mode baseDir doesn't exist returns empty results", async () => {
+    const { auditCommand } = await import("./audit.js");
+    await auditCommand(undefined, { json: true, all: true, source: "/nonexistent/path/abc123" });
+
+    const output = JSON.parse(consoleLogSpy.mock.calls[0]![0] as string);
+    expect(output.results).toEqual([]);
+  });
+
+  it("JSON mode single skill that doesn't exist returns WEAK with Exists check", async () => {
+    const base = mkdtempSync(join(tmpdir(), "arcana-audit-"));
+
+    const { auditCommand } = await import("./audit.js");
+    await auditCommand("nonexistent-skill", { json: true, source: base });
+
+    const output = JSON.parse(consoleLogSpy.mock.calls[0]![0] as string);
+    expect(output.results.length).toBe(1);
+    expect(output.results[0].rating).toBe("WEAK");
+    expect(output.results[0].score).toBe(0);
+    expect(output.results[0].checks[0].name).toBe("Exists");
+    expect(output.results[0].checks[0].passed).toBe(false);
   });
 });

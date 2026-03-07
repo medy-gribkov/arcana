@@ -61,12 +61,9 @@ describe("createCli", () => {
       "init",
       "doctor",
       "clean",
-      "compact",
-      "stats",
       "config",
       "audit",
       "scan",
-      "optimize",
     ];
 
     for (const cmd of expectedCommands) {

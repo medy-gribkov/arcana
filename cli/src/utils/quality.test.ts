@@ -206,4 +206,34 @@ describe("crossValidate", () => {
     expect(companionIssues).toHaveLength(1);
     expect(companionIssues[0]!.detail).toContain("nonexistent");
   });
+
+  it("returns error when marketplace.json cannot be parsed", () => {
+    const base = mkdtempSync(join(tmpdir(), "arcana-cross-"));
+    const skillsDir = join(base, "skills");
+    mkdirSync(skillsDir, { recursive: true });
+    const marketplacePath = join(base, "marketplace.json");
+    writeFileSync(marketplacePath, "not valid json {{{", "utf-8");
+
+    const issues = crossValidate(skillsDir, marketplacePath);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]!.level).toBe("error");
+    expect(issues[0]!.skill).toBe("marketplace.json");
+    expect(issues[0]!.detail).toContain("Cannot read or parse marketplace.json");
+  });
+
+  it("returns error when skills directory cannot be read", () => {
+    const base = mkdtempSync(join(tmpdir(), "arcana-cross-"));
+    const nonExistentSkillsDir = join(base, "nonexistent-skills-dir");
+    const marketplacePath = join(base, "marketplace.json");
+    writeFileSync(
+      marketplacePath,
+      JSON.stringify({ name: "test", plugins: [{ name: "skill-a", source: "./skills/skill-a", description: "A test skill", version: "1.0.0" }] }),
+      "utf-8",
+    );
+
+    const issues = crossValidate(nonExistentSkillsDir, marketplacePath);
+    const dirError = issues.find((i) => i.skill === "skills/" && i.detail.includes("Cannot read skills directory"));
+    expect(dirError).toBeDefined();
+    expect(dirError!.level).toBe("error");
+  });
 });

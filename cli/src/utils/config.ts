@@ -7,6 +7,9 @@ import { atomicWriteSync } from "./atomic.js";
 
 const CONFIG_PATH = join(homedir(), ".arcana", "config.json");
 
+/** Module-level config cache. Avoids repeated disk reads during a single CLI invocation. */
+let _cache: ArcanaConfig | null = null;
+
 /** Matches owner/repo slug format (e.g. "medy-gribkov/arcana") */
 const SLUG_RE = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
 
@@ -18,6 +21,12 @@ const DEFAULT_CONFIG: ArcanaConfig = {
       name: "arcana",
       type: "github",
       url: "medy-gribkov/arcana",
+      enabled: true,
+    },
+    {
+      name: "anthropics",
+      type: "github",
+      url: "anthropics/skills",
       enabled: true,
     },
   ],
@@ -55,22 +64,27 @@ export function validateConfig(config: ArcanaConfig): string[] {
 }
 
 export function loadConfig(): ArcanaConfig {
+  if (_cache) return cloneConfig(_cache);
+
+  let config: ArcanaConfig;
   if (!existsSync(CONFIG_PATH)) {
-    return applyEnvOverrides(cloneConfig(DEFAULT_CONFIG));
+    config = applyEnvOverrides(cloneConfig(DEFAULT_CONFIG));
+  } else {
+    try {
+      const raw = readFileSync(CONFIG_PATH, "utf-8");
+      const loaded = JSON.parse(raw) as Partial<ArcanaConfig>;
+      config = applyEnvOverrides({
+        ...DEFAULT_CONFIG,
+        ...loaded,
+        providers: loaded.providers ?? DEFAULT_CONFIG.providers.map((p) => ({ ...p })),
+      });
+    } catch {
+      console.error(ui.warn("  Warning: Config file is corrupted, using defaults"));
+      config = applyEnvOverrides(cloneConfig(DEFAULT_CONFIG));
+    }
   }
-  try {
-    const raw = readFileSync(CONFIG_PATH, "utf-8");
-    const loaded = JSON.parse(raw) as Partial<ArcanaConfig>;
-    const config: ArcanaConfig = {
-      ...DEFAULT_CONFIG,
-      ...loaded,
-      providers: loaded.providers ?? DEFAULT_CONFIG.providers.map((p) => ({ ...p })),
-    };
-    return applyEnvOverrides(config);
-  } catch {
-    console.error(ui.warn("  Warning: Config file is corrupted, using defaults"));
-    return applyEnvOverrides(cloneConfig(DEFAULT_CONFIG));
-  }
+  _cache = config;
+  return cloneConfig(config);
 }
 
 function applyEnvOverrides(base: ArcanaConfig): ArcanaConfig {
@@ -103,6 +117,12 @@ export function saveConfig(config: ArcanaConfig): void {
     mkdirSync(dir, { recursive: true });
   }
   atomicWriteSync(CONFIG_PATH, JSON.stringify(config, null, 2) + "\n", 0o600);
+  _cache = null; // Invalidate cache on write
+}
+
+/** Clear the config cache. Call from tests to ensure isolated state. */
+export function clearConfigCache(): void {
+  _cache = null;
 }
 
 export function addProvider(provider: ProviderConfig): void {
