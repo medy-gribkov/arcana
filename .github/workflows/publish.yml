@@ -1,0 +1,43 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: cli
+
+      - run: pnpm exec tsc --noEmit
+        working-directory: cli
+
+      - run: pnpm exec vitest run
+        working-directory: cli
+
+      - run: pnpm run build
+        working-directory: cli
+
+      - run: npm publish --provenance --access public
+        working-directory: cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

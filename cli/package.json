@@ -1,6 +1,6 @@
 {
   "name": "@sporesec/arcana",
-  "version": "3.0.4",
+  "version": "4.0.0",
   "description": "Context intelligence for AI coding agents. 74 skills, budget-aware curation, output compression, cross-session memory, MCP management. 7 platforms.",
   "bin": {
     "arcana": "dist/index.js"
