@@ -1,7 +1,7 @@
 {
   "name": "@sporesec/arcana",
   "version": "3.0.4",
-  "description": "Universal AI development CLI. Skills, scaffolding, diagnostics, and analytics for every agent.",
+  "description": "Context intelligence for AI coding agents. 74 skills, budget-aware curation, output compression, cross-session memory, MCP management. 7 platforms.",
   "bin": {
     "arcana": "dist/index.js"
   },
@@ -27,9 +27,14 @@
     "gemini",
     "windsurf",
     "aider",
+    "antigravity",
     "ai",
+    "ai-agents",
     "skills",
     "cli",
+    "context-management",
+    "token-optimization",
+    "mcp",
     "developer-tools",
     "automation",
     "typescript",
@@ -40,8 +45,8 @@
     "devops",
     "security",
     "testing",
-    "playwright",
-    "notebooklm"
+    "compression",
+    "curation"
   ],
   "license": "Apache-2.0",
   "author": {

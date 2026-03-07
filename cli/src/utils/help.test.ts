@@ -22,7 +22,8 @@ describe("buildCustomHelp", () => {
     const help = buildCustomHelp("2.1.1");
     expect(help).toContain("GETTING STARTED");
     expect(help).toContain("SKILLS");
-    expect(help).toContain("DEVELOPMENT");
+    expect(help).toContain("CONTEXT INTELLIGENCE");
+    expect(help).toContain("SECURITY");
     expect(help).toContain("CONFIGURATION");
     expect(help).toContain("EXAMPLES");
     expect(help).toContain("LEARN MORE");
@@ -36,23 +37,30 @@ describe("buildCustomHelp", () => {
 
   it("contains tagline", () => {
     const help = buildCustomHelp("2.1.1");
-    expect(help).toContain("Supercharge any AI coding agent");
+    expect(help).toContain("Context intelligence for AI coding agents");
   });
 
-  it("contains all 15 commands", () => {
+  it("contains core commands", () => {
     const help = buildCustomHelp("1.0.0");
     const commands = [
       "init",
       "doctor",
       "list",
       "search",
-      "info",
       "install",
       "update",
       "uninstall",
-      "create",
-      "validate",
-      "audit",
+      "recommend",
+      "curate",
+      "compress",
+      "remember",
+      "recall",
+      "snapshot",
+      "trim",
+      "mcp",
+      "scan",
+      "verify",
+      "lock",
       "config",
       "providers",
       "clean",
@@ -70,9 +78,9 @@ describe("buildCustomHelp", () => {
 
   it("contains examples with actual commands", () => {
     const help = buildCustomHelp("1.0.0");
-    expect(help).toContain("arcana install code-reviewer");
-    expect(help).toContain("arcana search");
-    expect(help).toContain("arcana init --tool claude");
+    expect(help).toContain("arcana install --all");
+    expect(help).toContain("arcana curate");
+    expect(help).toContain("arcana compress git status");
   });
 
   it("contains GitHub URL", () => {

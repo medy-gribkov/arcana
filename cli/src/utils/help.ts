@@ -41,15 +41,17 @@ export function renderBanner(): string {
 // Help groups: subset of registry for --help display (keeps output scannable)
 const HELP_GROUPS: Record<string, string[]> = {
   "GETTING STARTED": ["init", "doctor"],
-  SKILLS: ["list", "search", "info", "install", "update", "uninstall", "recommend"],
-  DEVELOPMENT: ["create", "validate", "audit"],
+  SKILLS: ["list", "search", "install", "update", "uninstall", "recommend"],
+  "CONTEXT INTELLIGENCE": ["curate", "compress", "remember", "recall", "snapshot", "trim", "mcp"],
+  SECURITY: ["scan", "verify", "lock"],
   CONFIGURATION: ["config", "providers", "clean", "stats"],
 };
 
 const EXAMPLES = [
-  "$ arcana install code-reviewer typescript golang",
-  '$ arcana search "testing"',
-  "$ arcana init --tool claude",
+  "$ arcana install --all && arcana curate",
+  '$ arcana remember "always use pnpm"',
+  "$ arcana compress git status --json",
+  "$ arcana init",
 ];
 
 function padRight(str: string, width: number): string {
@@ -62,7 +64,7 @@ export function buildCustomHelp(version: string): string {
   lines.push("");
   lines.push(renderBanner());
   lines.push("");
-  lines.push(`  ${ui.bold("Supercharge any AI coding agent.")}${" ".repeat(20)}${ui.dim(`v${version}`)}`);
+  lines.push(`  ${ui.bold("Context intelligence for AI coding agents.")}${" ".repeat(11)}${ui.dim(`v${version}`)}`);
   lines.push("");
   lines.push(`  ${ui.dim("USAGE")}`);
   lines.push("    arcana <command> [options]");
