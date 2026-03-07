@@ -96,6 +96,7 @@ export function buildMenuOptions(installedCount: number, _availableCount: number
     options.push({ value: "setup", label: "Get Started", hint: "detect project, add more skills" });
   }
 
+  options.push({ value: "curate", label: "Curate context", hint: "auto-select skills for token budget" });
   options.push({ value: "health", label: "Health check" });
   options.push({ value: "optimize", label: "Token budget" });
   options.push({ value: "ref", label: "CLI reference" });

@@ -320,5 +320,68 @@ describe("install-core", () => {
 
       Object.defineProperty(process.stdout, "isTTY", { value: origIsTTY, writable: true });
     });
+
+    it("rejects path traversal skill names", async () => {
+      const mockProvider = {
+        name: "test-provider",
+        fetch: vi.fn(async () => []),
+        info: vi.fn(async () => null),
+        list: vi.fn(async () => []),
+        search: vi.fn(async () => []),
+      };
+
+      const result = await installOneCore("../evil", mockProvider, {});
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Invalid skill name");
+    });
+
+    it("rejects uppercase skill names", async () => {
+      const mockProvider = {
+        name: "test-provider",
+        fetch: vi.fn(async () => []),
+        info: vi.fn(async () => null),
+        list: vi.fn(async () => []),
+        search: vi.fn(async () => []),
+      };
+
+      const result = await installOneCore("MySkill", mockProvider, {});
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Invalid skill name");
+    });
+
+    it("rejects skill names longer than 64 chars", async () => {
+      const longName = "a".repeat(65);
+      const mockProvider = {
+        name: "test-provider",
+        fetch: vi.fn(async () => []),
+        info: vi.fn(async () => null),
+        list: vi.fn(async () => []),
+        search: vi.fn(async () => []),
+      };
+
+      const result = await installOneCore(longName, mockProvider, {});
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Invalid skill name");
+    });
+
+    it("accepts valid lowercase hyphenated names", async () => {
+      const mockProvider = {
+        name: "test-provider",
+        fetch: vi.fn(async () => [{ path: "SKILL.md", content: "---\nname: test\n---\nBody" }]),
+        info: vi.fn(async () => ({ name: "golang-pro", version: "1.0.0", description: "Test", tags: [], verified: false })),
+        list: vi.fn(async () => []),
+        search: vi.fn(async () => []),
+      };
+
+      const result = await installOneCore("golang-pro", mockProvider, {});
+      expect(result.success).toBe(true);
+    });
+
+    it("install-core.ts source imports regenerateIndex for post-install", async () => {
+      const { readFileSync } = await import("node:fs");
+      const source = readFileSync(new URL("./install-core.ts", import.meta.url), "utf-8");
+      expect(source).toContain("regenerateIndex");
+      expect(source).toContain('import("../commands/index.js")');
+    });
   });
 });

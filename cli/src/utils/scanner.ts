@@ -299,22 +299,101 @@ const PATTERNS: Pattern[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Scope detection: skip BAD/DON'T example blocks to reduce false positives
+// ---------------------------------------------------------------------------
+
+/** Detect if a line enters or exits a "BAD example" scope. */
+function isBadScopeStart(line: string): boolean {
+  const trimmed = line.trim();
+  // Markdown headings: ### BAD, ### DON'T, ### Anti-pattern
+  if (/^#{1,4}\s+(?:BAD|DON'T|DONT|Anti-?pattern)/i.test(trimmed)) return true;
+  // Bold markers: **BAD**, **DON'T**
+  if (/^\*{2}(?:BAD|DON'T|DONT)\*{2}/i.test(trimmed)) return true;
+  // Code fence with bad label: ```bad, ```BAD
+  if (/^```\s*bad\b/i.test(trimmed)) return true;
+  // Inline label: BAD: or DON'T:
+  if (/^(?:BAD|DON'T|DONT)\s*:/i.test(trimmed)) return true;
+  return false;
+}
+
+function isBadScopeEnd(line: string, inCodeFence: boolean): boolean {
+  const trimmed = line.trim();
+  // End of bad-labeled code fence
+  if (inCodeFence && trimmed === "```") return true;
+  // New heading that isn't BAD
+  if (/^#{1,4}\s+/.test(trimmed) && !isBadScopeStart(trimmed)) return true;
+  // GOOD marker ends a BAD section
+  if (/^(?:\*{2}GOOD\*{2}|#{1,4}\s+GOOD)/i.test(trimmed)) return true;
+  return false;
+}
+
+/**
+ * Build a set of line indices that are inside BAD/DON'T example blocks.
+ * These lines should have their findings suppressed (not scanned) in default mode.
+ */
+function buildBadScopeSet(lines: string[]): Set<number> {
+  const badLines = new Set<number>();
+  let inBadScope = false;
+  let inBadCodeFence = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!;
+    const trimmed = line.trim();
+
+    if (!inBadScope) {
+      if (isBadScopeStart(line)) {
+        inBadScope = true;
+        inBadCodeFence = /^```\s*bad\b/i.test(trimmed);
+        badLines.add(i);
+      }
+    } else {
+      badLines.add(i);
+      if (isBadScopeEnd(line, inBadCodeFence)) {
+        inBadScope = false;
+        inBadCodeFence = false;
+      }
+    }
+  }
+
+  return badLines;
+}
+
+// ---------------------------------------------------------------------------
 // Scanner
 // ---------------------------------------------------------------------------
+
+export interface ScanOptions {
+  /** When true, scan all lines including BAD/DON'T blocks (no scope filtering). */
+  strict?: boolean;
+}
 
 /**
  * Scan SKILL.md content for security threats.
  * Returns an array of issues sorted by severity (critical first).
+ * By default, findings inside BAD/DON'T example blocks are suppressed.
+ * Use strict mode to scan everything.
  */
-export function scanSkillContent(content: string): ScanIssue[] {
+export interface ScanResult {
+  issues: ScanIssue[];
+  suppressed: ScanIssue[];
+}
+
+/**
+ * Scan with full result including suppressed findings.
+ * Used by scan command when --verbose is needed.
+ */
+export function scanSkillContentFull(content: string, options?: ScanOptions): ScanResult {
   const issues: ScanIssue[] = [];
+  const suppressed: ScanIssue[] = [];
   const lines = content.split("\n");
+  const badScope = options?.strict ? new Set<number>() : buildBadScopeSet(lines);
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]!;
+    const target = badScope.has(i) && !options?.strict ? suppressed : issues;
     for (const pattern of PATTERNS) {
       if (pattern.regex.test(line)) {
-        issues.push({
+        target.push({
           level: pattern.level,
           category: pattern.category,
           detail: pattern.detail,
@@ -330,11 +409,13 @@ export function scanSkillContent(content: string): ScanIssue[] {
     const line = lines[i]!;
     if (line.endsWith("\\")) {
       const joined = line.slice(0, -1) + " " + (lines[i + 1] ?? "").trim();
+      const target = badScope.has(i) && !options?.strict ? suppressed : issues;
       for (const pattern of PATTERNS) {
         if (pattern.regex.test(joined)) {
           const alreadyFound = issues.some((iss) => iss.line === i + 1 && iss.category === pattern.category);
-          if (!alreadyFound) {
-            issues.push({
+          const alreadySuppressed = suppressed.some((iss) => iss.line === i + 1 && iss.category === pattern.category);
+          if (!alreadyFound && !alreadySuppressed) {
+            target.push({
               level: pattern.level,
               category: pattern.category,
               detail: pattern.detail,
@@ -347,11 +428,21 @@ export function scanSkillContent(content: string): ScanIssue[] {
     }
   }
 
-  // Sort: critical first, then high, then medium
   const order = { critical: 0, high: 1, medium: 2 };
   issues.sort((a, b) => order[a.level] - order[b.level]);
+  suppressed.sort((a, b) => order[a.level] - order[b.level]);
 
-  return issues;
+  return { issues, suppressed };
+}
+
+/**
+ * Scan SKILL.md content for security threats.
+ * Returns an array of issues sorted by severity (critical first).
+ * By default, findings inside BAD/DON'T example blocks are suppressed.
+ * Use strict mode to scan everything.
+ */
+export function scanSkillContent(content: string, options?: ScanOptions): ScanIssue[] {
+  return scanSkillContentFull(content, options).issues;
 }
 
 /**

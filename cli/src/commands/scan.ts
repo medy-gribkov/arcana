@@ -1,13 +1,17 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { getInstallDir } from "../utils/fs.js";
-import { scanSkillContent, formatScanResults } from "../utils/scanner.js";
+import { scanSkillContentFull, formatScanResults } from "../utils/scanner.js";
+import type { ScanIssue } from "../utils/scanner.js";
 import { ui, banner } from "../utils/ui.js";
 
-export async function scanCommand(skill: string | undefined, opts: { all?: boolean; json?: boolean }): Promise<void> {
+export async function scanCommand(
+  skill: string | undefined,
+  opts: { all?: boolean; json?: boolean; strict?: boolean; verbose?: boolean },
+): Promise<void> {
   if (!opts.json) {
     banner();
-    console.log(ui.bold("  Security Scan\n"));
+    console.log(ui.bold("  Security Scan") + (opts.strict ? ui.dim(" (strict mode)") : "") + "\n");
   }
 
   const installDir = getInstallDir();
@@ -40,12 +44,14 @@ export async function scanCommand(skill: string | undefined, opts: { all?: boole
 
   interface SkillScanResult {
     skill: string;
-    issues: ReturnType<typeof scanSkillContent>;
+    issues: ScanIssue[];
+    suppressed: ScanIssue[];
     error?: string;
   }
 
   const results: SkillScanResult[] = [];
   let totalIssues = 0;
+  let totalSuppressed = 0;
   let criticalCount = 0;
   let highCount = 0;
   let mediumCount = 0;
@@ -54,14 +60,14 @@ export async function scanCommand(skill: string | undefined, opts: { all?: boole
   for (const name of skills) {
     const skillMd = join(installDir, name, "SKILL.md");
     if (!existsSync(skillMd)) {
-      results.push({ skill: name, issues: [], error: "Missing SKILL.md" });
+      results.push({ skill: name, issues: [], suppressed: [], error: "Missing SKILL.md" });
       continue;
     }
 
     try {
       const content = readFileSync(skillMd, "utf-8");
-      const issues = scanSkillContent(content);
-      results.push({ skill: name, issues });
+      const { issues, suppressed } = scanSkillContentFull(content, { strict: opts.strict });
+      results.push({ skill: name, issues, suppressed });
 
       if (issues.length === 0) {
         cleanCount++;
@@ -71,33 +77,31 @@ export async function scanCommand(skill: string | undefined, opts: { all?: boole
         highCount += issues.filter((i) => i.level === "high").length;
         mediumCount += issues.filter((i) => i.level === "medium").length;
       }
+      totalSuppressed += suppressed.length;
     } catch (err) {
-      results.push({ skill: name, issues: [], error: err instanceof Error ? err.message : "Read failed" });
+      results.push({ skill: name, issues: [], suppressed: [], error: err instanceof Error ? err.message : "Read failed" });
     }
   }
 
   if (opts.json) {
-    console.log(
-      JSON.stringify(
-        {
-          summary: {
-            total: skills.length,
-            clean: cleanCount,
-            issues: totalIssues,
-            critical: criticalCount,
-            high: highCount,
-            medium: mediumCount,
-          },
-          results: results.map((r) => ({
-            skill: r.skill,
-            ...(r.error ? { error: r.error } : {}),
-            issues: r.issues.map((i) => ({ level: i.level, category: i.category, detail: i.detail, line: i.line })),
-          })),
-        },
-        null,
-        2,
-      ),
-    );
+    const jsonOutput: Record<string, unknown> = {
+      summary: {
+        total: skills.length,
+        clean: cleanCount,
+        issues: totalIssues,
+        critical: criticalCount,
+        high: highCount,
+        medium: mediumCount,
+        ...(opts.verbose ? { suppressed: totalSuppressed } : {}),
+      },
+      results: results.map((r) => ({
+        skill: r.skill,
+        ...(r.error ? { error: r.error } : {}),
+        issues: r.issues.map((i) => ({ level: i.level, category: i.category, detail: i.detail, line: i.line })),
+        ...(opts.verbose ? { suppressed: r.suppressed.map((i) => ({ level: i.level, category: i.category, detail: i.detail, line: i.line })) } : {}),
+      })),
+    };
+    console.log(JSON.stringify(jsonOutput, null, 2));
     if (criticalCount > 0) process.exit(1);
     return;
   }
@@ -109,6 +113,12 @@ export async function scanCommand(skill: string | undefined, opts: { all?: boole
       continue;
     }
     console.log(formatScanResults(r.skill, r.issues));
+    if (opts.verbose && !opts.strict && r.suppressed.length > 0) {
+      for (const s of r.suppressed) {
+        const icon = s.level === "critical" ? "CRIT" : s.level === "high" ? "HIGH" : "MED";
+        console.log(`    ${ui.dim(`[SKIP] [${icon}] ${s.category}: ${s.detail} (line ${s.line})`)}`);
+      }
+    }
   }
 
   console.log();
@@ -117,10 +127,14 @@ export async function scanCommand(skill: string | undefined, opts: { all?: boole
   if (criticalCount > 0) parts.push(ui.error(`${criticalCount} critical`));
   if (highCount > 0) parts.push(ui.warn(`${highCount} high`));
   if (mediumCount > 0) parts.push(ui.dim(`${mediumCount} medium`));
+  if (totalSuppressed > 0 && !opts.strict) parts.push(ui.dim(`${totalSuppressed} suppressed`));
   console.log(`  ${parts.join(ui.dim(" | "))}`);
 
   if (totalIssues === 0) {
     console.log(ui.success("  No security issues detected."));
+  }
+  if (!opts.strict) {
+    console.log(ui.dim("  Note: BAD/DON'T example blocks are skipped. Use --strict to scan everything."));
   }
   console.log();
 

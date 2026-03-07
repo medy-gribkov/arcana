@@ -3,8 +3,8 @@
 </p>
 
 <p align="center">
-  <strong>The AI development toolkit.</strong><br/>
-  74 production-ready skills for every coding agent. By <a href="https://sporesec.com">SporeSec</a>.
+  <strong>Context intelligence for AI coding agents.</strong><br/>
+  74 skills, 40 commands, 7 platforms. By <a href="https://sporesec.com">SporeSec</a>.
 </p>
 
 <p align="center">
@@ -18,6 +18,35 @@
 
 ---
 
+## What It Does
+
+Arcana manages the context your AI coding agent reads. It installs structured skill packages (production code, BAD/GOOD pairs, procedural workflows), then curates which skills load into context based on your project, your token budget, and your usage patterns.
+
+Without arcana, you either load everything (context bloat) or nothing (agent doesn't know your stack). Arcana solves this with budget-aware curation, output compression, cross-session memory, and session management.
+
+## Quick Start
+
+```bash
+# npm
+npm i -g @sporesec/arcana
+
+# pnpm
+pnpm add -g @sporesec/arcana
+
+# without global install
+npx @sporesec/arcana install --all
+```
+
+Then in your project:
+
+```bash
+arcana init          # detect project, configure AI tools
+arcana install --all # install all 74 skills
+arcana curate        # auto-select skills within token budget
+```
+
+Skills install to `~/.agents/skills/`. Config scaffolds for Claude Code, Cursor, Codex, Gemini, Windsurf, Antigravity, and Aider.
+
 ## Demo
 
 <p align="center">
@@ -26,34 +55,82 @@
 
 <sub>Built with arcana's own <code>remotion-best-practices</code> skill.</sub>
 
-## What It Does
+## Core Features
 
-Arcana ships structured skill packages, not loose prompts. Each skill contains production code examples, BAD/GOOD comparison pairs, step-by-step procedural workflows, and on-demand reference documents that load only when needed. 74 skills across 15 categories: languages, frameworks, DevOps, security, game development, databases, testing, and more.
+### Context Curation
 
-Skills include bundled scripts that run as zero-cost automation. Security review scans auth code. Database design lints migrations. TypeScript catches `any` usage. Scraping automation launches Playwright with stealth config. NotebookLM research drives Google's tool through CDP. These scripts execute at build time or on demand, never loaded as idle context.
-
-The CLI gives you 29 commands beyond install/uninstall. `doctor` diagnoses environment issues. `benchmark` measures token cost per skill. `scan` detects prompt injection and credential theft. `verify` checks SHA-256 integrity of installed skills. `lock` generates reproducible lockfiles for CI. `recommend` suggests skills based on your project's stack. `profile` manages named skill sets for different workflows. `team` shares configurations across developers.
-
-## Quick Start
+`arcana curate` auto-generates `_active.md` containing full content of project-relevant skills within your model's token budget. Skills are ranked by project detection (tags, dependencies, file patterns) and usage history, then greedily packed until the budget fills.
 
 ```bash
-npm i -g @sporesec/arcana
-arcana install --all
+arcana curate                                    # default: 30% of 200K context
+arcana curate --model gpt-5.4 --budget 40        # 40% of 1M context
+arcana curate --include golang-pro typescript     # force-include specific skills
 ```
 
-Or install specific skills:
+Supported models: Claude Opus 4.6, Sonnet 4.6, Haiku 4.5 (200K), GPT-5.4 (1M), Gemini 3.1 Pro/Flash/Thinking (1M).
+
+### Output Compression
+
+`arcana compress` runs commands through a 4-stage pipeline (filter, group, truncate, dedup) that reduces token waste from tool output. Shell hooks make it transparent.
 
 ```bash
-arcana install golang-pro security-review typescript-advanced
+arcana compress git status                # compressed git output
+arcana compress npm test                  # keep failures + summary only
+echo "..." | arcana compress --stdin --tool tsc
+arcana hook install                       # transparent shell hooks
+arcana hook status                        # show cumulative savings
 ```
 
-Without global install:
+Rules for: git, npm/pnpm, tsc, vitest, jest, pytest, go test.
+
+### Cross-Session Memory
+
+`arcana remember` persists facts and preferences across sessions. `arcana recall` searches them. Project-relevant memories inject into `_active.md` automatically.
 
 ```bash
-npx @sporesec/arcana install --all
+arcana remember "always use pnpm for this project"
+arcana remember "use vitest not jest" --tag testing
+arcana recall "package manager"
+arcana recall --all
+arcana forget abc123
 ```
 
-Skills install to `~/.agents/skills/`.
+### Session Intelligence
+
+`arcana snapshot` saves session state before compaction or context loss. `arcana trim` analyzes and reduces session bloat without touching the original session files.
+
+```bash
+arcana snapshot pre-refactor              # save current session
+arcana snapshot --list                    # list all snapshots
+arcana trim --dry-run                     # analyze trimmable content
+arcana trim                              # create trimmed copy
+```
+
+### MCP Server Management
+
+`arcana mcp` installs and manages MCP servers (like Context7 for live docs) in your AI tool's config.
+
+```bash
+arcana mcp list                           # available MCP servers
+arcana mcp install context7               # install into Claude/Cursor config
+arcana mcp status                         # show configured servers
+```
+
+### Progressive Disclosure
+
+Three tiers of context loading:
+
+| Tier | File | Tokens/Skill | Use Case |
+|------|------|-------------|----------|
+| Index | `_index.md` | ~50 | Discovery, agent reads at startup |
+| Active | `_active.md` | Full (budgeted) | Auto-curated, project-relevant |
+| On-demand | `arcana load` | Full | Manual, specific skill needed |
+
+```bash
+arcana index                              # generate lightweight index
+arcana load golang-pro typescript         # load specific skills on demand
+arcana benchmark --all --progressive      # compare index vs full token cost
+```
 
 ## CLI Commands
 
@@ -61,8 +138,10 @@ Skills install to `~/.agents/skills/`.
 
 | Command | Description |
 |---------|-------------|
-| `arcana init` | Scaffold config for Claude Code, Cursor, Codex, Gemini, Windsurf, Antigravity, Aider |
+| `arcana` | Interactive TUI menu |
+| `arcana init` | Detect project, configure AI tools, install skills, set up MCP |
 | `arcana doctor` | Diagnose environment issues |
+| `arcana doctor --fix` | Auto-fix common issues |
 
 ### Skills
 
@@ -75,7 +154,36 @@ Skills install to `~/.agents/skills/`.
 | `arcana list` | List available skills |
 | `arcana search <query>` | Search across providers |
 | `arcana info <skill>` | Show skill details and metadata |
-| `arcana recommend` | Get smart skill recommendations for current project |
+| `arcana recommend` | Smart skill recommendations for current project |
+
+### Context Intelligence
+
+| Command | Description |
+|---------|-------------|
+| `arcana curate` | Auto-generate budget-aware `_active.md` |
+| `arcana compress <cmd>` | Run command with output compression |
+| `arcana hook install` | Install transparent shell compression hooks |
+| `arcana remember "..."` | Save a cross-session memory |
+| `arcana recall <query>` | Search saved memories |
+| `arcana snapshot [name]` | Save session state snapshot |
+| `arcana trim` | Analyze and trim session bloat |
+| `arcana mcp install <name>` | Install an MCP server |
+
+### Progressive Disclosure
+
+| Command | Description |
+|---------|-------------|
+| `arcana index` | Generate skill metadata index (~50 tokens/skill) |
+| `arcana load <skill>` | Load full skill content on demand |
+| `arcana benchmark --progressive` | Show before/after token comparison |
+
+### Security
+
+| Command | Description |
+|---------|-------------|
+| `arcana scan --all` | Scan for prompt injection, malware, credential theft |
+| `arcana verify --all` | Verify SHA-256 integrity against lockfile |
+| `arcana lock --ci` | Generate or validate reproducible lockfile |
 
 ### Development
 
@@ -83,44 +191,35 @@ Skills install to `~/.agents/skills/`.
 |---------|-------------|
 | `arcana create <name>` | Create a new skill from template |
 | `arcana validate --all --fix` | Validate and auto-fix all skills |
-| `arcana audit` | Audit skill quality (code examples, BAD/GOOD pairs, structure) |
-
-### Security
-
-| Command | Description |
-|---------|-------------|
-| `arcana scan --all` | Scan for prompt injection, malware, credential theft, path leaks |
-| `arcana verify --all` | Verify SHA-256 integrity of installed skills against lockfile |
-| `arcana lock --ci` | Generate or validate reproducible lockfile for CI pipelines |
+| `arcana audit` | Audit skill quality (code examples, BAD/GOOD pairs) |
 
 ### Inspection
 
 | Command | Description |
 |---------|-------------|
 | `arcana benchmark` | Measure token cost of installed skills |
-| `arcana diff <skill>` | Show changes between installed and remote version |
+| `arcana diff <skill>` | Show installed vs remote changes |
 | `arcana outdated` | List skills with newer versions available |
+| `arcana stats` | Session analytics and token usage |
+| `arcana optimize` | Suggest token/performance improvements |
 
 ### Configuration
 
 | Command | Description |
 |---------|-------------|
-| `arcana config list` | View configuration |
+| `arcana config` | View or modify configuration |
 | `arcana providers --add <repo>` | Manage skill providers |
-| `arcana clean --dry-run` | Preview cleanup of stale data and temp files |
-| `arcana compact` | Remove agent logs while preserving session history |
-| `arcana stats` | Session analytics and token usage |
-| `arcana optimize` | Analyze setup and suggest token/performance improvements |
+| `arcana clean` | Remove orphaned data and temp files |
+| `arcana compact` | Remove agent logs, preserve session history |
 
 ### Workflow
 
 | Command | Description |
 |---------|-------------|
-| `arcana profile <name>` | Manage named skill sets for different workflows |
-| `arcana team` | Manage shared team skill configuration |
-| `arcana export` | Export installed skills as a portable manifest |
-| `arcana import <file>` | Import and install skills from a manifest |
-| `arcana completions` | Generate shell completion scripts (bash, zsh, fish) |
+| `arcana profile <name>` | Manage named skill sets |
+| `arcana team` | Shared team skill configuration |
+| `arcana export` / `arcana import` | Portable skill manifests |
+| `arcana completions <shell>` | Shell completions (bash, zsh, fish) |
 
 All commands support `--json` for machine-readable output and respect `NO_COLOR`.
 
@@ -209,7 +308,7 @@ Skills are plain markdown with YAML frontmatter. Claude Code loads them natively
 
 | Platform | Config File | Integration |
 |----------|------------|-------------|
-| Claude Code | `CLAUDE.md` | Native skill loading |
+| Claude Code | `CLAUDE.md` | Native skill loading + `_active.md` curation |
 | Codex CLI | `AGENTS.md` | Config scaffold via `arcana init` |
 | Cursor AI | `.cursor/rules/` | Config scaffold via `arcana init` |
 | Gemini CLI | `GEMINI.md` | Config scaffold via `arcana init` |
@@ -224,7 +323,12 @@ Arcana was built on the shoulders of these projects:
 | Project | Inspiration |
 |---------|------------|
 | [skills.sh](https://skills.sh) | Marketplace UX patterns and community-driven skill discovery |
-| [token-optimizer](https://github.com/alexgreensh/token-optimizer) | Backup-first safety, token budget estimation, progressive disclosure |
+| [token-optimizer](https://github.com/alexgreensh/token-optimizer) | Token budget estimation, progressive disclosure, backup-first safety |
+| [RTK](https://github.com/rtk-ai/rtk) | Tool output compression pipeline, 60-90% token reduction patterns |
+| [CMV](https://github.com/CosmoNaught/claude-code-cmv) | Session snapshot/restore, context bloat analysis, trim strategies |
+| [mem0](https://github.com/mem0ai/mem0) | Cross-session memory persistence, project-scoped recall |
+| [Context7](https://github.com/upstash/context7) | MCP server for live version-specific documentation |
+| [best-practices](https://github.com/shanraisshan/claude-code-best-practice) | Unified setup flow, Command/Agent/Skill pattern, session hygiene |
 | [notebooklm-skill](https://github.com/PleasePrompto/notebooklm-skill) | NotebookLM browser automation via CDP |
 | [notebooklm-py](https://github.com/teng-lin/notebooklm-py) | NotebookLM Python SDK patterns |
 

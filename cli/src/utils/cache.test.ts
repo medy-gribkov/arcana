@@ -77,15 +77,16 @@ describe("cache", () => {
       expect(result).toEqual(testData);
     });
 
-    it("should use default TTL of 1 hour", async () => {
+    it("should use default TTL of 24 hours (CACHE_MAX_AGE_MS)", async () => {
       vi.useFakeTimers();
       const now = Date.now();
       vi.setSystemTime(now);
 
       const testData = { data: "test" };
       mockFs.existsSync.mockReturnValue(true);
+      // 23 hours ago should still be valid with 24h TTL
       mockFs.statSync.mockReturnValue({
-        mtimeMs: now - 59 * 60 * 1000, // 59 minutes ago
+        mtimeMs: now - 23 * 60 * 60 * 1000,
       });
       mockFs.readFileSync.mockReturnValue(JSON.stringify(testData));
 
@@ -93,6 +94,29 @@ describe("cache", () => {
       const result = readCache("test-key");
 
       expect(result).toEqual(testData);
+    });
+
+    it("should expire after 24 hours with default TTL", async () => {
+      vi.useFakeTimers();
+      const now = Date.now();
+      vi.setSystemTime(now);
+
+      mockFs.existsSync.mockReturnValue(true);
+      // 25 hours ago should be expired with 24h TTL
+      mockFs.statSync.mockReturnValue({
+        mtimeMs: now - 25 * 60 * 60 * 1000,
+      });
+      mockFs.readFileSync.mockReturnValue(JSON.stringify({ data: "stale" }));
+
+      const { readCache } = await import("./cache.js");
+      const result = readCache("test-key");
+
+      expect(result).toBeNull();
+    });
+
+    it("should import CACHE_MAX_AGE_MS from constants", async () => {
+      const { CACHE_MAX_AGE_MS } = await import("../constants.js");
+      expect(CACHE_MAX_AGE_MS).toBe(24 * 60 * 60 * 1000);
     });
 
     it("should return null on read error", async () => {

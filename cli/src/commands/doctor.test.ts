@@ -305,4 +305,19 @@ describe("doctor", () => {
       expect(mockUi.banner).not.toHaveBeenCalled();
     });
   });
+
+  describe("RTK check removal verification", () => {
+    it("should not include RTK in doctor checks", async () => {
+      const { runDoctorChecks } = await import("./doctor.js");
+      const checks = runDoctorChecks();
+      const rtkCheck = checks.find((c) => c.name === "RTK");
+      expect(rtkCheck).toBeUndefined();
+    });
+
+    it("should have exactly 11 checks", async () => {
+      const { runDoctorChecks } = await import("./doctor.js");
+      const checks = runDoctorChecks();
+      expect(checks).toHaveLength(11);
+    });
+  });
 });

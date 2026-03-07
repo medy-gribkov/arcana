@@ -1,10 +1,39 @@
-import { existsSync, readdirSync, readFileSync, statSync, openSync, readSync, closeSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, openSync, readSync, closeSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { execSync } from "node:child_process";
 import { ui, banner, suggest } from "../utils/ui.js";
 import { getInstallDir, getDirSize, listSymlinks, isOrphanedProject } from "../utils/fs.js";
 import type { DoctorCheck } from "../types.js";
+
+/** Auto-fix a doctor check. Returns true if fixed. */
+function autoFix(check: DoctorCheck): boolean {
+  try {
+    switch (check.name) {
+      case "Skills directory": {
+        const dir = getInstallDir();
+        if (!existsSync(dir)) { mkdirSync(dir, { recursive: true }); return true; }
+        return false;
+      }
+      case "Symlinks": {
+        const broken = listSymlinks().filter((s) => s.broken);
+        for (const s of broken) { try { rmSync(s.fullPath); } catch { /* skip */ } }
+        return broken.length > 0;
+      }
+      case "Arcana config": {
+        const configPath = join(homedir(), ".arcana", "config.json");
+        const dir = join(homedir(), ".arcana");
+        if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+        writeFileSync(configPath, JSON.stringify({ defaultProvider: "arcana", providers: [] }, null, 2));
+        return true;
+      }
+      default:
+        return false;
+    }
+  } catch {
+    return false;
+  }
+}
 
 function checkNodeVersion(): DoctorCheck {
   const major = parseInt(process.version.slice(1));
@@ -318,7 +347,7 @@ export function runDoctorChecks(): DoctorCheck[] {
   ];
 }
 
-export async function doctorCommand(opts: { json?: boolean } = {}): Promise<void> {
+export async function doctorCommand(opts: { json?: boolean; fix?: boolean } = {}): Promise<void> {
   if (!opts.json) {
     banner();
     console.log(ui.bold("  Environment Health Check\n"));
@@ -344,12 +373,23 @@ export async function doctorCommand(opts: { json?: boolean } = {}): Promise<void
     return;
   }
 
+  let fixed = 0;
   for (const check of checks) {
     const icon =
       check.status === "pass" ? ui.success("[OK]") : check.status === "warn" ? ui.warn("[!!]") : ui.error("[XX]");
 
     console.log(`  ${icon} ${ui.bold(check.name)}: ${check.message}`);
-    if (check.fix) {
+
+    // Auto-fix if --fix flag and check has issues
+    if (opts.fix && check.status !== "pass" && check.fix) {
+      const wasFixed = autoFix(check);
+      if (wasFixed) {
+        console.log(ui.success(`    Fixed automatically`));
+        fixed++;
+      } else {
+        console.log(ui.dim(`    Manual fix: ${check.fix}`));
+      }
+    } else if (check.fix && !opts.fix) {
       console.log(ui.dim(`    Fix: ${check.fix}`));
     }
   }
@@ -358,6 +398,9 @@ export async function doctorCommand(opts: { json?: boolean } = {}): Promise<void
   const warns = checks.filter((c) => c.status === "warn").length;
   console.log();
 
+  if (opts.fix && fixed > 0) {
+    console.log(ui.success(`  Auto-fixed ${fixed} issue${fixed > 1 ? "s" : ""}`));
+  }
   if (fails > 0) {
     console.log(ui.error(`  ${fails} issue${fails > 1 ? "s" : ""} found`));
   } else if (warns > 0) {

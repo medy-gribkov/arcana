@@ -108,6 +108,11 @@ export async function showInteractiveMenu(version: string): Promise<void> {
         case "optimize":
           await optimizeInteractive();
           break;
+        case "curate": {
+          const { curateCommand } = await import("../commands/curate.js");
+          await curateCommand({});
+          break;
+        }
         case "ref":
           p.note(getCliReference(), "CLI Reference");
           break;

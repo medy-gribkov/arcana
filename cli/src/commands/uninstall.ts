@@ -69,6 +69,16 @@ async function uninstallOneInteractive(skillName: string, skipConfirm?: boolean)
 
   const symlinksRemoved = removeSymlinksFor(skillName);
 
+  // Regenerate skill index and active curation
+  try {
+    const { regenerateIndex } = await import("./index.js");
+    regenerateIndex();
+  } catch { /* best-effort */ }
+  try {
+    const { regenerateActive } = await import("./curate.js");
+    regenerateActive();
+  } catch { /* best-effort */ }
+
   spin.stop(`Removed ${chalk.bold(skillName)}`);
 
   if (symlinksRemoved > 0) {
@@ -119,6 +129,16 @@ async function uninstallMultipleInteractive(skillNames: string[], skipConfirm?: 
     rmSync(getSkillDir(skillName), { recursive: true, force: true });
     totalSymlinks += removeSymlinksFor(skillName);
   }
+
+  // Regenerate skill index and active curation
+  try {
+    const { regenerateIndex } = await import("./index.js");
+    regenerateIndex();
+  } catch { /* best-effort */ }
+  try {
+    const { regenerateActive } = await import("./curate.js");
+    regenerateActive();
+  } catch { /* best-effort */ }
 
   spin.stop(`Removed ${toRemove.length} skills`);
 

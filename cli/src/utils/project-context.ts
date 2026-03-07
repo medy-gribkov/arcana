@@ -151,6 +151,11 @@ function extractNpmTags(cwd: string): string[] {
     tags.add("typescript");
   }
 
+  // Detect package manager
+  if (existsSync(join(cwd, "pnpm-lock.yaml")) || existsSync(join(cwd, "pnpm-workspace.yaml"))) {
+    tags.add("pnpm");
+  }
+
   return [...tags];
 }
 

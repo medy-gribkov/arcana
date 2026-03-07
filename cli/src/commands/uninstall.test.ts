@@ -179,3 +179,13 @@ describe("removeSymlinksFor", () => {
     expect(mockRmSync).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("uninstall - index regeneration", () => {
+  it("uninstall.ts source imports regenerateIndex for post-uninstall cleanup", async () => {
+    // Use importActual to bypass the fs mock and read the real source file
+    const realFs = await vi.importActual<typeof import("node:fs")>("node:fs");
+    const source = realFs.readFileSync(new URL("./uninstall.ts", import.meta.url), "utf-8");
+    expect(source).toContain("regenerateIndex");
+    expect(source).toContain('import("./index.js")');
+  });
+});

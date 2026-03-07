@@ -18,12 +18,31 @@ export function detectProject(cwd: string): ProjectInfo {
   return { name: ctx.name, type: ctx.type, lang: ctx.lang };
 }
 
+/** Detect which AI tools are already configured in this project. */
+export function detectInstalledTools(cwd: string): ToolName[] {
+  const tools: ToolName[] = [];
+  if (existsSync(join(cwd, "CLAUDE.md"))) tools.push("claude");
+  if (existsSync(join(cwd, ".cursor"))) tools.push("cursor");
+  if (existsSync(join(cwd, "AGENTS.md"))) tools.push("codex");
+  if (existsSync(join(cwd, "GEMINI.md"))) tools.push("gemini");
+  if (existsSync(join(cwd, ".windsurfrules"))) tools.push("windsurf");
+  if (existsSync(join(cwd, "AGENT.md"))) tools.push("antigravity");
+  if (existsSync(join(cwd, ".aider.conf.yml"))) tools.push("aider");
+  return tools;
+}
+
 function claudeTemplate(proj: ProjectInfo): string {
   return `# CLAUDE.md - ${proj.name}
 
 ## Project
 - **Type:** ${proj.type}
 - **Language:** ${proj.lang}
+
+## Skills
+Active skills curated at ~/.agents/skills/_active.md (budget-aware, project-specific).
+Full index at ~/.agents/skills/_index.md.
+Run \`arcana curate\` to refresh after project changes.
+Run \`arcana load <skill>\` for additional skills on demand.
 
 ## Coding Preferences
 - Follow existing patterns in the codebase
@@ -62,6 +81,11 @@ function codexTemplate(proj: ProjectInfo): string {
 
 ## Project
 Type: ${proj.type} | Language: ${proj.lang}
+
+## Skills
+Active skills curated at ~/.agents/skills/_active.md (budget-aware, project-specific).
+Full index at ~/.agents/skills/_index.md.
+Run \`arcana curate\` to refresh. Run \`arcana load <skill>\` for on-demand loading.
 
 ## Sandbox
 Codex runs in a sandboxed environment with no network access.
@@ -288,6 +312,63 @@ export async function initCommand(opts: { tool?: string }): Promise<void> {
 
   const skillList = suggestions.map((s) => `arcana install ${s}`).join("\n");
   p.note(skillList, "Recommended skills");
+
+  // Offer context curation
+  const doCurate = await p.confirm({
+    message: "Run context curation? (auto-selects project-relevant skills within token budget)",
+    initialValue: true,
+  });
+  if (!p.isCancel(doCurate) && doCurate) {
+    try {
+      const { regenerateActive } = await import("./curate.js");
+      const result = regenerateActive();
+      p.log.success(`Curated ${result.selected.length} skills (${result.totalTokens.toLocaleString()} tokens)`);
+    } catch {
+      p.log.info("No skills installed yet. Run curate after installing skills.");
+    }
+  }
+
+  // Offer MCP server setup
+  const doMcp = await p.confirm({
+    message: "Set up MCP servers? (Context7 for live docs, etc.)",
+    initialValue: false,
+  });
+  if (!p.isCancel(doMcp) && doMcp) {
+    try {
+      const { installMcpServer } = await import("../mcp/install.js");
+      const result = installMcpServer("context7", "claude", cwd);
+      if (result.installed) {
+        p.log.success("Context7 MCP configured");
+      }
+    } catch (err) {
+      p.log.warn(`MCP setup: ${err instanceof Error ? err.message : "failed"}`);
+    }
+  }
+
+  // Offer compression hook install
+  const doCompress = await p.confirm({
+    message: "Install output compression hooks? (saves 60-80% on git/npm/tsc tokens)",
+    initialValue: false,
+  });
+  if (!p.isCancel(doCompress) && doCompress) {
+    try {
+      const { installHook } = await import("../compress/hook.js");
+      const result = installHook();
+      if (result.installed) {
+        p.log.success(`Compression hook installed at ${result.path}`);
+      } else {
+        p.log.warn(result.error ?? "Hook install failed");
+      }
+    } catch (err) {
+      p.log.warn(`Hook: ${err instanceof Error ? err.message : "failed"}`);
+    }
+  }
+
+  // Show detected tools
+  const detected = detectInstalledTools(cwd);
+  if (detected.length > 0) {
+    p.log.info(`Detected AI tools: ${detected.join(", ")}`);
+  }
 
   p.outro(`Next: ${chalk.cyan("arcana install <skill>")} or ${chalk.cyan("arcana install --all")}`);
 }

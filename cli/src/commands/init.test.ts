@@ -117,3 +117,20 @@ describe("SKILL_SUGGESTIONS", () => {
     expect(SKILL_SUGGESTIONS_DEFAULT).toContain("code-reviewer");
   });
 });
+
+describe("init template content", () => {
+  const initSourcePath = new URL("./init.ts", import.meta.url);
+
+  it("Claude template includes active curation reference", () => {
+    const source = readFileSync(initSourcePath, "utf-8");
+    expect(source).toContain("Active skills curated at");
+    expect(source).toContain("arcana curate");
+  });
+
+  it("both Claude and Codex templates reference skill curation", () => {
+    const source = readFileSync(initSourcePath, "utf-8");
+    const matches = source.match(/Active skills curated at/g);
+    expect(matches).not.toBeNull();
+    expect(matches!.length).toBeGreaterThanOrEqual(2);
+  });
+});

@@ -231,4 +231,77 @@ describe("benchmarkCommand", () => {
     expect(output).toContain("No skills installed");
     expect(processExitSpy).not.toHaveBeenCalled();
   });
+
+  // === --progressive flag tests ===
+
+  it("--progressive shows comparison output", async () => {
+    const installDir = "/fake/install";
+
+    setupMocks({
+      installDir,
+      readdirResults: {
+        [installDir]: ["skill1", "skill2"],
+        [installDir + "/skill1"]: ["SKILL.md"],
+        [installDir + "/skill2"]: ["SKILL.md"],
+      },
+      statResults: {
+        [installDir + "/skill1"]: makeDirStat(),
+        [installDir + "/skill2"]: makeDirStat(),
+        [installDir + "/skill1/SKILL.md"]: makeFileStat(400),
+        [installDir + "/skill2/SKILL.md"]: makeFileStat(800),
+      },
+    });
+
+    const { benchmarkCommand } = await import("./benchmark.js");
+    await benchmarkCommand(undefined, { all: true, progressive: true });
+
+    const output = consoleLogSpy.mock.calls.map((c) => c[0]).join("\n");
+    expect(output).toContain("Progressive Disclosure Comparison");
+  });
+
+  it("--progressive shows reduction percentage", async () => {
+    const installDir = "/fake/install";
+
+    setupMocks({
+      installDir,
+      readdirResults: {
+        [installDir]: ["skill1"],
+        [installDir + "/skill1"]: ["SKILL.md"],
+      },
+      statResults: {
+        [installDir + "/skill1"]: makeDirStat(),
+        [installDir + "/skill1/SKILL.md"]: makeFileStat(4000),
+      },
+    });
+
+    const { benchmarkCommand } = await import("./benchmark.js");
+    await benchmarkCommand(undefined, { all: true, progressive: true });
+
+    const output = consoleLogSpy.mock.calls.map((c) => c[0]).join("\n");
+    expect(output).toContain("Reduction:");
+    expect(output).toMatch(/\d+\.\d+%/);
+  });
+
+  it("--progressive shows arcana index usage hint", async () => {
+    const installDir = "/fake/install";
+
+    setupMocks({
+      installDir,
+      readdirResults: {
+        [installDir]: ["skill1"],
+        [installDir + "/skill1"]: ["SKILL.md"],
+      },
+      statResults: {
+        [installDir + "/skill1"]: makeDirStat(),
+        [installDir + "/skill1/SKILL.md"]: makeFileStat(400),
+      },
+    });
+
+    const { benchmarkCommand } = await import("./benchmark.js");
+    await benchmarkCommand(undefined, { all: true, progressive: true });
+
+    const output = consoleLogSpy.mock.calls.map((c) => c[0]).join("\n");
+    expect(output).toContain("arcana index");
+    expect(output).toContain("arcana load");
+  });
 });

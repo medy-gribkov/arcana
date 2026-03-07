@@ -3,6 +3,7 @@ import { join, resolve } from "node:path";
 import { getInstallDir } from "../utils/fs.js";
 import { extractFrontmatter, parseFrontmatter } from "../utils/frontmatter.js";
 import { ui, banner } from "../utils/ui.js";
+import { SKILL_MAX_LINES } from "../constants.js";
 
 export interface AuditResult {
   skill: string;
@@ -70,10 +71,11 @@ export function auditSkill(skillDir: string, skillName: string): AuditResult {
   });
   if (!isCapabilityList) score += 15;
 
-  // 7. Reasonable length (50-500 lines)
-  const goodLength = lineCount >= 50 && lineCount <= 500;
-  checks.push({ name: "Reasonable length (50-500 lines)", passed: goodLength, detail: `${lineCount} lines` });
+  // 7. Reasonable length (50-300 lines)
+  const goodLength = lineCount >= 50 && lineCount <= SKILL_MAX_LINES;
+  checks.push({ name: `Reasonable length (50-${SKILL_MAX_LINES} lines)`, passed: goodLength, detail: `${lineCount} lines` });
   if (goodLength) score += 10;
+  if (lineCount > SKILL_MAX_LINES) score -= 10;
 
   // 8. Has scripts/ or references/ directory (bonus)
   const hasScripts = existsSync(join(skillDir, "scripts"));
@@ -102,7 +104,7 @@ export function auditSkill(skillDir: string, skillName: string): AuditResult {
   checks.push({ name: "Has numbered steps (3+)", passed: hasSteps, detail: `${numberedSteps} steps` });
   if (hasSteps) score += 5;
 
-  // Rating (max possible: 110)
+  // Rating (max possible: 110, penalty can reduce below 0)
   let rating: AuditResult["rating"];
   if (score >= 90) rating = "PERFECT";
   else if (score >= 65) rating = "STRONG";

@@ -52,6 +52,21 @@ const COMMANDS: CommandEntry[] = [
     group: "CONFIGURATION",
   },
 
+  // Context Intelligence
+  { name: "curate", usage: "curate", description: "Auto-generate budget-aware _active.md", group: "CONTEXT" },
+  { name: "compress", usage: "compress [command...]", description: "Run command with output compression", group: "CONTEXT" },
+  { name: "hook", usage: "hook <action>", description: "Manage shell compression hooks", group: "CONTEXT" },
+  { name: "remember", usage: "remember [content...]", description: "Save a cross-session memory", group: "CONTEXT" },
+  { name: "recall", usage: "recall [query...]", description: "Search saved memories", group: "CONTEXT" },
+  { name: "forget", usage: "forget <id>", description: "Remove a saved memory", group: "CONTEXT" },
+  { name: "snapshot", usage: "snapshot [name]", description: "Save session state snapshot", group: "CONTEXT" },
+  { name: "trim", usage: "trim", description: "Analyze and trim session bloat", group: "CONTEXT" },
+  { name: "mcp", usage: "mcp <action> [name]", description: "Manage MCP servers", group: "CONTEXT" },
+
+  // Progressive Disclosure
+  { name: "index", usage: "index", description: "Generate skill metadata index", group: "DISCLOSURE" },
+  { name: "load", usage: "load [skills...]", description: "Load full skill content on demand", group: "DISCLOSURE" },
+
   // Team & Workflow
   { name: "profile", usage: "profile [action]", description: "Manage skill profiles", group: "WORKFLOW" },
   { name: "team", usage: "team [action]", description: "Shared team skill config", group: "WORKFLOW" },

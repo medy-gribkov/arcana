@@ -2,9 +2,9 @@ import { existsSync, mkdirSync, readFileSync, unlinkSync, statSync } from "node:
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { atomicWriteSync } from "./atomic.js";
+import { CACHE_MAX_AGE_MS } from "../constants.js";
 
 const CACHE_DIR = join(homedir(), ".arcana", "cache");
-const DEFAULT_TTL = 60 * 60 * 1000; // 1 hour
 
 function ensureCacheDir(): void {
   if (!existsSync(CACHE_DIR)) {
@@ -16,7 +16,7 @@ function cacheFile(key: string): string {
   return join(CACHE_DIR, `${key}.json`);
 }
 
-export function readCache<T>(key: string, maxAgeMs: number = DEFAULT_TTL): T | null {
+export function readCache<T>(key: string, maxAgeMs: number = CACHE_MAX_AGE_MS): T | null {
   const file = cacheFile(key);
   if (!existsSync(file)) return null;
   try {

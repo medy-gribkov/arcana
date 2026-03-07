@@ -6,7 +6,7 @@ import { scanSkillContent } from "./scanner.js";
 import { updateLockEntry } from "./integrity.js";
 import { checkConflicts } from "./conflict-check.js";
 import { detectProjectContext } from "./project-context.js";
-import { LARGE_SKILL_KB_THRESHOLD, TOKENS_PER_KB } from "../constants.js";
+import { LARGE_SKILL_KB_THRESHOLD, TOKENS_PER_KB, SKILL_NAME_REGEX } from "../constants.js";
 
 export interface InstallOneResult {
   success: boolean;
@@ -80,6 +80,14 @@ export async function installOneCore(
   provider: Provider,
   opts: { force?: boolean; noCheck?: boolean },
 ): Promise<InstallOneResult> {
+  if (!SKILL_NAME_REGEX.test(skillName)) {
+    return {
+      success: false,
+      skillName,
+      error: `Invalid skill name "${skillName}". Must match: lowercase alphanumeric with hyphens, 1-64 chars.`,
+    };
+  }
+
   const files = await provider.fetch(skillName);
 
   // Security scan
@@ -124,6 +132,20 @@ export async function installOneCore(
     sizeBytes,
   });
   updateLockEntry(skillName, version, provider.name, files);
+
+  // Auto-regenerate skill index and active curation
+  try {
+    const { regenerateIndex } = await import("../commands/index.js");
+    regenerateIndex();
+  } catch {
+    /* non-critical, index regeneration is best-effort */
+  }
+  try {
+    const { regenerateActive } = await import("../commands/curate.js");
+    regenerateActive();
+  } catch {
+    /* non-critical, active curation is best-effort */
+  }
 
   const sizeKB = sizeBytes / 1024;
   return { success: true, skillName, files, sizeKB, conflictWarnings };

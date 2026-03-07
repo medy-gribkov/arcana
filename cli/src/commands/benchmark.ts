@@ -68,7 +68,7 @@ function formatTokens(tokens: number): string {
 
 export async function benchmarkCommand(
   skill: string | undefined,
-  opts: { all?: boolean; json?: boolean },
+  opts: { all?: boolean; json?: boolean; progressive?: boolean },
 ): Promise<void> {
   const installDir = getInstallDir();
 
@@ -77,7 +77,7 @@ export async function benchmarkCommand(
   }
 
   if (opts.all) {
-    return benchmarkAll(installDir, opts.json);
+    return benchmarkAll(installDir, opts.json, opts.progressive);
   }
 
   console.error("Specify a skill name or use --all to benchmark all installed skills.");
@@ -146,7 +146,7 @@ function benchmarkSingle(skillName: string, json?: boolean): void {
   console.log();
 }
 
-function benchmarkAll(installDir: string, json?: boolean): void {
+function benchmarkAll(installDir: string, json?: boolean, progressive?: boolean): void {
   let dirs: string[];
   try {
     dirs = readdirSync(installDir).filter((d) => {
@@ -230,6 +230,21 @@ function benchmarkAll(installDir: string, json?: boolean): void {
   if (totalContextPercent > 50) {
     console.log(`  Warning: installed skills consume ${totalContextPercent.toFixed(1)}% of context window.`);
     console.log("  Consider removing unused skills with: arcana uninstall <skill>");
+    console.log();
+  }
+
+  if (progressive) {
+    const indexTokens = results.length * 50; // ~50 tokens per index row
+    const reductionPercent = totalTokens > 0 ? ((totalTokens - indexTokens) / totalTokens) * 100 : 0;
+
+    console.log("  Progressive Disclosure Comparison:");
+    console.log();
+    console.log(`    Without progressive:  ${formatTokens(totalTokens)} tokens (all skills loaded)`);
+    console.log(`    With progressive:     ${formatTokens(indexTokens)} tokens (index only) + on-demand`);
+    console.log(`    Reduction:            ${reductionPercent.toFixed(1)}%`);
+    console.log();
+    console.log("    Use: arcana index     (generate metadata index)");
+    console.log("    Use: arcana load X    (load full skill on demand)");
     console.log();
   }
 }
